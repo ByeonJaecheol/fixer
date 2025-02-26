@@ -196,6 +196,44 @@ export default function InputHistory() {
     setTaskDetails(item.task_details || "");
   };
 
+  // 삭제 함수 추가
+  const handleDelete = async (id: number) => {
+    // 삭제 확인
+    if (!confirm("정말로 이 작업내역을 삭제하시겠습니까?")) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const { error } = await supabase
+        .from("work-history")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      alert("삭제되었습니다.");
+      setEditingId(null);
+      // 폼 초기화
+      setCreatedAt(now);
+      setReceivedDate(now);
+      setUser("");
+      setDepartment("");
+      setModelName("");
+      setSerial("");
+      setCode("");
+      setIsBackup(false);
+      setTaskDetails("");
+      // 데이터 새로고침
+      await fetchWorkHistory();
+    } catch (error) {
+      console.error("삭제 중 오류 발생:", error);
+      alert("삭제 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-4 p-4">
       {/* 입력 폼 섹션 */}
@@ -338,23 +376,17 @@ export default function InputHistory() {
         </div>
       </div>
 
-      {/* 작업내용 입력 후 제출 버튼 */}
-      <div className="flex justify-end mt-4">
-        <button
-          onClick={() => (editingId ? handleEdit(editingId) : onSave())}
-          disabled={isLoading}
-          className={`
-                        px-4 py-2 rounded-md text-white
-                        ${
-                          isLoading
-                            ? "bg-gray-500 cursor-not-allowed"
-                            : "bg-yellow-600 hover:bg-yellow-700"
-                        }
-                        transition-colors duration-200
-                    `}
-        >
-          {isLoading ? "처리 중..." : editingId ? "수정하기" : "작성하기"}
-        </button>
+      {/* 버튼 섹션 수정 */}
+      <div className="flex justify-end items-center gap-2 mt-6">
+        {editingId && (
+          <button
+            onClick={() => handleDelete(editingId)}
+            disabled={isLoading}
+            className="px-6 py-3 rounded-md text-white bg-red-600 hover:bg-red-700 transition-colors duration-200 text-base"
+          >
+            삭제하기
+          </button>
+        )}
         {editingId && (
           <button
             onClick={() => {
@@ -370,11 +402,22 @@ export default function InputHistory() {
               setIsBackup(false);
               setTaskDetails("");
             }}
-            className="ml-2 px-4 py-2 rounded-md text-white bg-gray-600 hover:bg-gray-700"
+            className="px-6 py-3 rounded-md text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-200 text-base"
           >
             취소
           </button>
         )}
+        <button
+          onClick={() => editingId ? handleEdit(editingId) : onSave()}
+          disabled={isLoading}
+          className={`
+            px-6 py-3 rounded-md text-white text-base
+            ${isLoading ? "bg-gray-500 cursor-not-allowed" : "bg-yellow-600 hover:bg-yellow-700"}
+            transition-colors duration-200
+          `}
+        >
+          {isLoading ? "처리 중..." : editingId ? "수정하기" : "작성하기"}
+        </button>
       </div>
 
       {/* 수정 모드일 때 상단에 안내 메시지 추가 */}
