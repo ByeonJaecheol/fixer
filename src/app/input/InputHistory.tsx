@@ -37,6 +37,9 @@ export default function InputHistory() {
   // 데이터 로딩 상태
   const [isDataLoading, setIsDataLoading] = useState(true);
 
+  // 수정 모드 상태 추가
+  const [editingId, setEditingId] = useState<number | null>(null);
+
   // 날짜 포맷팅 헬퍼 함수 추가
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "-";
@@ -58,7 +61,7 @@ export default function InputHistory() {
       const { data, error } = await supabase
         .from("work-history")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("id", { ascending: false });
 
       if (error) {
         throw error;
@@ -85,23 +88,44 @@ export default function InputHistory() {
       alert("모든 필드를 입력해주세요.");
       return;
     }
-    const { data, error } = await supabase.from("work-history").insert({
-      created_at: createdAt,
-      receivedDate: receivedDate,
-      user: user,
-      department: department,
-      model_name: modelName,
-      serial: serial,
-      code: code,
-      isBackup: isBackup,
-      task_details: taskDetails,
-    });
-    if (error) {
-      alert("저장 중 오류가 발생했습니다!!.");
-      console.log(error);
-      return;
+
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase.from("work-history").insert({
+        created_at: createdAt,
+        receivedDate: receivedDate,
+        user: user,
+        department: department,
+        model_name: modelName,
+        serial: serial,
+        code: code,
+        isBackup: isBackup,
+        task_details: taskDetails,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      alert("저장되었습니다.");
+      // 폼 초기화
+      setCreatedAt(now);
+      setReceivedDate(now);
+      setUser("");
+      setDepartment("");
+      setModelName("");
+      setSerial("");
+      setCode("");
+      setIsBackup(false);
+      setTaskDetails("");
+      // 데이터 새로고침
+      await fetchWorkHistory();
+    } catch (error) {
+      alert("저장 중 오류가 발생했습니다.");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
     }
-    alert("저장되었습니다.");
   };
   // 행 확장/축소 토글 함수
   const toggleRowExpansion = (index: number) => {
@@ -115,52 +139,29 @@ export default function InputHistory() {
     fetchWorkHistory();
   }, []);
 
-  // 데이터 제출 핸들러
-  const handleSubmit = async () => {
-    if (
-      !createdAt ||
-      !receivedDate ||
-      !user ||
-      !department ||
-      !modelName ||
-      !serial ||
-      !code
-    ) {
-      alert("모든 필드를 입력해주세요.");
-      return;
-    }
-
-    console.log(
-      createdAt,
-      receivedDate,
-      user,
-      department,
-      modelName,
-      serial,
-      code
-    );
-
+  // 수정 함수 추가
+  const handleEdit = async (id: number) => {
     try {
       setIsLoading(true);
-
-      const { error } = await supabase.from("work-history").insert([
-        {
+      const { error } = await supabase
+        .from("work-history")
+        .update({
           created_at: createdAt,
-          received_date: receivedDate,
+          receivedDate: receivedDate,
           user: user,
           department: department,
           model_name: modelName,
           serial: serial,
           code: code,
-          is_backup: isBackup,
+          isBackup: isBackup,
           task_details: taskDetails,
-        },
-      ]);
+        })
+        .eq("id", id);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
+      alert("수정이 완료되었습니다.");
+      setEditingId(null);
       // 폼 초기화
       setCreatedAt(now);
       setReceivedDate(now);
@@ -171,16 +172,28 @@ export default function InputHistory() {
       setCode("");
       setIsBackup(false);
       setTaskDetails("");
-
-      alert("성공적으로 저장되었습니다.");
-
+      // 데이터 새로고침
       await fetchWorkHistory();
     } catch (error) {
-      console.error("Error:", error);
-      alert("저장 중 오류가 발생했습니다.");
+      console.error("수정 중 오류 발생:", error);
+      alert("수정 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // 수정할 항목 선택 함수
+  const startEdit = (item: any) => {
+    setEditingId(item.id);
+    setCreatedAt(item.created_at?.slice(0, 16) || now);
+    setReceivedDate(item.received_date?.slice(0, 16) || now);
+    setUser(item.user || "");
+    setDepartment(item.department || "");
+    setModelName(item.model_name || "");
+    setSerial(item.serial || "");
+    setCode(item.code || "");
+    setIsBackup(item.is_backup || false);
+    setTaskDetails(item.task_details || "");
   };
 
   return (
@@ -328,7 +341,7 @@ export default function InputHistory() {
       {/* 작업내용 입력 후 제출 버튼 */}
       <div className="flex justify-end mt-4">
         <button
-          onClick={() => onSave()}
+          onClick={() => (editingId ? handleEdit(editingId) : onSave())}
           disabled={isLoading}
           className={`
                         px-4 py-2 rounded-md text-white
@@ -340,9 +353,36 @@ export default function InputHistory() {
                         transition-colors duration-200
                     `}
         >
-          {isLoading ? "저장 중..." : "작성하기"}
+          {isLoading ? "처리 중..." : editingId ? "수정하기" : "작성하기"}
         </button>
+        {editingId && (
+          <button
+            onClick={() => {
+              setEditingId(null);
+              // 폼 초기화
+              setCreatedAt(now);
+              setReceivedDate(now);
+              setUser("");
+              setDepartment("");
+              setModelName("");
+              setSerial("");
+              setCode("");
+              setIsBackup(false);
+              setTaskDetails("");
+            }}
+            className="ml-2 px-4 py-2 rounded-md text-white bg-gray-600 hover:bg-gray-700"
+          >
+            취소
+          </button>
+        )}
       </div>
+
+      {/* 수정 모드일 때 상단에 안내 메시지 추가 */}
+      {editingId && (
+        <div className="bg-blue-900 text-white p-4 rounded-md mb-4">
+          ID: {editingId} 작업내역을 수정하고 있습니다.
+        </div>
+      )}
 
       {/* 데이터 리스트 테이블 - 반응형 처리 */}
       <div className="w-full">
@@ -350,6 +390,9 @@ export default function InputHistory() {
           <table className="w-full divide-y divide-gray-700">
             <thead className="bg-gray-800">
               <tr className="border-b border-gray-700">
+                <th className="px-2 sm:px-4 py-2 text-yellow-300 text-xs sm:text-sm">
+                  ID
+                </th>
                 <th className="px-2 sm:px-4 py-2 text-yellow-300 text-xs sm:text-sm">
                   작업일
                 </th>
@@ -382,13 +425,13 @@ export default function InputHistory() {
             <tbody className="bg-gray-800 divide-y divide-gray-700">
               {isDataLoading ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-white">
+                  <td colSpan={10} className="px-4 py-8 text-center text-white">
                     데이터를 불러오는 중...
                   </td>
                 </tr>
               ) : workHistoryData.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-white">
+                  <td colSpan={10} className="px-4 py-8 text-center text-white">
                     작업 내역이 없습니다.
                   </td>
                 </tr>
@@ -396,9 +439,16 @@ export default function InputHistory() {
                 workHistoryData.map((item, index) => (
                   <React.Fragment key={index}>
                     <tr
-                      className="border-b border-gray-700 hover:bg-gray-700 sm:cursor-default cursor-pointer"
-                      onClick={() => toggleRowExpansion(index)}
+                      className="border-b border-gray-700 hover:bg-gray-700 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEdit(item);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
                     >
+                      <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap">
+                        {item.id}
+                      </td>
                       <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap">
                         <span className="hidden sm:inline">
                           {formatDate(item.created_at)}
@@ -412,7 +462,7 @@ export default function InputHistory() {
                           {formatDate(item.receivedDate)}
                         </span>
                         <span className="sm:hidden">
-                          {formatDate(item.receiveddDate)?.slice(5) || "-"}
+                          {formatDate(item.receivedDate)?.slice(5) || "-"}
                         </span>
                       </td>
                       <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis max-w-[60px] sm:max-w-none">
@@ -446,7 +496,7 @@ export default function InputHistory() {
                     {expandedRows.includes(index) && (
                       <tr className="sm:hidden bg-gray-900">
                         <td
-                          colSpan={8}
+                          colSpan={9}
                           className="px-4 py-2 text-white text-xs"
                         >
                           <div className="font-bold text-yellow-300 mb-1">
@@ -463,51 +513,6 @@ export default function InputHistory() {
               )}
             </tbody>
           </table>
-        </div>
-      </div>
-      {/* 작업내역 테이블 이후 상태값 디버그 섹션 추가 */}
-      <div className="mt-8 p-4 bg-gray-800 rounded-lg">
-        <h3 className="text-yellow-300 mb-2">현재 입력 상태값:</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white text-sm">
-          <div>
-            <p>
-              <span className="text-yellow-300">작업일:</span>{" "}
-              {createdAt || "-"}
-            </p>
-            <p>
-              <span className="text-yellow-300">입고일:</span>{" "}
-              {receivedDate || "-"}
-            </p>
-            <p>
-              <span className="text-yellow-300">의뢰인:</span> {user || "-"}
-            </p>
-            <p>
-              <span className="text-yellow-300">부서:</span> {department || "-"}
-            </p>
-            <p>
-              <span className="text-yellow-300">모델명:</span>{" "}
-              {modelName || "-"}
-            </p>
-          </div>
-          <div>
-            <p>
-              <span className="text-yellow-300">시리얼 번호:</span>{" "}
-              {serial || "-"}
-            </p>
-            <p>
-              <span className="text-yellow-300">코드:</span> {code || "-"}
-            </p>
-            <p>
-              <span className="text-yellow-300">백업 여부:</span>{" "}
-              {isBackup ? "예" : "아니오"}
-            </p>
-            <p>
-              <span className="text-yellow-300">작업내용:</span>
-            </p>
-            <pre className="whitespace-pre-wrap bg-gray-700 p-2 rounded mt-1">
-              {taskDetails || "-"}
-            </pre>
-          </div>
         </div>
       </div>
     </div>
