@@ -14,6 +14,7 @@ import ButtonGroup from "./ButtonGroup";
 import MiddleNotice from "./MiddleNotice";
 import SortField from "./SortField";
 import ViewList from "./ViewList";
+import SearchField from './SearchField';
 
 export default function InputHistory() {
   // now 변수를 상태로 관리하고 useEffect에서 초기화
@@ -78,6 +79,10 @@ export default function InputHistory() {
 
   // 작업 유형을 위한 상태 추가
   const [workType, setWorkType] = useState<string>("");
+
+  // 검색 관련 상태 추가
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchField, setSearchField] = useState("all");
 
   // 날짜 포맷팅 헬퍼 함수 수정
   const formatDate = (dateString: string | null) => {
@@ -307,6 +312,27 @@ export default function InputHistory() {
     }
   };
 
+  // 필터링된 데이터를 반환하는 함수
+  const getFilteredData = () => {
+    if (!searchTerm) return workHistoryData;
+
+    return workHistoryData.filter((item: any) => {
+      if (searchField === "all") {
+        return Object.values(item).some(
+          (value) =>
+            value &&
+            value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      const fieldValue = item[searchField];
+      return (
+        fieldValue &&
+        fieldValue.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    });
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-4 p-4">
      <WorkType workType={workType} setWorkType={setWorkType} />
@@ -324,6 +350,13 @@ export default function InputHistory() {
       
       {/* 안내 메시지 */}
       <MiddleNotice editingId={editingId} />
+      {/* 검색 필드 추가 */}
+      <SearchField
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        searchField={searchField}
+        setSearchField={setSearchField}
+      />
       {/* 정렬 필드 */}
       <SortField
         sortField={sortField}
@@ -333,7 +366,7 @@ export default function InputHistory() {
       />
       {/* 데이터 리스트 */}
       <ViewList
-        workHistoryData={workHistoryData}
+        workHistoryData={getFilteredData()}
         isDataLoading={isDataLoading}
         expandedRows={expandedRows}
         startEdit={startEdit}
