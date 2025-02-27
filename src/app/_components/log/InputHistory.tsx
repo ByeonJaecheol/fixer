@@ -312,24 +312,27 @@ export default function InputHistory() {
     }
   };
 
-  // 필터링된 데이터를 반환하는 함수
+  // 필터링된 데이터를 반환하는 함수 수정
   const getFilteredData = () => {
     if (!searchTerm) return workHistoryData;
 
+    const searchTermLower = searchTerm.toLowerCase();
+
     return workHistoryData.filter((item: any) => {
       if (searchField === "all") {
-        return Object.values(item).some(
-          (value) =>
-            value &&
-            value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        return Object.values(item).some((value) => {
+          // null이나 undefined 체크
+          if (value === null || value === undefined) return false;
+          // 모든 값을 소문자로 변환하여 비교
+          return value.toString().toLowerCase().includes(searchTermLower);
+        });
       }
 
       const fieldValue = item[searchField];
-      return (
-        fieldValue &&
-        fieldValue.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      // null이나 undefined 체크
+      if (fieldValue === null || fieldValue === undefined) return false;
+      // 선택된 필드의 값을 소문자로 변환하여 비교
+      return fieldValue.toString().toLowerCase().includes(searchTermLower);
     });
   };
 
