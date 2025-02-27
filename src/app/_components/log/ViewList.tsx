@@ -35,7 +35,7 @@ export default function ViewList({ workHistoryData, isDataLoading, expandedRows,
                   보안코드
                 </th>
                 <th className="text-yellow-300 text-xs sm:text-sm">
-                  백업
+                  PC이름
                 </th>
                 <th className="py-2 text-yellow-300 text-xs sm:text-sm">
                   작업유형
@@ -104,11 +104,7 @@ export default function ViewList({ workHistoryData, isDataLoading, expandedRows,
                         {item.code || "-"}
                       </td>
                       <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap">
-                        {item.isBackup !== undefined
-                          ? item.isBackup
-                            ? "예"
-                            : "아니오"
-                          : "-"}
+                        {item.pc_name || "-"}
                       </td>
                       <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap">
                         {item.work_type || "-"}
