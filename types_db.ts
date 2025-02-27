@@ -22,6 +22,9 @@ export type Database = {
           task_details: string | null
           user: string | null
           writer: string | null
+          client: string | null
+          work_type: string | null
+          pc_name: string | null
         }
         Insert: {
           code?: string | null
@@ -35,6 +38,9 @@ export type Database = {
           task_details?: string | null
           user?: string | null
           writer?: string | null
+          client?: string | null
+          work_type?: string | null
+          pc_name?: string | null
         }
         Update: {
           code?: string | null
@@ -48,6 +54,9 @@ export type Database = {
           task_details?: string | null
           user?: string | null
           writer?: string | null
+          client?: string | null
+          work_type?: string | null
+          pc_name?: string | null
         }
         Relationships: []
       }
