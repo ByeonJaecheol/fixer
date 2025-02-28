@@ -1,3 +1,6 @@
+import { tailwindDesign } from "@/design/tailwindDesign";
+import CommonInputOnChange from "../common/input/CommonInputOnChange";
+
 interface SearchFieldProps {
     searchTerm: string;
     setSearchTerm: (term: string) => void;
@@ -9,11 +12,10 @@ interface SearchFieldProps {
     return (
       <div className="flex items-center gap-4 mb-4">
         <div className="flex items-center gap-2">
-          <label className="text-white">검색 필드:</label>
           <select
             value={searchField}
             onChange={(e) => setSearchField(e.target.value)}
-            className="bg-gray-700 text-white rounded-md px-2 py-1"
+            className={tailwindDesign.input}
           >
             <option value="all">전체</option>
             <option value="user">작업자</option>
@@ -28,13 +30,7 @@ interface SearchFieldProps {
           </select>
         </div>
         <div className="flex-1">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="검색어를 입력하세요"
-            className="w-full bg-gray-700 text-white rounded-md px-3 py-1"
-          />
+          <CommonInputOnChange value={searchTerm} setValue={setSearchTerm} type="text" name="searchTerm" placeholder="검색어를 입력하세요" />
         </div>
       </div>
     );

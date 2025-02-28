@@ -1,3 +1,5 @@
+import { tailwindDesign } from "@/design/tailwindDesign";
+
 interface SortFieldProps {
   sortField: 'id' | 'created_at' | 'receivedDate' | 'pc_name';
   setSortField: (field: 'id' | 'created_at' | 'receivedDate' | 'pc_name') => void;
@@ -12,11 +14,10 @@ export default function SortField({ sortField, setSortField, sortOrder, setSortO
     {/* 정렬 컨트롤 */}
     <div className="flex items-center gap-4 mb-2">
             <div className="flex items-center gap-2">
-            <label className="text-white">정렬 기준:</label>
             <select
                 value={sortField}
                 onChange={(e) => setSortField(e.target.value as 'id' | 'created_at' | 'receivedDate' | 'pc_name')}
-                className="bg-gray-700 text-white rounded-md px-2 py-1"
+                className={tailwindDesign.input}
             >
                 <option value="created_at">작업일</option>
                 <option value="receivedDate">입고일</option>

@@ -1,139 +1,95 @@
-import React from "react";
+import React from 'react';
+import { Database } from '../../../../types_db';
 
-export default function ViewList({ workHistoryData, isDataLoading, expandedRows, startEdit, formatDate }: { workHistoryData: any[], isDataLoading: boolean, expandedRows: number[], startEdit: (item: any) => void, formatDate: (date: string) => string }) {
-  
+interface ViewListProps {
+  workHistoryData: Database['public']['Tables']['work-history']['Row'][];
+  isDataLoading: boolean;
+  expandedRows: number[];
+  startEdit: (item: any) => void;
+  formatDate: (date: string) => string;
+}
+
+export default function ViewList({
+  workHistoryData,
+  isDataLoading,
+  expandedRows,
+  startEdit,
+  formatDate
+}: ViewListProps) {
+  if (isDataLoading) {
     return (
-    <>
-       {/* 데이터 리스트 테이블 - 반응형 처리 */}
-       <div className="w-full">
-        <div className="border border-gray-700 rounded-lg">
-          <table className="w-full divide-y divide-gray-700">
-            <thead className="bg-gray-800">
-              <tr className="border-b border-gray-700">
-                <th className="py-2 text-yellow-300 text-xs sm:text-sm">
-                  ID
-                </th>
-                <th className="py-2 text-yellow-300 text-xs sm:text-sm">
-                  작업일
-                </th>
-                <th className="py-2 text-yellow-300 text-xs sm:text-sm">
-                  입고일
-                </th>
-                <th className="py-2 text-yellow-300 text-xs sm:text-sm">
-                  의뢰인
-                </th>
-                <th className=" py-2 text-yellow-300 text-xs sm:text-sm">
-                  부서
-                </th>
-                <th className=" py-2 text-yellow-300 text-xs sm:text-sm">
-                  모델명
-                </th>
-                <th className="py-2 text-yellow-300 text-xs sm:text-sm">
-                  제조번호
-                </th>
-                <th className="py-2 text-yellow-300 text-xs sm:text-sm">
-                  보안코드
-                </th>
-                <th className="text-yellow-300 text-xs sm:text-sm">
-                  PC이름
-                </th>
-                <th className="py-2 text-yellow-300 text-xs sm:text-sm">
-                  작업유형
-                </th>
-                <th className="hidden sm:table-cell px-2 sm:px-4 py-2 text-yellow-300 text-xs sm:text-sm">
-                  작업내용
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-gray-800 divide-y divide-gray-700">
-              {isDataLoading ? (
-                <tr>
-                  <td colSpan={11} className="px-4 py-8 text-center text-white">
-                    데이터를 불러오는 중...
-                  </td>
-                </tr>
-              ) : workHistoryData.length === 0 ? (
-                <tr>
-                  <td colSpan={11} className="px-4 py-8 text-center text-white">
-                    작업 내역이 없습니다.
-                  </td>
-                </tr>
-              ) : (
-                workHistoryData.map((item, index) => (
-                  <React.Fragment key={index}>
-                    <tr
-                      className="border-b border-gray-700 hover:bg-gray-700 cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        startEdit(item);
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }}
-                    >
-                      <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap">
-                        {item.id}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap">
-                        <span className="hidden sm:inline">
-                          {item.created_at ? formatDate(item.created_at) : "-"}
-                        </span>
-                        <span className="sm:hidden">
-                          {item.created_at ? formatDate(item.created_at)?.slice(5) : "-"}
-                        </span>
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap">
-                        <span className="hidden sm:inline">
-                          {item.receivedDate ? formatDate(item.receivedDate) : "-"}
-                        </span>
-                        <span className="sm:hidden">
-                          {item.receivedDate ? formatDate(item.receivedDate)?.slice(5) : "-"}
-                        </span>
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis max-w-[60px] sm:max-w-none">
-                        {item.user || "-"}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis max-w-[60px] sm:max-w-none">
-                        {item.department || "-"}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap">
-                        {item.model_name || "-"}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis max-w-[80px] sm:max-w-none">
-                        {item.serial || "-"}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap">
-                        {item.code || "-"}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap">
-                        {item.pc_name || "-"}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 text-white text-xs sm:text-sm whitespace-nowrap">
-                        {item.work_type || "-"}
-                      </td>
-                      <td className="hidden sm:table-cell px-2 sm:px-4 py-2 text-white text-xs sm:text-sm">
-                        <div className="whitespace-pre-wrap break-words">
-                          {item.task_details || "-"}
-                        </div>
-                      </td>
-                    </tr>
-                    {expandedRows.includes(index) && (
-                      <tr className="sm:hidden bg-gray-900">
-                        <td colSpan={11} className="px-4 py-2 text-white text-xs">
-                          <div className="font-bold text-yellow-300 mb-1">
-                            작업내용:
-                          </div>
-                          <div className="whitespace-pre-wrap break-words">
-                            {item.task_details || "-"}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))
-              )}
-            </tbody>
-          </table>
+      <div className="flex justify-center items-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
+  if (!workHistoryData.length) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+        작업 내역이 없습니다.
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow">
+      {/* 헤더 */}
+      <div className="grid grid-cols-8 gap-4 px-6 py-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wider">
+        <div>작업일자</div>
+        <div>접수일자</div>
+        <div>작업유형</div>
+        <div>사용자</div>
+        <div>부서</div>
+        <div>PC명</div>
+        <div>작업내용</div>
+      </div>
+
+      {/* 데이터 행들 */}
+      <div className="divide-y divide-gray-200">
+        {workHistoryData.map((item) => (
+          <div 
+            key={item.id}
+            className="grid grid-cols-8 gap-4 px-6 py-4 hover:bg-gray-50 transition-colors duration-150 ease-in-out items-center"
+          >
+            <div className="text-sm text-gray-900">
+              {formatDate(item.created_at)}
+            </div>
+            <div className="text-sm text-gray-900">
+              {item.receivedDate ? formatDate(item.receivedDate) : ''}
+            </div>
+            <div>
+              <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                {item.work_type}
+              </span>
+            </div>
+            <div className="text-sm text-gray-900">
+              {item.user}
+            </div>
+            <div className="text-sm text-gray-500">
+              {item.department}
+            </div>
+            <div className="text-sm text-gray-500">
+              {item.pc_name}
+            </div>
+            <div className="text-sm text-gray-500">
+              <div className="max-w-xs truncate">
+                {item.task_details}
+              </div>
+            </div>
+            
+          </div>
+        ))}
+      </div>
+
+      {/* 페이지네이션 */}
+      <div className="px-6 py-3 border-t border-gray-200">
+        <div className="flex justify-between items-center">
+          <div className="text-sm text-gray-700">
+            총 <span className="font-medium">{workHistoryData.length}</span> 건
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

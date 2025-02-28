@@ -15,6 +15,7 @@ import MiddleNotice from "./MiddleNotice";
 import SortField from "./SortField";
 import ViewList from "./ViewList";
 import SearchField from './SearchField';
+import AutoComplete from "./AutoComplete";
 
 export default function InputHistory() {
   // now 변수를 상태로 관리하고 useEffect에서 초기화
@@ -44,9 +45,10 @@ export default function InputHistory() {
       setReceivedDate(now);
     }
   }, [now]);
-
+  const [getUser, setGetUser] = useState<Database["public"]["Tables"]["work-history"]["Row"][]>([]);
+  const [autoUser, setAutoUser] = useState("");
   const [user, setUser] = useState("");
-  const [client, setClient] = useState("");
+  const [client, setClient] = useState(""); 
   const [department, setDepartment] = useState("");
   const [modelName, setModelName] = useState("");
   const [serial, setSerial] = useState("");
@@ -54,6 +56,8 @@ export default function InputHistory() {
   const [isBackup, setIsBackup] = useState(false); // 기본값 false ('아니오')
   const [taskDetails, setTaskDetails] = useState("");
   const [pcName, setPcName] = useState("");
+  const [showAutoComplete, setShowAutoComplete] = useState(false);
+
 
   // useRef 추가
   const userInputRef = React.useRef<HTMLInputElement>(null!);
@@ -96,6 +100,8 @@ export default function InputHistory() {
       return "-";
     }
   };
+
+
 
   const DebugPanel = ({ states }: { states: any }) => {
     return (
@@ -338,6 +344,7 @@ export default function InputHistory() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-4 p-4">
+     <AutoComplete autoUser={autoUser} setAutoUser={setAutoUser} user={user} setUser={setUser} getUser={getUser} setGetUser={setGetUser} department={department} setDepartment={setDepartment} client={client} setClient={setClient} pcName={pcName} setPcName={setPcName} modelName={modelName} setModelName={setModelName} serial={serial} setSerial={setSerial} code={code} setCode={setCode} showAutoComplete={showAutoComplete} setShowAutoComplete={setShowAutoComplete} />
      <WorkType workType={workType} setWorkType={setWorkType} />
       {/* 입력 폼 섹션 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -375,6 +382,7 @@ export default function InputHistory() {
         startEdit={startEdit}
         formatDate={formatDate}
       />
+ 
       <DebugLog workType={workType} receiveDate={receivedDate} createdAt={createdAt} pcName={pcName} department={department} user={user} client={client} modelName={modelName} serial={serial} code={code} taskDetails={taskDetails} />
     </div>
   );

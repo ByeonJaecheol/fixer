@@ -4,7 +4,7 @@ export default function Header() {
             <div className="text-xl font-bold text-yellow-500">
                 Worklog beta
             </div>
-            <div className="text-sm text-yellow-300">
+            <div className="text-sm ">
                 작성자 : pcsub1
             </div>
         </header>

@@ -59,7 +59,39 @@ export type Database = {
           pc_name?: string | null
         }
         Relationships: []
-      }
+      },
+      admins: {
+        Row: {
+          id: string;
+          login_id: string;
+          name: string;
+          role: 'admin' | 'manager' | 'user';
+          department: string | null;
+          created_at: string;
+          last_login: string | null;
+          is_active: boolean;
+        };
+        Insert: {
+          id?: string;
+          login_id: string;
+          password: string;
+          name: string;
+          role?: 'admin' | 'manager' | 'user';
+          department?: string | null;
+          created_at?: string;
+          last_login?: string | null;
+          is_active?: boolean;
+        };
+        Update: {
+          login_id?: string;
+          password?: string;
+          name?: string;
+          role?: 'admin' | 'manager' | 'user';
+          department?: string | null;
+          last_login?: string | null;
+          is_active?: boolean;
+        };
+      };
     }
     Views: {
       [_ in never]: never

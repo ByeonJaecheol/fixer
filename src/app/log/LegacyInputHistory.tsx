@@ -281,7 +281,7 @@ export default function InputHistory() {
     <div className="max-w-7xl mx-auto space-y-4 p-4">
       {/* 작업 유형 선택 섹션 */}
       <div className="mb-6">
-        <h3 className="text-yellow-300 mb-2">작업 유형</h3>
+        <h3 className=" mb-2">작업 유형</h3>
         <div className="flex flex-wrap gap-4">
           {["신규","신규_재배치", "교체_재배치", "교체_신규", "수리", "반납","폐기"].map((type) => (
             <label key={type} className="flex items-center gap-2">
@@ -304,7 +304,7 @@ export default function InputHistory() {
        
         {/* 입고일 */}
         <div className="flex flex-col">
-          <h3 className="text-yellow-300">입고일</h3>
+          <h3 className={tailwindDesign.inputLabel}>입고일</h3>
           <input
             type="datetime-local"
             name="receivedDate"
@@ -316,7 +316,7 @@ export default function InputHistory() {
 
          {/* 작업일 */}
          <div className="flex flex-col">
-          <h3 className="text-yellow-300">작업일</h3>
+          <h3 className={tailwindDesign.inputLabel}>작업일</h3>
           <input
             type="datetime-local"
             name="created_at"
@@ -327,7 +327,7 @@ export default function InputHistory() {
         </div>
           {/* 부서 */}
           <div className="flex flex-col">
-            <h3 className="text-yellow-300">부서</h3>
+            <h3 className={tailwindDesign.inputLabel}>부서</h3>
             <input
               type="text"
               name="department"
@@ -341,7 +341,7 @@ export default function InputHistory() {
 
           {/* 사용자 */}
           <div className="flex flex-col">
-            <h3 className="text-yellow-300">사용자 (Pc description)</h3>
+            <h3 className={tailwindDesign.inputLabel}>사용자 (Pc description)</h3>
             <input
               ref={userInputRef}
               type="text"
@@ -354,7 +354,7 @@ export default function InputHistory() {
 
            {/* 의뢰인 */}
            <div className="flex flex-col col-span-1 md:col-span-2">
-            <h3 className="text-yellow-300">의뢰인</h3>
+            <h3 className={tailwindDesign.inputLabel}>의뢰인</h3>
             <input
               type="text"
               name="client"
@@ -366,7 +366,7 @@ export default function InputHistory() {
 
         {/* 모델명 - 반응형 그리드 수정 */}
         <div className="flex flex-col col-span-1 md:col-span-2">
-          <h3 className="text-yellow-300">모델명</h3>
+          <h3 className={tailwindDesign.inputLabel}>모델명</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
             {["Z4G4", "Z4G5", "Z440", "Z420", "G3", "G5", "G8", "G10"].map(
               (model) => (
@@ -391,7 +391,7 @@ export default function InputHistory() {
 
         {/* 시리얼 번호 */}
         <div className="flex flex-col">
-          <h3 className="text-yellow-300">시리얼 번호</h3>
+          <h3 className={tailwindDesign.inputLabel}>시리얼 번호</h3>
           <input
             type="text"
             name="serial"
@@ -403,7 +403,7 @@ export default function InputHistory() {
 
         {/* 코드 */}
         <div className="flex flex-col">
-          <h3 className="text-yellow-300">보안코드</h3>
+          <h3 className={tailwindDesign.inputLabel}>보안코드</h3>
           <input
             type="text"
             name="code"
@@ -415,7 +415,7 @@ export default function InputHistory() {
 
         {/* 백업 여부 */}
         <div className="flex flex-col">
-          <h3 className="text-yellow-300">백업 여부</h3>
+          <h3 className={tailwindDesign.inputLabel}>백업 여부</h3>
           <div className="flex gap-4">
             <label className="flex items-center gap-1">
               <input
@@ -442,7 +442,7 @@ export default function InputHistory() {
 
         {/* 작업내용 */}
         <div className="flex flex-col col-span-1 md:col-span-2">
-          <h3 className="text-yellow-300">작업내용</h3>
+          <h3 className={tailwindDesign.inputLabel}>작업내용</h3>
           <textarea
             name="task_details"
             value={taskDetails}
@@ -541,37 +541,37 @@ export default function InputHistory() {
           <table className="w-full divide-y divide-gray-700">
             <thead className="bg-gray-800">
               <tr className="border-b border-gray-700">
-                <th className="py-2 text-yellow-300 text-xs sm:text-sm">
+                <th className="py-2  text-xs sm:text-sm">
                   ID
                 </th>
-                <th className="py-2 text-yellow-300 text-xs sm:text-sm">
+                <th className="py-2  text-xs sm:text-sm">
                   작업일
                 </th>
-                <th className="py-2 text-yellow-300 text-xs sm:text-sm">
+                <th className="py-2  text-xs sm:text-sm">
                   입고일
                 </th>
-                <th className="py-2 text-yellow-300 text-xs sm:text-sm">
+                <th className="py-2  text-xs sm:text-sm">
                   의뢰인
                 </th>
-                <th className=" py-2 text-yellow-300 text-xs sm:text-sm">
+                <th className=" py-2  text-xs sm:text-sm">
                   부서
                 </th>
-                <th className=" py-2 text-yellow-300 text-xs sm:text-sm">
+                <th className=" py-2  text-xs sm:text-sm">
                   모델명
                 </th>
-                <th className="py-2 text-yellow-300 text-xs sm:text-sm">
+                <th className="py-2  text-xs sm:text-sm">
                   제조번호
                 </th>
-                <th className="py-2 text-yellow-300 text-xs sm:text-sm">
+                <th className="py-2  text-xs sm:text-sm">
                   보안코드
                 </th>
-                <th className="text-yellow-300 text-xs sm:text-sm">
+                <th className=" text-xs sm:text-sm">
                   백업
                 </th>
-                <th className="py-2 text-yellow-300 text-xs sm:text-sm">
+                <th className="py-2  text-xs sm:text-sm">
                   작업유형
                 </th>
-                <th className="hidden sm:table-cell px-2 sm:px-4 py-2 text-yellow-300 text-xs sm:text-sm">
+                <th className="hidden sm:table-cell px-2 sm:px-4 py-2  text-xs sm:text-sm">
                   작업내용
                 </th>
               </tr>
@@ -653,7 +653,7 @@ export default function InputHistory() {
                     {expandedRows.includes(index) && (
                       <tr className="sm:hidden bg-gray-900">
                         <td colSpan={11} className="px-4 py-2 text-white text-xs">
-                          <div className="font-bold text-yellow-300 mb-1">
+                          <div className="font-bold  mb-1">
                             작업내용:
                           </div>
                           <div className="whitespace-pre-wrap break-words">
