@@ -9,7 +9,7 @@ export default function Home() {
         <div className="space-y-8 lg:pr-12">
           <div className="space-y-4">
             <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 py-2">
-              Digital Koras
+              Digital Koras 테스트
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 leading-relaxed">
               혁신적인 기술로 더 나은 미래를 만들어갑니다
