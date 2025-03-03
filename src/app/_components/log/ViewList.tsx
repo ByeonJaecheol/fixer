@@ -45,7 +45,7 @@ export default function ViewList({
         <div>작업내용</div>
       </div>
 
-      {/* 데이터 행들 */}
+      {/* 데이터 핸들 */}
       <div className="divide-y divide-gray-200">
         {workHistoryData.map((item) => (
           <div 
