@@ -1,16 +1,21 @@
-import { ComputerDesktopIcon, QueueListIcon, DeviceTabletIcon, DocumentTextIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { ComputerDesktopIcon, DeviceTabletIcon, DocumentTextIcon, Cog6ToothIcon, ChatBubbleBottomCenterIcon,WrenchIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
 const navigationItems = [
   {
-    icon: ComputerDesktopIcon,
+    icon: ChatBubbleBottomCenterIcon,
     text: 'PC문의접수',
     href: '/private/pc-inquiry'
   },
   {
-    icon: QueueListIcon,
-    text: '이력관리',
-    href: '/private/history'
+    icon: ComputerDesktopIcon,
+    text: 'PC이력',
+    href: '/private/pc-history'
+  },
+  {
+    icon: WrenchIcon,
+    text: 'A/S요청이력',
+    href: '/private/as-request'
   },
   {
     icon: DeviceTabletIcon,
