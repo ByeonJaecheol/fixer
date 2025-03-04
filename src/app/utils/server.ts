@@ -3,7 +3,7 @@ import { cookies } from "next/headers"
 
 export async function createClient() {
     const cookieStore = await cookies();
-    const session = cookieStore.get('session')?.value||'';
+    // const session = cookieStore.get('session')?.value||''; 세션 미사용으로 일단 주석처리
     return createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

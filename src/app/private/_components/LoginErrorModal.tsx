@@ -1,10 +1,11 @@
 // components/AuthModal.tsx
 'use client';
 
+import { AuthError } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function LoginErrorModal({ error }: { error: any }) {
+export default function LoginErrorModal() {
     const router = useRouter();
     const [countdown, setCountdown] = useState(3);
 
@@ -13,7 +14,7 @@ export default function LoginErrorModal({ error }: { error: any }) {
             setCountdown((prev) => {
                 if (prev <= 1) {
                     clearInterval(timer);
-                    router.push('/login');
+                    router.push('/');
                     return 0;
                 }
                 return prev - 1;

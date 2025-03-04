@@ -1,18 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from './_components/layout/Header';
 import { APP_DESCRIPTION, APP_NAME } from "./constants/constNames";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: APP_NAME,
@@ -29,9 +18,11 @@ export default function RootLayout({
       <body className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100 text-black">
           <div className="flex flex-col min-h-screen">
             {/* <Header /> */}
-            <main className="flex-1">
+            
+            <main className="flex-1 flex justify-center items-center">
               {children}
             </main>
+            
           </div>
       </body>
     </html>

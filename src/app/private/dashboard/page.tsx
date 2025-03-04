@@ -1,7 +1,7 @@
 
 
-import Header from "../_components/layout/Header";
-import InputHistory from "../_components/log/InputHistory";
+import Header from "../../_components/layout/header/PrivateHeader";
+import InputHistory from "../../_components/log/InputHistory";
 
 export default function Dashboard() {
   return (
