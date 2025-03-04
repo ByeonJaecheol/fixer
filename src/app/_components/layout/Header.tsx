@@ -1,8 +1,15 @@
-'use client';
 
+import { APP_NAME } from '@/app/constants/constNames';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
+import LoginedUser from './LoginedUser';
 
-export default function Header() {
+
+
+export default async function Header( ) {
+  const cookieStore = await cookies();
+  const user = cookieStore.get('session')?.value||'';
+  const isLogined = user ? true : false;
 
   return (
     <header className="bg-white shadow-sm">
@@ -10,8 +17,12 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-              Koras solution
+              {APP_NAME}
             </Link>
+            
+          </div>
+          <div>
+            <LoginedUser isLogined={isLogined} />
           </div>
           
           {/* {user && (
