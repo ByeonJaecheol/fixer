@@ -92,6 +92,35 @@ export type Database = {
           is_active?: boolean;
         };
       };
+      "pc-history": {
+        Row: {
+          id: number;
+          created_at: string;
+          received_at: string;
+          pc_type: string;
+          pc_model: string;
+          pc_serial: string;
+          pc_status: string;
+        };
+        Insert: {
+          id: number;
+          created_at: string;
+          received_at: string;
+          pc_type: string;
+          pc_model: string;
+          pc_serial: string;
+          pc_status: string;
+        };
+        Update: {
+          id: number;
+          created_at: string;
+          received_at: string;
+          pc_type: string;
+          pc_model: string;
+          pc_serial: string;
+          pc_status: string;
+        };
+    }
     }
     Views: {
       [_ in never]: never

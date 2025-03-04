@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { ComputerDesktopIcon,PlusIcon,ArrowPathIcon, XMarkIcon,ArrowUturnDownIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
 import Container from '@/app/_components/Container';
-import InputHistory from '@/app/_components/log/InputHistory';
+import { supabase } from '@/app/utils/supabase';
+import InputPcIn from './_components/input/InputPcIn';
 
 const categories = [
   {
@@ -43,7 +43,20 @@ const categories = [
   
 ];
 
-export default function InventoryPage() {
+
+
+export default async function InventoryPage() {
+
+  const getPcHistory = async () => {
+    try {
+      const {data, error} = await supabase.from('pc-history').select('*')
+      return data
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const pcHistory = await getPcHistory();
+  console.log(pcHistory,"pcHistory")
   return (
     <Container title="이력관리" description="카테고리별 이력을 확인하실 수 있습니다.">
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -62,10 +75,29 @@ export default function InventoryPage() {
             </button>
           ))}
         </div>
+        {/* {pcHistory?.map((pc) => (
+          <div key={pc.id}>
+            {pc.pc_type}
+            {pc.pc_model}
+            {pc.pc_serial}
+            {pc.pc_status}
+            {pc.created_at}
+            {pc.received_at}
+          </div>
+        ))} */}
         {/* 입력폼 */}
+        {/* <div className="max-w-7xl mx-auto space-y-4 p-4"> */}
+              <InputPcIn />
+        {/* </div> */}
         {/* <InputHistory /> */}
         {/* 컨텐츠 영역 */}
         <div className="p-6">
+
+
+
+
+
+
           <div className="space-y-4">
             {/* 임시 데이터 테이블 */}
             <table className="min-w-full divide-y divide-gray-200">

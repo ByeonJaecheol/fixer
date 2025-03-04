@@ -1,7 +1,7 @@
 import { tailwindDesign } from "@/design/tailwindDesign";
 import CommonInputOnChange from "../common/input/CommonInputOnChange";
 
-export default function InputSerial({ serial, setSerial, code, setCode }: { serial: string, setSerial: (serial: string) => void, code: string, setCode: (code: string) => void }) {
+export default function InputSerial({ serial, setSerial, code, setCode }: { serial: string, setSerial: (serial: string) => void, code?: string, setCode?: (code: string) => void }) {
   return (
     <>
         {/* 시리얼 번호 */}
@@ -11,10 +11,12 @@ export default function InputSerial({ serial, setSerial, code, setCode }: { seri
         </div>
 
         {/* 코드 */}
-        <div className="flex flex-col">
-          <h3 className={tailwindDesign.inputLabel}>보안코드</h3>
-          <CommonInputOnChange value={code} setValue={setCode} type="text" name="code" />
-        </div>
+        {code && setCode && (
+          <div className="flex flex-col">
+            <h3 className={tailwindDesign.inputLabel}>보안코드</h3>
+            <CommonInputOnChange value={code} setValue={setCode} type="text" name="code" />
+          </div>
+        )}
     </>
   );
 }
