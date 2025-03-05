@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../../utils/supabase";
 import { Database } from "../../../../types_db";
 import WorkType from "./WorkType";
-import InputDate from "./InputDate";
+import LegacyInputDate from "./InputDate";
 import DebugLog from "../debug/DebugLog";
 import InputUser from "./InputUser";
 import InputModelName from "./InputModelName";
@@ -127,7 +127,7 @@ export default function InputHistory() {
         .from("work-history")
         .select("*")
         .order(sortField, { ascending: sortOrder === 'asc' });
-
+      console.log(data,"data")
       if (error) {
         throw error;
       }
@@ -348,9 +348,9 @@ export default function InputHistory() {
      <WorkType workType={workType} setWorkType={setWorkType} />
       {/* 입력 폼 섹션 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <InputDate receivedDate={receivedDate} createdAt={createdAt} setReceivedDate={setReceivedDate} setCreatedAt={setCreatedAt} />
+      <LegacyInputDate receivedDate={receivedDate} createdAt={createdAt} setReceivedDate={setReceivedDate} setCreatedAt={setCreatedAt} />
       <InputUser department={department} setDepartment={setDepartment} user={user} setUser={setUser} client={client} setClient={setClient} userInputRef={userInputRef} pcName={pcName} setPcName={setPcName} />
-      <InputModelName modelName={modelName} setModelName={setModelName} />
+      {/* <InputModelName modelName={modelName} setModelName={setModelName} /> */}
       <InputSerial serial={serial} setSerial={setSerial} code={code} setCode={setCode} />
       <InputTaskDetails taskDetails={taskDetails} setTaskDetails={setTaskDetails} />
       </div>

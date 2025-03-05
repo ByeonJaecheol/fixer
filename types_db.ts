@@ -91,37 +91,96 @@ export type Database = {
           last_login?: string | null;
           is_active?: boolean;
         };
-      };
-      "pc-history": {
+      },
+      "pc_assets": {
         Row: {
-          id: number;
-          created_at: string;
-          received_at: string;
+          brand: string;
+          model_name: string;
+          serial_number: string;
           pc_type: string;
-          pc_model: string;
-          pc_serial: string;
-          pc_status: string;
-        };
-        Insert: {
-          id: number;
-          created_at: string;
-          received_at: string;
-          pc_type: string;
-          pc_model: string;
-          pc_serial: string;
-          pc_status: string;
-        };
-        Update: {
-          id: number;
-          created_at: string;
-          received_at: string;
-          pc_type: string;
-          pc_model: string;
-          pc_serial: string;
-          pc_status: string;
-        };
+          status : string;
+        usage_type : string;
+        security_code : string;
+        is_available : boolean;
+        usage_count : number;
+        
+      };
+      Insert: {
+        brand: string;
+        model_name: string;
+        serial_number: string;
+        pc_type: string;
+        status : string;
+        usage_type : string;
+        security_code : string;
+        is_available : boolean;
+        usage_count : number;
+      };
+      Update: {
+        brand: string;
+        model_name: string;
+        serial_number: string;
+        pc_type: string;
+        status : string;
+        usage_type : string;
+        security_code : string;
+        is_available : boolean;
+        usage_count : number;
+      };
+  }
+  "pc_management_log": {
+    Row: {
+      asset_id: number;
+      employee_id: number;
+      work_type: string;
+      work_date: string;
+      requester: string;
+      security_code: string;
+      detailed_description: string;
+      created_by: string;
+      created_at: string;
     }
+    Insert: {
+      asset_id: number;
+      employee_id: number;
+      work_type: string;
+      work_date: string;
+      requester: string;
+      security_code: string;
+      detailed_description: string;
+      created_by: string;
+      created_at: string;
     }
+    Update: {
+      asset_id: number;
+      employee_id: number;
+      work_type: string;
+      work_date: string;
+      requester: string;
+      security_code: string;
+      detailed_description: string;
+      created_by: string;
+      created_at: string;
+    }
+  };
+  "employees": {
+    Row: {
+      name: string;
+      department: string;
+      workplace: string;
+    }
+    Insert: {
+      name: string;
+      department: string;
+      workplace: string;
+    }
+    Update: {
+      name: string;
+      department: string;
+      workplace: string;
+    }
+  };
+}
     Views: {
       [_ in never]: never
     }

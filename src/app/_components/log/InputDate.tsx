@@ -1,7 +1,7 @@
 import { tailwindDesign } from "@/design/tailwindDesign";
 import CommonInputOnChange from "../common/input/CommonInputOnChange";
 
-export default function InputDate({ receivedDate, createdAt, setReceivedDate, setCreatedAt }: { receivedDate: string, createdAt: string, setReceivedDate: (date: string) => void, setCreatedAt: (date: string) => void }) {
+export default function LegacyInputDate({ receivedDate, createdAt, setReceivedDate, setCreatedAt }: { receivedDate: string, createdAt: string, setReceivedDate: (date: string) => void, setCreatedAt: (date: string) => void }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div className="flex flex-col">

@@ -16,7 +16,7 @@ export default function InputModelName({ modelName, setModelName, pcType, }: { m
   return (
     <div className="container mx-auto px-4 py-8">
       {/* PC 타입별 브랜드 및 모델 목록 */}
-      <div className="space-y-8">
+      {/* <div className="space-y-8">
         {Object.entries(modelNameList[pcType as keyof typeof modelNameList]).map(([brand, models]) => (
           <div key={brand} className="border-b pb-6">
             <h2 className="text-xl font-bold mb-4 text-gray-800">{brand}</h2>
@@ -38,10 +38,10 @@ export default function InputModelName({ modelName, setModelName, pcType, }: { m
                   />
                 </div>
               ))}
-            </div>
-          </div>
-        ))}
-      </div>
+            </div> */}
+          {/* </div> */}
+        {/* ))} */}
+      {/* </div> */}
     </div>
   );
 }

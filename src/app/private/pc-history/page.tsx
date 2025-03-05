@@ -47,18 +47,36 @@ const categories = [
 
 export default async function InventoryPage() {
 
-  const getPcHistory = async () => {
+  
+  // fetchWorkHistory 함수 수정
+  const fetchWorkHistory = async () => {
     try {
-      const {data, error} = await supabase.from('pc-history').select('*')
-      return data
+      const { data, error } = await supabase
+        .from("pc_assets")
+        .select("*")
+      console.log(data,"data---")
+      if (error) {
+        throw error;
+      }
+
     } catch (error) {
-      console.log(error)
+      console.error("작업 내역을 불러오는 중 오류 발생:", error);
+    } finally {
+      console.log("fetchWorkHistory")
     }
-  }
-  const pcHistory = await getPcHistory();
-  console.log(pcHistory,"pcHistory")
+  };
+
+  const pcAsset = await fetchWorkHistory();
+
+  
+      
+  
+  
+    
+  console.log(pcAsset,"pcAsset")
   return (
     <Container title="이력관리" description="카테고리별 이력을 확인하실 수 있습니다.">
+      
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="flex overflow-x-auto scrollbar-hide">
           {categories.map((category) => (
