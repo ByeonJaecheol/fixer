@@ -100,6 +100,7 @@ export type Database = {
           pc_type: string;
           status : string;
           first_stock_date : string;
+          manufacture_date : string;
         
       };
       Insert: {
@@ -109,6 +110,7 @@ export type Database = {
         pc_type: string;
         status : string;
         first_stock_date : string;
+        manufacture_date : string;
       };
       Update: {
         brand: string;
@@ -117,6 +119,7 @@ export type Database = {
         pc_type: string;
         status : string;
         first_stock_date : string;
+        manufacture_date : string;
       };
   }
   "pc_management_log": {
@@ -132,6 +135,7 @@ export type Database = {
       created_at: string;
       status : string;
       is_available : boolean;
+      usage_type : string;
       usage_count : number;
       employee_workspace : string;
       employee_department : string;
@@ -149,6 +153,7 @@ export type Database = {
       created_at: string;
       status : string;
       is_available : boolean;
+      usage_type : string;
       usage_count : number;
       employee_workspace : string;
       employee_department : string;
@@ -167,6 +172,7 @@ export type Database = {
       status : string;
       is_available : boolean;
       usage_count : number;
+      usage_type : string;
       employee_workspace : string;
       employee_department : string;
       employee_name : string;

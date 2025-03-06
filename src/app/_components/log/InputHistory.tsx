@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../../utils/supabase";
 import { Database } from "../../../../types_db";
 import WorkType from "./WorkType";
-import LegacyInputDate from "./InputDate";
+import InputDateLegacy from "./InputDateLegacy";
 import DebugLog from "../debug/DebugLog";
 import InputUser from "./InputUser";
 import InputSerial from "./InputSerial";
@@ -329,7 +329,7 @@ export default function InputHistory() {
      <WorkType workType={workType} setWorkType={setWorkType} />
       {/* 입력 폼 섹션 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <LegacyInputDate receivedDate={receivedDate} createdAt={createdAt} setReceivedDate={setReceivedDate} setCreatedAt={setCreatedAt} />
+      <InputDateLegacy receivedDate={receivedDate} createdAt={createdAt} setReceivedDate={setReceivedDate} setCreatedAt={setCreatedAt} />
       <InputUser department={department} setDepartment={setDepartment} user={user} setUser={setUser} client={client} setClient={setClient} pcName={pcName} setPcName={setPcName} />
       {/* <InputModelName modelName={modelName} setModelName={setModelName} /> */}
       <InputSerial serial={serial} setSerial={setSerial} code={code} setCode={setCode} />

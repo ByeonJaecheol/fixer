@@ -1,5 +1,6 @@
 import LoginForm from "./_components/auth/LoginForm";
-import { ComputerDesktopIcon, QueueListIcon, DeviceTabletIcon, DocumentTextIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { ComputerDesktopIcon, ClockIcon, DeviceTabletIcon, DocumentTextIcon, Cog6ToothIcon ,QueueListIcon} from '@heroicons/react/24/outline';
+import Header from './_components/Header';
 
 const menuItems = [
   {
@@ -26,22 +27,25 @@ const menuItems = [
 
 export default function Home() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* 로그인 폼 */}
-      <div className="lg:pl-12 max-w-md mx-auto">
-        <LoginForm />
-      </div>
-      {/* 메뉴 버튼 */}
-      <div className="mt-12">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 max-w-4xl mx-auto">
-          {menuItems.map((item, index) => (
-            <MenuButtonCircle key={index} text={item.text}>
-              <item.icon className="w-12 h-12 text-gray-600 group-hover:text-blue-500 transition-colors duration-300" />
-            </MenuButtonCircle>
-          ))}
+    <>
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        {/* 로그인 폼 */}
+        <div className="lg:pl-12 max-w-md mx-auto">
+          <LoginForm />
+        </div>
+        {/* 메뉴 버튼 */}
+        <div className="mt-12">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 max-w-4xl mx-auto">
+            {menuItems.map((item, index) => (
+              <MenuButtonCircle key={index} text={item.text}>
+                <item.icon className="w-12 h-12 text-gray-600 group-hover:text-blue-500 transition-colors duration-300" />
+              </MenuButtonCircle>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
