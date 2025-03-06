@@ -99,10 +99,7 @@ export type Database = {
           serial_number: string;
           pc_type: string;
           status : string;
-        usage_type : string;
-        security_code : string;
-        is_available : boolean;
-        usage_count : number;
+          first_stock_date : string;
         
       };
       Insert: {
@@ -111,10 +108,7 @@ export type Database = {
         serial_number: string;
         pc_type: string;
         status : string;
-        usage_type : string;
-        security_code : string;
-        is_available : boolean;
-        usage_count : number;
+        first_stock_date : string;
       };
       Update: {
         brand: string;
@@ -122,10 +116,7 @@ export type Database = {
         serial_number: string;
         pc_type: string;
         status : string;
-        usage_type : string;
-        security_code : string;
-        is_available : boolean;
-        usage_count : number;
+        first_stock_date : string;
       };
   }
   "pc_management_log": {
@@ -139,6 +130,12 @@ export type Database = {
       detailed_description: string;
       created_by: string;
       created_at: string;
+      status : string;
+      is_available : boolean;
+      usage_count : number;
+      employee_workspace : string;
+      employee_department : string;
+      employee_name : string;
     }
     Insert: {
       asset_id: number;
@@ -150,6 +147,12 @@ export type Database = {
       detailed_description: string;
       created_by: string;
       created_at: string;
+      status : string;
+      is_available : boolean;
+      usage_count : number;
+      employee_workspace : string;
+      employee_department : string;
+      employee_name : string;
     }
     Update: {
       asset_id: number;
@@ -161,6 +164,12 @@ export type Database = {
       detailed_description: string;
       created_by: string;
       created_at: string;
+      status : string;
+      is_available : boolean;
+      usage_count : number;
+      employee_workspace : string;
+      employee_department : string;
+      employee_name : string;
     }
   };
   "employees": {
