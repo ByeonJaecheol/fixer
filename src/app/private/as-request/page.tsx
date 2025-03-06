@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { ComputerDesktopIcon, CommandLineIcon, PrinterIcon, GlobeAltIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
 import Container from '@/app/_components/Container';
 import InputHistory from '@/app/_components/log/InputHistory';

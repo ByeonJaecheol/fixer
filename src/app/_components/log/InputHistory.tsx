@@ -7,7 +7,6 @@ import WorkType from "./WorkType";
 import LegacyInputDate from "./InputDate";
 import DebugLog from "../debug/DebugLog";
 import InputUser from "./InputUser";
-import InputModelName from "./InputModelName";
 import InputSerial from "./InputSerial";
 import InputTaskDetails from "./InputDescription";
 import ButtonGroup from "./ButtonGroup";
@@ -29,10 +28,6 @@ export default function InputHistory() {
     setNow(koreaTime.toISOString().slice(0, 16));
   }, []);
 
-  const [logs, setLogs] = useState<
-    Database["public"]["Tables"]["work-history"]["Row"][]
-  >([]);
-  
 
   // 개별 상태값 관리 - 빈 문자열로 초기화
   const [createdAt, setCreatedAt] = useState("");
@@ -101,20 +96,6 @@ export default function InputHistory() {
     }
   };
 
-
-
-  const DebugPanel = ({ states }: { states: any }) => {
-    return (
-      <details className="mt-4 p-4 border rounded-lg bg-gray-50">
-        <summary className="cursor-pointer font-semibold text-gray-700">
-          디버그 정보 보기
-        </summary>
-        <pre className="mt-2 p-2 bg-white rounded text-sm overflow-auto">
-          {JSON.stringify(states, null, 2)}
-        </pre>
-      </details>
-    );
-  };
   // 컴포넌트 마운트 시 의뢰인 입력 필드에 포커스
   useEffect(() => {
     userInputRef.current?.focus();
@@ -349,7 +330,7 @@ export default function InputHistory() {
       {/* 입력 폼 섹션 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <LegacyInputDate receivedDate={receivedDate} createdAt={createdAt} setReceivedDate={setReceivedDate} setCreatedAt={setCreatedAt} />
-      <InputUser department={department} setDepartment={setDepartment} user={user} setUser={setUser} client={client} setClient={setClient} userInputRef={userInputRef} pcName={pcName} setPcName={setPcName} />
+      <InputUser department={department} setDepartment={setDepartment} user={user} setUser={setUser} client={client} setClient={setClient} pcName={pcName} setPcName={setPcName} />
       {/* <InputModelName modelName={modelName} setModelName={setModelName} /> */}
       <InputSerial serial={serial} setSerial={setSerial} code={code} setCode={setCode} />
       <InputTaskDetails taskDetails={taskDetails} setTaskDetails={setTaskDetails} />
@@ -378,8 +359,6 @@ export default function InputHistory() {
       <ViewList
         workHistoryData={getFilteredData()}
         isDataLoading={isDataLoading}
-        expandedRows={expandedRows}
-        startEdit={startEdit}
         formatDate={formatDate}
       />
  

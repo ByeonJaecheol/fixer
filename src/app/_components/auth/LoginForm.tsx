@@ -1,7 +1,7 @@
 'use client'
 
 import { APP_NAME } from "@/app/constants/constNames";
-import { login, signup } from "@/app/login/action";
+import { login } from "@/app/login/action";
 import { useEffect, useState } from "react";
 
 export default function LoginForm() {
@@ -24,20 +24,6 @@ export default function LoginForm() {
     }
     console.log(remember)
 
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.target as HTMLFormElement)
-    const email = formData.get('email')
-    const password = formData.get('password')
-    const remember = formData.get('remember')
-    console.log(email,password,remember)
-    if(remember){
-      localStorage.setItem('email',email as string)
-      
-    console.log(remember)
-  }
-  }
-  
   return (
     <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-8 shadow-lg">
       <div className="mb-8 text-center">

@@ -1,6 +1,6 @@
 import { tailwindDesign } from "@/design/tailwindDesign";
 
-export default function CommonTextArea({ value, setValue, name, placeholder, required }: { value: string, setValue: (value: string) => void, name: string, placeholder?: string, required?: boolean }) {
+export default function CommonTextArea({ value, setValue, name, }: { value: string, setValue: (value: string) => void, name: string, }) {
     return (
         <textarea
             name={name}

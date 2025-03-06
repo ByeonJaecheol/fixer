@@ -16,7 +16,7 @@ export async function updateSession(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           // cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value)) 기존 코드, 옵션 미사용으로 에러나서 일단 주석
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          
           supabaseResponse = NextResponse.next({
             request,
           })

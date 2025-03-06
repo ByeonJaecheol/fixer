@@ -1,5 +1,3 @@
-import { createClient } from '@/app/utils/server'
-import LoginErrorModal from './_components/LoginErrorModal'
 
 export default async function PrivatePage() {
   // const supabase = await createClient()

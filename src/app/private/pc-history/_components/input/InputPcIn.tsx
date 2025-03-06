@@ -8,16 +8,7 @@ import { tailwindDesign } from "@/design/tailwindDesign";
 import { supabase } from "@/app/utils/supabase";
 import { useState } from "react";
 
-interface InputPcInProps {
-  pcHistory: PcHistory[];
-}
-export interface PcHistory {
-  id: number;
-  created_at: string;
-  received_at: string;
-  pc_type: string;
-  pc_model: string;
-}
+
 
 export default function InputPcIn() {
   const [receivedDate, setReceivedDate] = useState<string>("");

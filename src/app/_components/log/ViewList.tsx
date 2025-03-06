@@ -4,16 +4,12 @@ import { Database } from '../../../../types_db';
 interface ViewListProps {
   workHistoryData: Database['public']['Tables']['work-history']['Row'][];
   isDataLoading: boolean;
-  expandedRows: number[];
-  startEdit: (item: any) => void;
   formatDate: (date: string) => string;
 }
 
 export default function ViewList({
   workHistoryData,
   isDataLoading,
-  expandedRows,
-  startEdit,
   formatDate
 }: ViewListProps) {
   if (isDataLoading) {

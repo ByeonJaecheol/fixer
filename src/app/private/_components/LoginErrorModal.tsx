@@ -1,7 +1,6 @@
 // components/AuthModal.tsx
 'use client';
 
-import { AuthError } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 

@@ -24,4 +24,4 @@ export default async function PrivateHeader() {
       </div>
     </div>
   )
-}
+}   

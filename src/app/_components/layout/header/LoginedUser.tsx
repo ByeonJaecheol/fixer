@@ -1,9 +1,6 @@
 'use client';
 
 import { User } from "@supabase/supabase-js";
-import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function LoginedUser({ data }: { data: User }) {
 // const logined_id = localStorage.getItem('userID') ||'';

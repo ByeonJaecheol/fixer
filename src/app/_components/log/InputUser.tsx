@@ -1,7 +1,8 @@
 import { tailwindDesign } from "@/design/tailwindDesign";
 import CommonInputOnChange from "../common/input/CommonInputOnChange";
 
-export default function InputUser({ department, setDepartment, user, setUser, client, setClient, userInputRef, pcName, setPcName }: { department: string, setDepartment: (department: string) => void, user: string, setUser: (user: string) => void, client: string, setClient: (client: string) => void, userInputRef: React.RefObject<HTMLInputElement>, pcName: string, setPcName: (pcName: string) => void }) {
+export default function InputUser({ department, setDepartment, user, setUser, client, setClient, pcName, setPcName }: 
+  { department: string, setDepartment: (department: string) => void, user: string, setUser: (user: string) => void, client: string, setClient: (client: string) => void, pcName: string, setPcName: (pcName: string) => void }) {
   return (
     <>
       {/* 부서 */}
