@@ -1,6 +1,6 @@
 import LoginForm from "./_components/auth/LoginForm";
 import { ComputerDesktopIcon, ClockIcon, DeviceTabletIcon, DocumentTextIcon, Cog6ToothIcon ,QueueListIcon} from '@heroicons/react/24/outline';
-import Header from './_components/Header';
+// import Header from './_components/layout/header/Header';
 
 const menuItems = [
   {
@@ -28,7 +28,7 @@ const menuItems = [
 export default function Home() {
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <div className="container mx-auto px-4 py-8">
         {/* 로그인 폼 */}
         <div className="lg:pl-12 max-w-md mx-auto">

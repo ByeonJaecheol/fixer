@@ -1,49 +1,19 @@
-import SupabaseService from "@/api/supabase/supabaseApi";
-import InputPcIn from "../_components/input/InputPcIn";
 import { formatToKoreanTime } from "@/utils/utils";
+import { getPcManagementLog } from "@/api/supabase/supabaseTempApi";
+import InputPcIn from "../_components/input/InputPcIn";
 
-interface IPcAsset {
-  asset_id: number;
-  brand: string;
-  model_name: string;
-  serial_number: string;
-  pc_type: string;
-  first_stock_date: string;
-  manufacture_date: string;
-}
-export default async function AddPcHistory() {
-  const gridStyle = {
-    gridTemplateColumns: "8% 8% 8% 8% 12% 5% 5% 5% 5% 10% 35%"
-  }
-  const getPcManagementLog = async () : Promise<any> => {
-    const supabaseService = SupabaseService.getInstance();
-    const { success, error, data } = await supabaseService.selectWithRelations({
-      table: 'pc_management_log',
-      columns: '*',
-      relations: [
-        { 
-          table: 'pc_assets',
-          columns: '*'  // 필요한 컬럼만 지정할 수도 있습니다 (예: 'asset_id,name,model')
-        }
-      ],
-      match: { work_type: '입고' },
-      // 필요에 따라 추가 조건 설정
-      // match: { some_column: 'some_value' }
-      order: { column: 'log_id', ascending: false },
-    });
-    if (success) {
-      return data;
-    } else {
-      console.error('Error fetching pc_management_log:', error);
-      return [];
-    }
-  }
-  const pcManagementLog = await getPcManagementLog();
+
+export default async function ReturnPage() {
+    const gridStyle = {
+       gridTemplateColumns: "8% 8% 8% 8% 12% 5% 5% 5% 5% 10% 35%"
+      }
+    const pcManagementLog = await getPcManagementLog("pc_management_log","pc_assets","반납","log_id",false);
 
   return (
     <div>
-        <InputPcIn workType={"입고"} />
-      <div className="p-6">
+        <InputPcIn workType={"반납"} />
+    
+    <div className="p-6">
         <div className="space-y-4">
           <div className="overflow-x-auto">
             <div className="inline-block min-w-full">
@@ -90,7 +60,7 @@ export default async function AddPcHistory() {
                     </div>
                   {/* 모델명 */}
                     <div className="px-2 py-4 text-sm text-gray-500 font-medium">{log.pc_assets.model_name}</div>
-                    {/* 제조번호 */}
+                  {/* 제조번호 */}
                     <div className="px-2 py-4 text-sm text-gray-500 font-medium">{log.pc_assets.serial_number}</div>
                   {/* 상태 */}
                     <div className="px-2 py-4 text-sm">

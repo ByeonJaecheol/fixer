@@ -10,28 +10,28 @@ const categories = [
     },
     {
       id: 'pc-in',
-      name: 'PC입고',
+      name: '등록',
       icon: PlusIcon,
       color: 'text-green-600',
       href: '/private/pc-history/in'
     },
     {
       id: 'pc-new-install',
-      name: 'PC신규설치',
+      name: '설치',
       icon: ComputerDesktopIcon,
       color: 'text-blue-600',
       href: '/private/pc-history/new-install'
     },
     {
       id: 'pc-return',
-      name: 'PC반납',
+      name: '반납',
       icon: ArrowUturnDownIcon,
       color: 'text-blue-600',
       href: '/private/pc-history/return'
     },
     {
       id: 'pc-disposal',
-      name: 'PC폐기',
+      name: '폐기',
       icon: XMarkIcon,
       color: 'text-red-600',
       href: '/private/pc-history/disposal'

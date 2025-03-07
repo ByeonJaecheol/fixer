@@ -15,7 +15,7 @@ export function formatToKoreanTime(inputDate: string, format: "date" | "month"):
   
     // 4. 출력 포맷 결정
     if (format === "date") {
-      return `${yy}/${mm}/${dd}/00`; // "25년03월05일00시"
+      return `${yy}/${mm}/${dd}`; // "25년03월05일00시"
     } else if (format === "month") {
       return `${yy}/${mm}`; // "25년03월"
     }

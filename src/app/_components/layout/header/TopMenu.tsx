@@ -4,17 +4,17 @@ import Link from 'next/link';
 const navigationItems = [
   {
     icon: ChatBubbleBottomCenterIcon,
-    text: 'PC문의접수',
+    text: '문의접수',
     href: '/private/pc-inquiry'
   },
   {
     icon: ComputerDesktopIcon,
-    text: 'PC이력',
+    text: '장비이력',
     href: '/private/pc-history'
   },
   {
     icon: WrenchIcon,
-    text: 'A/S요청이력',
+    text: '수리이력',
     href: '/private/as-request'
   },
   {

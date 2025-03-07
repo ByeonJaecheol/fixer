@@ -3,7 +3,8 @@ import { signOut } from '../../../login/action'
 import LoginErrorModal from '../../../private/_components/LoginErrorModal'
 import LoginedUser from './LoginedUser'
 import { APP_NAME } from '@/app/constants/constNames'
-
+import { PowerIcon } from '@heroicons/react/24/solid'
+import LogoutButton from './LogoutButton'
 export default async function PrivateHeader() {
   const supabase = await createClient()
 
@@ -20,7 +21,7 @@ export default async function PrivateHeader() {
       </div>
       <div className='flex justify-between items-center'>
         <LoginedUser data={data.user} />
-        <button className='ml-2 bg-red-500 border-2 shadow-lg text-white px-2 py-1 rounded-md text-md hover:bg-red-600 transition-colors duration-300 text-center' onClick={signOut}>로그아웃</button>
+        <LogoutButton />
       </div>
     </div>
   )

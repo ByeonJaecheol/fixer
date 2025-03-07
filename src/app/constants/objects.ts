@@ -43,3 +43,12 @@ export const PC_HP_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
     { value: '15ZD95Q-GX56K', label: '15ZD95Q-GX56K' },
   ];
   
+
+  export const PC_USAGE_TYPE_OPTIONS: IDropDownOption[] = [
+    { value: '개인', label: '개인' },
+    { value: '공용', label: '공용' },
+    { value: '임대', label: '임대' },
+  ];
+  
+  
+

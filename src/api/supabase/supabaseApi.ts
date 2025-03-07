@@ -39,7 +39,7 @@ interface DeleteOptions {
 }
 
 interface IPcAsset {
-    id: number;
+    asset_id: number;
     brand: string;
     model_name: string;
     serial_number: string;
@@ -59,6 +59,29 @@ interface IPcAsset {
       created_by: string;
     }[];
   }
+  // 조인 조건을 위한 타입 정의
+interface JoinCondition {
+  table: string;
+  columns?: string;
+  sourceColumn: string; // 원본 테이블의 컬럼 (예: asset_id)
+  targetColumn: string; // 대상 테이블의 컬럼 (예: asset_id)
+}
+
+// 기존 SelectWithRelationsOptions 타입 확장
+interface SelectWithRelationsOptions {
+  table: string;
+  columns?: string;
+  relations?: Array<{
+    table: string;
+    columns?: string;
+  }>;
+  match?: any;
+  order?: {
+    column: string;
+    ascending?: boolean;
+  };
+  limit?: number;
+}
   
 class SupabaseService {
   private static instance: SupabaseService;
@@ -134,27 +157,26 @@ class SupabaseService {
     }
   }
 // 관계 테이블 조회
-  async selectWithRelations({ 
-    table, 
-    columns = '*', 
-    relations = [], // 새로운 파라미터 추가
-    match, 
-    order, 
-    limit 
-  }: SelectWithRelationsOptions) {
-    try {
-      console.log(`Selecting data from ${table} with relations`);
-      
-      // 관계 테이블의 컬럼들을 포함한 select 쿼리 구성
-      let selectQuery = columns;
-      
-      // relations 배열을 사용하여 관계 테이블 데이터 요청
-      // 예: [{ table: 'profiles', columns: 'name,avatar_url' }]
-      if (relations.length > 0) {
-        relations.forEach(relation => {
-          selectQuery += `,${relation.table}(${relation.columns || '*'})`;
-        });
-      }
+async selectWithRelations({ 
+  table, 
+  columns = '*', 
+  relations = [],
+  match, 
+  order, 
+  limit,
+  joinConditions = [] // 조인 조건 추가
+}: SelectWithRelationsOptions & { joinConditions?: JoinCondition[] }) {
+  try {
+    console.log(`Selecting data from ${table} with relations`);
+    
+    // 기본 쿼리 설정
+    let selectQuery = columns;
+    
+    // 단순 관계 테이블 (Supabase 자동 관계 사용)
+    if (relations.length > 0 && joinConditions.length === 0) {
+      relations.forEach(relation => {
+        selectQuery += `,${relation.table}(${relation.columns || '*'})`;
+      });
       
       let query = this.supabase.from(table).select(selectQuery);
       
@@ -173,16 +195,99 @@ class SupabaseService {
       const { data, error } = await query;
       
       if (error) {
-        // console.error(`Error selecting from ${table} with relations:`, error);
         return { success: false, error, data: null };
       }
       
       return { success: true, error: null, data };
-    } catch (error) {
-    //   console.error(`Exception selecting from ${table} with relations:`, error);
+    } 
+    // 명시적 조인 조건 사용 (더 복잡한 관계)
+    else if (joinConditions.length > 0) {
+      // 조인 쿼리를 위한 SQL 문 생성
+      const joinQuery = joinConditions
+        .map(join => {
+          // 조인 테이블의 컬럼들 선택
+          const joinColumns = join.columns 
+            ? join.columns.split(',').map(col => `${join.table}.${col.trim()} as "${join.table}_${col.trim()}"`).join(', ')
+            : `${join.table}.*`;
+            
+          return {
+            joinSql: `LEFT JOIN ${join.table} ON ${table}.${join.sourceColumn} = ${join.table}.${join.targetColumn}`,
+            selectColumns: joinColumns
+          };
+        });
+      
+      // 기본 테이블의 컬럼들
+      let selectColumns = columns === '*' 
+        ? `${table}.*` 
+        : columns.split(',').map(col => `${table}.${col.trim()}`).join(', ');
+      
+      // 조인 테이블의 컬럼들 추가
+      selectColumns += ', ' + joinQuery.map(j => j.selectColumns).join(', ');
+      
+      // SQL 쿼리 구성
+      let sqlQuery = `
+        SELECT ${selectColumns}
+        FROM ${table}
+        ${joinQuery.map(j => j.joinSql).join(' ')}
+      `;
+      
+      // WHERE 절 추가
+      if (match) {
+        const conditions = Object.entries(match)
+          .map(([key, value]) => `${table}.${key} = '${value}'`)
+          .join(' AND ');
+        
+        sqlQuery += ` WHERE ${conditions}`;
+      }
+      
+      // ORDER BY 절 추가
+      if (order) {
+        sqlQuery += ` ORDER BY ${table}.${order.column} ${order.ascending ? 'ASC' : 'DESC'}`;
+      }
+      
+      // LIMIT 절 추가
+      if (limit) {
+        sqlQuery += ` LIMIT ${limit}`;
+      }
+      
+      // 쿼리 실행
+      const { data, error } = await this.supabase.rpc('run_query', { query: sqlQuery });
+      
+      if (error) {
+        return { success: false, error, data: null };
+      }
+      
+      return { success: true, error: null, data };
+    }
+    
+    // 관계나 조인 조건이 없는 경우 기본 쿼리 수행
+    let query = this.supabase.from(table).select(columns);
+    
+    if (match) {
+      query = query.match(match);
+    }
+    
+    if (order) {
+      query = query.order(order.column, { ascending: order.ascending ?? true });
+    }
+    
+    if (limit) {
+      query = query.limit(limit);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
       return { success: false, error, data: null };
     }
+    
+    return { success: true, error: null, data };
+  } catch (error) {
+    return { success: false, error, data: null };
   }
+}
+
+
   
   // 데이터 업데이트
   async update({ table, data, match, returnData = true }: UpdateOptions) {

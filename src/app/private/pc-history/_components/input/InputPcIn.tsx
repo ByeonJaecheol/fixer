@@ -4,37 +4,36 @@ import InputDateLegacy from "@/app/_components/log/InputDateLegacy";
 import InputModelName from "@/app/_components/log/InputModelName";
 import InputPcType from "@/app/_components/log/InputPcType";
 import InputSerial from "@/app/_components/log/InputSerial";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import OkButton from "@/app/_components/common/input/button/OkButton";
 import SupabaseService from "@/api/supabase/supabaseApi";
 import InputDate from "@/app/_components/log/InputDate";
 import { usePathname, useRouter } from "next/navigation";
 import InputLog from "@/app/_components/log/new/InputLog";
 import InputDropDown from "@/app/_components/log/new/InputDropDown";
-import { PC_BRAND_OPTIONS, PC_HP_DESKTOP_MODEL_OPTIONS, PC_HP_NOTEBOOK_MODEL_OPTIONS, PC_LG_NOTEBOOK_MODEL_OPTIONS, PC_TYPE_OPTIONS } from "@/app/constants/objects";
+import { PC_BRAND_OPTIONS, PC_HP_DESKTOP_MODEL_OPTIONS, PC_HP_NOTEBOOK_MODEL_OPTIONS, PC_LG_NOTEBOOK_MODEL_OPTIONS, PC_TYPE_OPTIONS, PC_USAGE_TYPE_OPTIONS } from "@/app/constants/objects";
 import InputTextArea from "@/app/_components/log/new/InputTextArea";
 
 
 
 export default function InputPcIn({workType}:{workType:string}) {
   // pc 자산 정보
-  const [brand, setBrand] = useState<string>("");
+  const [pcType, setPcType] = useState<string>(PC_TYPE_OPTIONS[0].value);
+  const [brand, setBrand] = useState<string>(PC_BRAND_OPTIONS[0].value);
   const [modelName, setModelName] = useState<string>("");  
   const [serial, setSerial] = useState<string>("");
-  const [pcType, setPcType] = useState<string>("");
-  const [firstStockDate, setFirstStockDate] = useState<string>("");
+  const [firstStockDate, setFirstStockDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [manufactureDate, setManufactureDate] = useState<string>("");
   // 관리 로그 정보
-  const [workDate, setWorkDate] = useState<string>("");
+  const [workDate, setWorkDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [requester, setRequester] = useState<string>("");
   const [securityCode, setSecurityCode] = useState<string>("");
   const [detailedDescription, setDetailedDescription] = useState<string>("");
   const [createdBy, setCreatedBy] = useState<string>("");
-  const [createdAt, setCreatedAt] = useState<string>("");
   const [status, setStatus] = useState<string>("");
   const [isAvailable, setIsAvailable] = useState<boolean>(true);
   const [usageCount, setUsageCount] = useState<number>(1);
-  const [usageType, setUsageType] = useState<string>("");
+  const [usageType, setUsageType] = useState<string>(PC_USAGE_TYPE_OPTIONS[0].value);
   const [employeeWorkspace, setEmployeeWorkspace] = useState<string>("");
   const [employeeDepartment, setEmployeeDepartment] = useState<string>("");
   const [employeeName, setEmployeeName] = useState<string>("");
@@ -42,68 +41,41 @@ export default function InputPcIn({workType}:{workType:string}) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
   const ref = useRef<HTMLSelectElement>(null);
-  const handlePcAssetCreation = async () => {
-    setIsLoading(true);
-    const supabaseService = SupabaseService.getInstance();
-    
-    // PC 자산 생성 및 관리 로그 추가하는 트랜잭션
-    const result = await supabaseService.transaction([
-      // PC 자산 추가
-      async () => {
-        return await supabaseService.insert({
-          table: 'pc_assets',
-          data: { 
-            brand: "HP", 
-            model_name: "Z4G5", 
-            serial_number: "TEST441111", 
-            pc_type: "데스크탑", 
-            first_stock_date: workDate,
-            manufacture_date: manufactureDate
-          }
-        });
-      },
-      
-      // PC 자산이 성공적으로 추가되면 관리 로그 추가
-      async () => {
-        // 첫 번째 작업의 결과(PC 자산)에서 ID 가져오기
-        const pcAsset = result.results[0].data[0];
-        console.log(pcAsset,"pcAsset-ㅅㄷㄴㅅ")
-        
-        return await supabaseService.insert({
-          table: 'pc_management_log',
-          data: { 
-            asset_id: pcAsset.asset_id, 
-            work_type: workType, 
-            work_date: workDate, 
-            requester: requester, 
-            security_code: securityCode, 
-            detailed_description: detailedDescription, 
-            created_by: createdBy, 
-            created_at: createdAt,
-            status : status,
-            is_available : isAvailable,
-            usage_count : usageCount,
-            usage_type : "개인",
-            employee_workspace : "홍길동",
-            employee_department : "홍길동",
-            employee_name : "홍길동"
-          }
-        });
-      }
-    ]);
-    
-    if (result.success) {
-      console.log("PC 자산 및 관리 로그 추가 성공:", result.results);
-      return result.results;
-    } else {
-      console.error("PC 자산 및 관리 로그 추가 실패:", result.error);
-      return null;
-    }
-  };
 
   const handlePcAssetCreationTest = async () => {
     const supabaseService = SupabaseService.getInstance();
     
+    // 시리얼번호 중복 체크
+    const { data: existingAsset, error: existingAssetError } = await supabaseService.select({
+      table: 'pc_assets',
+      columns: '*',
+      match: { serial_number: serial },
+      limit: 1
+    });
+    console.log('existingAsset',existingAsset)
+    console.log('existingAsset',existingAsset)
+    console.log('existingAsset',existingAsset)
+    console.log('existingAsset',existingAsset)
+    console.log('existingAsset',existingAsset)
+    if (existingAsset&&existingAsset.length>0) {
+      alert('이미 존재하는 시리얼번호 입니다.');
+      return;
+    }
+    // 보안코드 중복 체크
+    const { data: existingSecurityCode, error: existingSecurityCodeError } = await supabaseService.select({
+      table: 'pc_management_log',
+      columns: '*',
+      match: { security_code : securityCode},
+      limit: 1
+    });
+    console.log('existingSecurityCode',existingSecurityCode)
+    console.log('existingSecurityCode',existingSecurityCode)
+    console.log('existingSecurityCode',existingSecurityCode)
+    if (existingSecurityCode&&existingSecurityCode.length>0) {
+      alert('이미 존재하는 보안코드 입니다.');
+      return;
+    }
+
     // PC 자산 생성 및 관리 로그 추가하는 트랜잭션
     console.log('입력시작')
     const result = await supabaseService.insert({
@@ -117,31 +89,60 @@ export default function InputPcIn({workType}:{workType:string}) {
         manufacture_date: manufactureDate
       }
     });
-    console.log('입력완료')
     if (result.success) {
-      supabaseService.insert({
+      if(workType==="입고"){
+        console.log('입고 시작')
+      const logResult = await supabaseService.insert({
         table: 'pc_management_log',
         data: {
-          asset_id: result.data[0].id,
-          work_type: "입고",
-          work_date: workDate,
-          requester: "홍길동",
-          security_code: "A4003",
-          detailed_description: "입고 처리",
-          created_by: "홍길동",
-          created_at: "2025-03-04",
+          asset_id: result.data[0].asset_id,
+          work_type: workType,
+          work_date: firstStockDate,
+          created_by: createdBy,
           status : "new",
-          is_available : true,
-          usage_count : 0,// 사용 횟수 입고는 0으로
-          usage_type : usageType,
-          employee_workspace : employeeWorkspace,
-          employee_department : employeeDepartment,
-          employee_name : employeeName
+          detailed_description: detailedDescription,
         }
       });
-
-      console.log("PC 입고 성공:", result.data);
-      alert("PC 입고 완료");
+      
+      if(logResult.success){
+        alert('입고 완료');
+        router.refresh();
+        return logResult.data;
+      }
+      }
+      if(workType==="반납"){
+        console.log('반납 시작')
+        const logResult = await supabaseService.insert({
+          table: 'pc_management_log',
+          data: {
+            asset_id: result.data[0].asset_id,
+            work_type: workType,
+            work_date: workDate, //반납일
+            created_by: 'pcsub1@ket.com',
+            status : "used",
+            security_code : securityCode,
+            requester : requester,
+            detailed_description: detailedDescription,
+            is_available : true,
+            usage_type : usageType,
+            employee_workspace : employeeWorkspace,
+            employee_department : employeeDepartment,
+            employee_name : employeeName,
+            usage_count : result.data[0].usage_count?result.data[0].usage_count+1:1,
+          }
+        });
+        console.log('반납 결과',logResult)
+        if(logResult.success){
+          alert('반납 완료');
+          router.refresh();
+          return logResult.data;
+        }else{
+          alert('반납 실패');
+          console.error('반납 실패:', logResult);
+          return null;
+        }
+      }
+      alert("해당사항 없음");
       router.refresh();
       return result.data;
     } else {
@@ -150,7 +151,9 @@ export default function InputPcIn({workType}:{workType:string}) {
       return null;
     }
   };
-  
+  useEffect(()=>{
+    setModelName(getModelNameOptions()[0]?.value)
+  },[pcType,brand])
   function getModelNameOptions() {
     if (pcType === "데스크탑"&&brand==="HP") {
       return PC_HP_DESKTOP_MODEL_OPTIONS;
@@ -167,19 +170,18 @@ export default function InputPcIn({workType}:{workType:string}) {
 
   return (
     <>
-    <div className="text-lg font-bold px-4 sm:px-8 ">PC 자산 정보</div>
+    <div className="text-sm font-semibold text-gray-700 px-4 sm:px-8 my-2">PC 자산 정보</div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-4 sm:px-8 mb-4">
-       
-       
+        
         <InputDropDown
-          label={"타입"}
+          label={"기종"}
           value={pcType}
           setValue={setPcType}
           ref={ref}
           options={PC_TYPE_OPTIONS}
         />
         <InputDropDown
-          label={"브랜드"}
+          label={"제조사"}
           value={brand}
           setValue={setBrand}
           ref={ref}
@@ -192,8 +194,7 @@ export default function InputPcIn({workType}:{workType:string}) {
           ref={ref}
           options={getModelNameOptions()}
         />
-       
-        <InputLog
+          <InputLog
           label={"시리얼번호"}
           value={serial}
           setValue={setSerial}
@@ -210,12 +211,21 @@ export default function InputPcIn({workType}:{workType:string}) {
           value={firstStockDate}
           setValue={setFirstStockDate}
           name="firstStockDate"
-          label="최초입고일"
+          label="입고일"
           type="date"
         />
       </div>
-      <div className="text-lg font-bold px-4 sm:px-8 ">입력정보</div>
+      {workType==="입고"?
+      null
+      :
+      (
+      <div className="text-sm font-semibold text-gray-700 px-4 sm:px-8 mb-2">입력 정보</div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-4 sm:px-8 mb-4">
+      {workType==="입고"?
+        <div></div>
+        :
+        (
         <InputDate
           label={"작업일"}
           value={workDate}
@@ -223,62 +233,95 @@ export default function InputPcIn({workType}:{workType:string}) {
           name="workDate"
           type="date"
         />
-       <InputLog
-         label={"의뢰인"}
-         value={requester}
-         setValue={setRequester}
-       /> 
+        )}
+        {workType==="입고"?
+        <div></div>
+        :
+        (
        <InputLog
          label={"보안코드"}
          value={securityCode}
          setValue={setSecurityCode}
-       />
-      
-      
-       {/* <InputLog
-         label={"가동여부"}
-         value={isAvailable}
-         setValue={setIsAvailable}
-       /> */}
-
+       /> 
+        )}
+           {workType==="입고"?
+        <div></div>
+        :
+        (
        <InputLog
-         label={"사용용도"}
-         value={usageType}
-         setValue={setUsageType}
+         label={"상태"}
+         value={status}
+         setValue={setStatus}
        />
+        )}
+       
+        {workType==="입고"?
+        <div></div>
+        :
+        (
+       <InputLog
+         label={"의뢰인"}
+         value={requester}
+         setValue={setRequester}
+       />
+        )}
+        {workType==="입고"?
+        <div></div>
+        :
+        (
        <InputLog
          label={"사업장"}
          value={employeeWorkspace}
          setValue={setEmployeeWorkspace}
        />
+        )}
+        {workType==="입고"?
+        <div></div>
+        :
+        (
        <InputLog
          label={"부서"}
          value={employeeDepartment}
          setValue={setEmployeeDepartment}
        />
+        )}
+        {workType==="입고"?
+        <div></div>
+        :
+        (
        <InputLog
          label={"사용자"}
          value={employeeName}
          setValue={setEmployeeName}
        />
-        <InputLog
-         label={"작성자"}
-         value={createdBy}
-         setValue={setCreatedBy}
-       />
-
+        )}
+         {workType==="입고"?
+        <div></div>
+        :
+        (
+       <InputDropDown
+         label={"사용용도"}
+         value={usageType}
+         setValue={setUsageType}
+         ref={ref}
+         options={PC_USAGE_TYPE_OPTIONS}
+        />
+        )}
+     
      </div>
     
       {/* <div>
         <h3>디버깅 정보</h3>
+        <p>workType: {workType}</p>
         <p>brand: {brand}</p>
         <p>modelName: {modelName}</p>
         <p>serial: {serial}</p>
+        <p>securityCode: {securityCode}</p>
         <p>pcType: {pcType}</p>
         <p>workDate: {workDate}</p>
         <p>manufactureDate: {manufactureDate}</p>
         <p>isLoading: {isLoading}</p>
-        
+        <p>detailedDescription: {detailedDescription}</p>
       </div> */}
       <div className="w-full mb-4 px-4 sm:px-8">
        <InputTextArea
