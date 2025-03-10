@@ -7,7 +7,7 @@ import { formatToKoreanTime } from '@/utils/utils';
 
 export default async function InventoryPage() {
   const gridStyle = {
-    gridTemplateColumns: "8% 8% 8% 8% 5% 5% 5% 5% 10% 35%"
+    gridTemplateColumns: "8% 8% 8% 8% 10% 5% 5% 5% 10% 30%"
   }
 
   

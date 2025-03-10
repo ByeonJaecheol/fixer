@@ -1,19 +1,11 @@
 import SupabaseService from "@/api/supabase/supabaseApi";
 import InputPcIn from "../_components/input/InputPcIn";
 import { formatToKoreanTime } from "@/utils/utils";
+import Link from "next/link"; 
 
-interface IPcAsset {
-  asset_id: number;
-  brand: string;
-  model_name: string;
-  serial_number: string;
-  pc_type: string;
-  first_stock_date: string;
-  manufacture_date: string;
-}
 export default async function AddPcHistory() {
   const gridStyle = {
-    gridTemplateColumns: "8% 8% 8% 8% 12% 5% 5% 5% 5% 10% 35%"
+    gridTemplateColumns: "8% 8% 8% 8% 12% 10% 5% 5% 5% 10% 30%"
   }
   const getPcManagementLog = async () : Promise<any> => {
     const supabaseService = SupabaseService.getInstance();
@@ -64,7 +56,8 @@ export default async function AddPcHistory() {
               </div>
                 {/* 데이터 행 */}
                 {pcManagementLog.map((log: any) => (
-                  <div 
+                  <Link 
+                    href={`/private/pc-history/in/detail/${log.log_id}`}
                     key={log.log_id}
                     style={gridStyle}
                     className="grid border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150"
@@ -116,7 +109,7 @@ export default async function AddPcHistory() {
                     <div className="px-2 py-4 text-sm text-gray-500 line-clamp-1" title={log.detailed_description}>
                       {log.detailed_description ?? '-'}
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

@@ -13,9 +13,10 @@ export const PC_BRAND_OPTIONS: IDropDownOption[] = [
   ];
 
 export const PC_STATUS_OPTIONS: IDropDownOption[] = [
-    { value: 'new', label: '신규' },
-    { value: 'used', label: '사용중' },
-    { value: 'disposal', label: '폐기' },
+    { value: '사용가능', label: '사용가능' },
+    { value: '사용불가', label: '사용불가' },
+    { value: '수리대기', label: '수리대기' },
+    { value: '폐기', label: '폐기' },
   ];
 
 export const PC_HP_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [

@@ -1,11 +1,13 @@
 import { formatToKoreanTime } from "@/utils/utils";
 import { getPcManagementLog } from "@/api/supabase/supabaseTempApi";
 import InputPcIn from "../_components/input/InputPcIn";
+import Link from "next/link";
 
 
 export default async function ReturnPage() {
     const gridStyle = {
-       gridTemplateColumns: "8% 8% 8% 8% 12% 5% 5% 5% 5% 10% 35%"
+       gridTemplateColumns: "8% 8% 8% 8% 12% 10% 5% 5% 5% 10% 30%"
+      //  id,작업유형,pc타입,모델명,제조번호,상태,가동,횟수,용도,입고일,작업내용
       }
     const pcManagementLog = await getPcManagementLog("pc_management_log","pc_assets","반납","log_id",false);
 
@@ -34,7 +36,8 @@ export default async function ReturnPage() {
               </div>
                 {/* 데이터 행 */}
                 {pcManagementLog.map((log: any) => (
-                  <div 
+                  <Link 
+                    href={`/private/pc-history/return/detail/${log.log_id}`}
                     key={log.log_id}
                     style={gridStyle}
                     className="grid border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150"
@@ -86,7 +89,7 @@ export default async function ReturnPage() {
                     <div className="px-2 py-4 text-sm text-gray-500 line-clamp-1" title={log.detailed_description}>
                       {log.detailed_description ?? '-'}
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

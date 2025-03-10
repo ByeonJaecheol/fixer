@@ -11,7 +11,7 @@ import InputDate from "@/app/_components/log/InputDate";
 import { usePathname, useRouter } from "next/navigation";
 import InputLog from "@/app/_components/log/new/InputLog";
 import InputDropDown from "@/app/_components/log/new/InputDropDown";
-import { PC_BRAND_OPTIONS, PC_HP_DESKTOP_MODEL_OPTIONS, PC_HP_NOTEBOOK_MODEL_OPTIONS, PC_LG_NOTEBOOK_MODEL_OPTIONS, PC_TYPE_OPTIONS, PC_USAGE_TYPE_OPTIONS } from "@/app/constants/objects";
+import { PC_BRAND_OPTIONS, PC_HP_DESKTOP_MODEL_OPTIONS, PC_HP_NOTEBOOK_MODEL_OPTIONS, PC_LG_NOTEBOOK_MODEL_OPTIONS, PC_STATUS_OPTIONS, PC_TYPE_OPTIONS, PC_USAGE_TYPE_OPTIONS } from "@/app/constants/objects";
 import InputTextArea from "@/app/_components/log/new/InputTextArea";
 
 
@@ -31,7 +31,6 @@ export default function InputPcIn({workType}:{workType:string}) {
   const [detailedDescription, setDetailedDescription] = useState<string>("");
   const [createdBy, setCreatedBy] = useState<string>("");
   const [status, setStatus] = useState<string>("");
-  const [isAvailable, setIsAvailable] = useState<boolean>(true);
   const [usageCount, setUsageCount] = useState<number>(1);
   const [usageType, setUsageType] = useState<string>(PC_USAGE_TYPE_OPTIONS[0].value);
   const [employeeWorkspace, setEmployeeWorkspace] = useState<string>("");
@@ -42,115 +41,56 @@ export default function InputPcIn({workType}:{workType:string}) {
   const router = useRouter();
   const ref = useRef<HTMLSelectElement>(null);
 
-  const handlePcAssetCreationTest = async () => {
+  // 입고 로그 생성 : 신규 pc 만 해당,
+  // 시리얼 번호 중복 체크, 
+  // 시리얼 번호 존재하지 않을시 입고 로그 생성, 
+  // 시리얼 번호 존재할시 입고 로그 생성 안함,
+  const handleInLogCreation = async () => {
     const supabaseService = SupabaseService.getInstance();
-    
-    // 시리얼번호 중복 체크
-    const { data: existingAsset, error: existingAssetError } = await supabaseService.select({
-      table: 'pc_assets',
-      columns: '*',
-      match: { serial_number: serial },
-      limit: 1
-    });
-    console.log('existingAsset',existingAsset)
-    console.log('existingAsset',existingAsset)
-    console.log('existingAsset',existingAsset)
-    console.log('existingAsset',existingAsset)
+    //1.시리얼 조회
+    const existingAsset = await checkSerialNumber(serial,supabaseService);
     console.log('existingAsset',existingAsset)
     if (existingAsset&&existingAsset.length>0) {
       alert('이미 존재하는 시리얼번호 입니다.');
       return;
     }
-    // 보안코드 중복 체크
-    const { data: existingSecurityCode, error: existingSecurityCodeError } = await supabaseService.select({
-      table: 'pc_management_log',
-      columns: '*',
-      match: { security_code : securityCode},
-      limit: 1
-    });
-    console.log('existingSecurityCode',existingSecurityCode)
-    console.log('existingSecurityCode',existingSecurityCode)
-    console.log('existingSecurityCode',existingSecurityCode)
-    if (existingSecurityCode&&existingSecurityCode.length>0) {
-      alert('이미 존재하는 보안코드 입니다.');
-      return;
-    }
+    //2.pc 자산 생성
+    const result = await createPcAsset();
+    console.log('pc 자산 생성 결과',result)
+    //3.입고 로그 생성
+    const logResult = await createPcLog(result.data[0].asset_id,supabaseService);
+    console.log('입고 로그 결과',logResult)
+  }
 
-    // PC 자산 생성 및 관리 로그 추가하는 트랜잭션
-    console.log('입력시작')
-    const result = await supabaseService.insert({
-      table: 'pc_assets',
-      data: { 
-        brand: brand, 
-        model_name: modelName, 
-        serial_number: serial, 
-        pc_type: pcType, 
-        first_stock_date: workDate,
-        manufacture_date: manufactureDate
-      }
-    });
-    if (result.success) {
-      if(workType==="입고"){
-        console.log('입고 시작')
-      const logResult = await supabaseService.insert({
-        table: 'pc_management_log',
-        data: {
-          asset_id: result.data[0].asset_id,
-          work_type: workType,
-          work_date: firstStockDate,
-          created_by: createdBy,
-          status : "new",
-          detailed_description: detailedDescription,
-        }
-      });
-      
-      if(logResult.success){
-        alert('입고 완료');
-        router.refresh();
-        return logResult.data;
-      }
-      }
-      if(workType==="반납"){
-        console.log('반납 시작')
-        const logResult = await supabaseService.insert({
-          table: 'pc_management_log',
-          data: {
-            asset_id: result.data[0].asset_id,
-            work_type: workType,
-            work_date: workDate, //반납일
-            created_by: 'pcsub1@ket.com',
-            status : "used",
-            security_code : securityCode,
-            requester : requester,
-            detailed_description: detailedDescription,
-            is_available : true,
-            usage_type : usageType,
-            employee_workspace : employeeWorkspace,
-            employee_department : employeeDepartment,
-            employee_name : employeeName,
-            usage_count : result.data[0].usage_count?result.data[0].usage_count+1:1,
-          }
-        });
-        console.log('반납 결과',logResult)
-        if(logResult.success){
-          alert('반납 완료');
-          router.refresh();
-          return logResult.data;
-        }else{
-          alert('반납 실패');
-          console.error('반납 실패:', logResult);
-          return null;
-        }
-      }
-      alert("해당사항 없음");
-      router.refresh();
-      return result.data;
-    } else {
-      console.error("PC 자산 추가 실패:", result.error);
-      alert("PC 자산 추가 실패");
-      return null;
+  // 반납 로그 생성 : 반납 로그 생성 시 시리얼 번호 존재 여부 체크, 
+  // 시리얼 번호 존재 시 사용 횟수 증가, 
+  // 시리얼 번호 존재 시 입고 로그 생성, 
+  // 시리얼 번호 존재 시 입고 로그 생성 안함, 
+  const handleReturnLogCreation = async () => {
+    const supabaseService = SupabaseService.getInstance();
+    //1.시리얼 조회
+    const existingAsset = await checkSerialNumber(serial,supabaseService);
+    console.log('existingAsset',existingAsset)
+    // 시리얼 번호 존재하지 않을시 pc 자산 생성
+    // 반납 로그 생성 - 아직 pc_asset 에 등록되지 않은 반납 pc 일 경우
+    if (!existingAsset||existingAsset.length===0) {
+      console.log('시리얼 번호 존재하지 않으므로 자산생성 시작')
+      const result = await createPcAsset();
+      console.log('pc 자산 생성 결과',result)
+      const logResult = await createPcLogReturn(result.data[0].asset_id,supabaseService);
+      console.log('반납 로그 결과',logResult)
+    }else {
+      // 시리얼 번호 존재하는 경우
+      //1. work_type 이 반납인 동일 pc가 있는지 조회
+      const existingReturnPcAsset = await checkWorkTypeReturn(serial,supabaseService);
+      console.log('existingReturnPcAsset',existingReturnPcAsset)
+      //2. 기존 asset_id 존재하는 PC에 대한 반납 로그 생성
+      const logResult = await createPcLogReturn(existingAsset[0].asset_id,supabaseService);
+      console.log('반납 로그 결과',logResult)
     }
-  };
+    
+  } 
+
   useEffect(()=>{
     setModelName(getModelNameOptions()[0]?.value)
   },[pcType,brand])
@@ -167,6 +107,141 @@ export default function InputPcIn({workType}:{workType:string}) {
     return [];
   }
 
+  
+    // 시리얼번호 중복 체크 함수, 
+    const checkSerialNumber = async (serial: string,supabaseService:SupabaseService) => {
+      const { data: existingAsset, error: existingAssetError } = await supabaseService.select({
+        table: 'pc_assets',
+        columns: '*',
+        match: { serial_number: serial },
+        limit: 1
+      });
+      return existingAsset;
+    }
+
+    // // 보안코드 중복 체크 함수, 
+    // const checkSecurityCode = async (securityCode: string,supabaseService:SupabaseService) => {
+    //   const { data: existingSecurityCode, error: existingSecurityCodeError } = await supabaseService.select({
+    //     table: 'pc_management_log',
+    //     columns: '*', 
+    //     match: { security_code: securityCode },
+    //     limit: 1
+    //   });
+    //   return existingSecurityCode;
+    // }
+
+       // PC 자산 생성, 
+       const createPcAsset = async () => {
+       const supabaseService = SupabaseService.getInstance();
+       const result = await supabaseService.insert({
+         table: 'pc_assets',
+         data: { 
+           brand: brand, 
+           model_name: modelName, 
+           serial_number: serial, 
+           pc_type: pcType, 
+           first_stock_date: workDate,
+           manufacture_date: manufactureDate
+         }
+       });
+       return result;
+       }
+
+      //  입고 로그 생성
+      const createPcLog = async (asset_id: string,supabaseService:SupabaseService) => {
+        const logResult = await supabaseService.insert({
+         table: 'pc_management_log',
+         data: {
+           asset_id: asset_id,
+           work_type: workType,
+           work_date: firstStockDate,
+           created_by: createdBy,
+           status : "new",
+           detailed_description: detailedDescription,
+         }
+       });
+       
+       if(logResult.success){
+         alert('입고 완료');
+         router.refresh();
+         return logResult.data;
+        }
+        return null;
+      }
+
+      // 반납 로그 생성
+      const createPcLogReturn = async (asset_id: string,supabaseService:SupabaseService) => {
+        console.log('반납 시작')
+      const logResult = await supabaseService.insert({
+        table: 'pc_management_log',
+        data: {
+          asset_id: asset_id,
+          work_type: workType,
+          work_date: workDate, //반납일
+          created_by: 'pcsub1@ket.com',
+          status : "used",
+          security_code : securityCode,
+          requester : requester,
+          detailed_description: detailedDescription,
+          is_available : true,
+          usage_type : usageType,
+          employee_workspace : employeeWorkspace,
+          employee_department : employeeDepartment,
+          employee_name : employeeName,
+          usage_count : usageCount,
+        }
+      });
+      console.log('반납 결과',logResult)
+      if(logResult.success){
+        alert('반납 완료');
+        router.refresh();
+        return logResult.data;
+      }else{
+        alert('반납 실패');
+        console.error('반납 실패:', logResult);
+        return null;
+      }
+      }
+
+      //work_type 이 반납이고 serial이 존재하는지 조회
+      const checkWorkTypeReturn = async (serial: string,supabaseService:SupabaseService) => {
+        // 시리얼 번호 존재하는 경우
+        
+        const { data: existingAsset, error: existingAssetError } = await supabaseService.select({
+          table: 'pc_management_log',
+          columns: '*',
+          match: { work_type: '반납' },
+          limit: 1
+        });
+        return existingAsset;
+      }
+
+
+      // 사용 횟수 증가
+      const increaseUsageCount = async (asset_id: string,supabaseService:SupabaseService) => {
+        const result = await supabaseService.update({
+          table: 'pc_assets',
+          data: {
+            usage_count: usageCount + 1
+          },
+          match: { asset_id: asset_id }
+        });
+        return result;
+      }
+
+  //작성 버튼 입고 반납 구분
+  const handleWriteButton = () => {
+    if(!serial){
+      alert('시리얼 번호를 입력해주세요.');
+      return;
+    }
+    if(workType==="입고"){
+      handleInLogCreation();
+    }
+    if(workType==="반납"){
+      handleReturnLogCreation();
+    }
+  }
 
   return (
     <>
@@ -198,6 +273,7 @@ export default function InputPcIn({workType}:{workType:string}) {
           label={"시리얼번호"}
           value={serial}
           setValue={setSerial}
+          required={true}
         />
 
         <InputDate
@@ -248,10 +324,12 @@ export default function InputPcIn({workType}:{workType:string}) {
         <div></div>
         :
         (
-       <InputLog
+       <InputDropDown
          label={"상태"}
          value={status}
          setValue={setStatus}
+         ref={ref}
+         options={PC_STATUS_OPTIONS}
        />
         )}
        
@@ -334,7 +412,7 @@ export default function InputPcIn({workType}:{workType:string}) {
         
         <div className="w-36 ">
         <OkButton
-          onClick={handlePcAssetCreationTest}
+          onClick={handleWriteButton}
           isLoading={isLoading}
           buttonText="입고"
         />
