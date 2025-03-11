@@ -11,7 +11,7 @@ import InputDate from "@/app/_components/log/InputDate";
 import { usePathname, useRouter } from "next/navigation";
 import InputLog from "@/app/_components/log/new/InputLog";
 import InputDropDown from "@/app/_components/log/new/InputDropDown";
-import { PC_BRAND_OPTIONS, PC_HP_DESKTOP_MODEL_OPTIONS, PC_HP_NOTEBOOK_MODEL_OPTIONS, PC_LG_NOTEBOOK_MODEL_OPTIONS, PC_STATUS_OPTIONS, PC_TYPE_OPTIONS, PC_USAGE_TYPE_OPTIONS } from "@/app/constants/objects";
+import { PC_BRAND_OPTIONS, PC_HP_DESKTOP_MODEL_OPTIONS, PC_HP_NOTEBOOK_MODEL_OPTIONS, PC_INSTALL_STATUS_OPTIONS, PC_INSTALL_TYPE_OPTIONS, PC_LG_NOTEBOOK_MODEL_OPTIONS, PC_LOCATION_TYPE_OPTIONS, PC_STATUS_OPTIONS, PC_TYPE_OPTIONS, PC_USAGE_TYPE_OPTIONS } from "@/app/constants/objects";
 import InputTextArea from "@/app/_components/log/new/InputTextArea";
 import { IDB_ASSET_LOG_DATA } from "@/app/constants/interfaces";
 
@@ -37,6 +37,9 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
   const [employeeWorkspace, setEmployeeWorkspace] = useState<string>(pcManagementLog[0]?.employee_workspace);
   const [employeeDepartment, setEmployeeDepartment] = useState<string>(pcManagementLog[0]?.employee_department);
   const [employeeName, setEmployeeName] = useState<string>(pcManagementLog[0]?.employee_name);
+  const [location, setLocation] = useState<string>(pcManagementLog[0]?.location);
+  const [install_type, setInstallType] = useState<string>(pcManagementLog[0]?.install_type);
+  const [install_status, setInstallStatus] = useState<string>(pcManagementLog[0]?.install_status);
   // 추가 정보
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
@@ -76,11 +79,13 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
           detailed_description: detailedDescription,
           created_by: createdBy,
           status: status,
-          usage_count: usageCount,
           usage_type: usageType,
           employee_workspace: employeeWorkspace,
           employee_department: employeeDepartment,
           employee_name: employeeName,
+          location: location,
+          install_type: install_type,
+          install_status: install_status,
         },
         match: { log_id: pcManagementLog[0].log_id },
       });
@@ -133,7 +138,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
           options={getModelNameOptions()}
         />
           <InputLog
-          label={"시리얼번호"}
+          label={"제조번호"}
           value={serial}
           setValue={setSerial}
           required={true}
@@ -249,7 +254,48 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         />
         )}
      
+     {/* 반납일때만 보임 */}
+        {workType!=="반납"?
+        null
+        :
+        (   
+     <InputDropDown
+         label={"보관장소"}
+         value={location}
+         setValue={setLocation}
+         ref={ref}
+         options={PC_LOCATION_TYPE_OPTIONS}
+        />
+        )}
+
+        {/* 설치일때만 보임 */}
+        {workType!=="설치"?
+        null
+        :
+        (
+        <InputDropDown
+          label={"설치유형"}
+          value={install_type}
+          setValue={setInstallType}
+          ref={ref}
+          options={PC_INSTALL_TYPE_OPTIONS}
+        />
+        )}
+        {workType!=="설치"?
+        null
+        :
+        (
+        <InputDropDown
+          label={"설치상태"}
+          value={install_status}
+          setValue={setInstallStatus}
+          ref={ref}
+          options={PC_INSTALL_STATUS_OPTIONS}
+        />
+        )}
      </div>
+
+     
     
       {/* <div>
         <h3>디버깅 정보</h3>

@@ -26,4 +26,7 @@ export interface IPcAsset {
     usage_type: string;
     work_date: string; // YYYY-MM-DD 형식
     work_type: string;
+    location: string;
+    install_type: string;
+    install_status: string;
   }

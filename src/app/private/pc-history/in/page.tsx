@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default async function AddPcHistory() {
   const gridStyle = {
-    gridTemplateColumns: "8% 8% 8% 8% 12% 10% 5% 5% 5% 10% 30%"
+    gridTemplateColumns: "8% 8% 6% 8% 10% 12% 5% 5% 10% 30%"
   }
   const getPcManagementLog = async () : Promise<any> => {
     const supabaseService = SupabaseService.getInstance();
@@ -43,15 +43,14 @@ export default async function AddPcHistory() {
               {/* 헤더 부분 */}
               <div className="grid border-b border-gray-200" style={gridStyle}>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ID</div>
+                <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">입고일</div>
                 <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">작업유형</div>
                 <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PC타입</div>
                 <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">모델명</div>
                 <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">제조번호</div>
                 <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상태</div>
-                <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">가동</div>
                 <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">횟수</div>
                 <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">용도</div>
-                <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">입고일</div>
                 <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
               </div>
                 {/* 데이터 행 */}
@@ -64,6 +63,8 @@ export default async function AddPcHistory() {
                   >
                   {/* id */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center bg-gray-50">{log.log_id}</div>
+                  {/* 입고일 */}
+                    <div className="px-2 py-4 text-sm text-gray-500">{formatToKoreanTime(log.work_date, 'date')}</div>
                   {/* 작업유형 */}
                     <div className="px-2 py-4 text-sm text-gray-500">
                       <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -92,19 +93,12 @@ export default async function AddPcHistory() {
                         {log.status ?? '-'}
                       </span>
                     </div>
-                  {/* 가동 */}
-                    <div className="px-2 py-4 text-sm">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium
-                        ${log.is_available ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                        {log.is_available===null ? "-" : log.is_available ? "Y" : "N"}
-                      </span>
-                    </div>
+                  
                   {/* 횟수 */}
-                    <div className="px-2 py-4 text-sm text-gray-500">{log.usage_count ?? '-'}</div>
+                    <div className="px-2 py-4 text-sm text-gray-500">{log.pc_assets.usage_count ?? '-'}</div>
                   {/* 용도 */}
                     <div className="px-2 py-4 text-sm text-gray-500">{log.usage_type ?? '-'}</div>
-                  {/* 입고일 */}
-                    <div className="px-2 py-4 text-sm text-gray-500">{formatToKoreanTime(log.work_date, 'date')}</div>
+                  
                   {/* 작업내용 */}
                     <div className="px-2 py-4 text-sm text-gray-500 line-clamp-1" title={log.detailed_description}>
                       {log.detailed_description ?? '-'}

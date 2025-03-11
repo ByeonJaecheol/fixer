@@ -20,7 +20,7 @@ const categories = [
       name: '설치',
       icon: ComputerDesktopIcon,
       color: 'text-blue-600',
-      href: '/private/pc-history/new-install'
+      href: '/private/pc-history/install'
     },
     {
       id: 'pc-return',

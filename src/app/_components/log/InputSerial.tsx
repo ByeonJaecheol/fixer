@@ -4,9 +4,9 @@ import CommonInputOnChange from "../common/input/CommonInputOnChange";
 export default function InputSerial({ serial, setSerial, code, setCode }: { serial: string, setSerial: (serial: string) => void, code?: string, setCode?: (code: string) => void }) {
   return (
     <>
-        {/* 시리얼 번호 */}
+        {/* 제조 번호 */}
         <div className="flex flex-col">
-          <h3 className={tailwindDesign.inputLabel}>시리얼 번호</h3>
+          <h3 className={tailwindDesign.inputLabel}>제조 번호</h3>
           <CommonInputOnChange value={serial} setValue={setSerial} type="text" name="serial" />
         </div>
 

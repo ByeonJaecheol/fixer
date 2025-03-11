@@ -11,7 +11,7 @@ export default function CommonInputDropdown({ value, setValue, type, name, place
       <select
         id={name}
         name={name}
-        value={value}
+        value={value||undefined}
         onChange={(e) => setValue(e.target.value)}
         ref={ref}
         required={required}

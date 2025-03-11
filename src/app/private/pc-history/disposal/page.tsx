@@ -4,16 +4,16 @@ import InputPcIn from "../_components/input/InputPcIn";
 import Link from "next/link";
 
 
-export default async function ReturnPage() {
+export default async function DisposalPage() {
     const gridStyle = {
        gridTemplateColumns: "8% 8% 8% 8% 12% 10% 5% 5% 5% 30%"
       //  id,작업유형,pc타입,모델명,제조번호,상태,가동,횟수,용도,입고일,작업내용
       }
-    const pcManagementLog = await getPcManagementLog("pc_management_log","pc_assets","반납","log_id",false);
+    const pcManagementLog = await getPcManagementLog("pc_management_log","pc_assets","폐기","log_id",false);
 
   return (
     <div>
-        <InputPcIn workType={"반납"} />
+        <InputPcIn workType={"폐기"} />
     
     <div className="p-6">
         <div className="space-y-4">

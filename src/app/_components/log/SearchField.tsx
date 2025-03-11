@@ -22,7 +22,7 @@ interface SearchFieldProps {
             <option value="client">고객사</option>
             <option value="department">부서</option>
             <option value="model_name">모델명</option>
-            <option value="serial">시리얼</option>
+            <option value="serial">제조번호</option>
             <option value="code">코드</option>
             <option value="pc_name">PC 이름</option>
             <option value="task_details">작업내용</option>

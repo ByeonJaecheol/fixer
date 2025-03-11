@@ -43,6 +43,7 @@ export default async function InventoryPage() {
             {/* 헤더 부분 */}
             <div className="grid border-b border-gray-200" style={gridStyle}>
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ID</div>
+              <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">일자</div>
               <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">작업유형</div>
               <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PC타입</div>
               <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">모델명</div>
@@ -50,7 +51,6 @@ export default async function InventoryPage() {
               <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">가동</div>
               <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">횟수</div>
               <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">용도</div>
-              <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">입고일</div>
               <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
             </div>
               {/* 데이터 행 */}
@@ -62,6 +62,8 @@ export default async function InventoryPage() {
                 >
                 {/* id */}
                   <div className="px-2 py-4 text-sm text-gray-500 text-center bg-gray-50">{log.log_id}</div>
+                {/* 입고일 */}
+                  <div className="px-2 py-4 text-sm text-gray-500">{formatToKoreanTime(log.work_date, 'date')}</div>
                 {/* 작업유형 */}
                   <div className="px-2 py-4 text-sm text-gray-500">
                     <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -99,8 +101,7 @@ export default async function InventoryPage() {
                   <div className="px-2 py-4 text-sm text-gray-500">{log.usage_count ?? '-'}</div>
                 {/* 용도 */}
                   <div className="px-2 py-4 text-sm text-gray-500">{log.usage_type ?? '-'}</div>
-                {/* 입고일 */}
-                  <div className="px-2 py-4 text-sm text-gray-500">{formatToKoreanTime(log.work_date, 'date')}</div>
+                
                 {/* 작업내용 */}
                   <div className="px-2 py-4 text-sm text-gray-500 line-clamp-1" title={log.detailed_description}>
                     {log.detailed_description ?? '-'}

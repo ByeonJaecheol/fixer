@@ -2,6 +2,10 @@ export interface IDropDownOption {
     value: string;
     label: string;
 }
+export interface ICheckBoxOption {
+    value: boolean;
+    label: string;
+}
 export const PC_TYPE_OPTIONS: IDropDownOption[] = [
     { value: '데스크탑', label: '데스크탑' },
     { value: '노트북', label: '노트북' },
@@ -15,8 +19,6 @@ export const PC_BRAND_OPTIONS: IDropDownOption[] = [
 export const PC_STATUS_OPTIONS: IDropDownOption[] = [
     { value: '사용가능', label: '사용가능' },
     { value: '사용불가', label: '사용불가' },
-    { value: '수리대기', label: '수리대기' },
-    { value: '폐기', label: '폐기' },
   ];
 
 export const PC_HP_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
@@ -51,5 +53,19 @@ export const PC_HP_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
     { value: '임대', label: '임대' },
   ];
   
+  export const PC_LOCATION_TYPE_OPTIONS: IDropDownOption[] = [
+    { value: '창고', label: '창고' },
+    { value: '서버실', label: '서버실' },
+  ];
+  
+  export const PC_INSTALL_TYPE_OPTIONS: IDropDownOption[] = [
+    { value: '신규', label: '신규' },
+    { value: '교체', label: '교체' },
+  ];  
+
+  export const PC_INSTALL_STATUS_OPTIONS: IDropDownOption[] = [
+    { value: '새PC', label: '새PC' },
+    { value: '재배치', label: '재배치' },
+  ];  
   
 

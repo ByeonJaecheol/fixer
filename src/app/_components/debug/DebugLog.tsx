@@ -10,7 +10,7 @@ export default function DebugLog({ workType, receiveDate, createdAt, pcName, dep
       <h3>사용자 : {user}</h3>
       <h3>의뢰인 : {client}</h3>
       <h3>모델명 : {modelName}</h3>
-      <h3>시리얼 번호 : {serial}</h3>
+      <h3>제조 번호 : {serial}</h3>
       <h3>보안코드 : {code}</h3>
       <h3>작업내용 : {taskDetails}</h3>
      </div>

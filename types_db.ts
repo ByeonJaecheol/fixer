@@ -133,8 +133,10 @@ export type Database = {
       detailed_description: string;
       created_by: string;
       created_at: string;
-      status : string;
-      is_available : boolean;
+      is_available : string;
+      location : string;
+      install_type : boolean;
+      install_status : boolean;
       usage_type : string;
       usage_count : number;
       employee_workspace : string;
@@ -151,8 +153,10 @@ export type Database = {
       detailed_description: string;
       created_by: string;
       created_at: string;
-      status : string;
-      is_available : boolean;
+      is_available : string;
+      location : string;
+      install_type : boolean;
+      install_status : boolean;
       usage_type : string;
       usage_count : number;
       employee_workspace : string;
@@ -169,8 +173,10 @@ export type Database = {
       detailed_description: string;
       created_by: string;
       created_at: string;
-      status : string;
-      is_available : boolean;
+      is_available : string;
+      location : string;
+      install_type : boolean;
+      install_status : boolean;
       usage_count : number;
       usage_type : string;
       employee_workspace : string;
