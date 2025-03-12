@@ -38,27 +38,38 @@ interface DeleteOptions {
   returnData?: boolean;
 }
 
-interface IPcAsset {
-    asset_id: number;
-    brand: string;
-    model_name: string;
-    serial_number: string;
-    pc_type: string;
-    first_stock_date: string;
-    manufacture_date: string;
-    status: string;
-    is_available: boolean;
-    usage_count: number;
-    usage_type: string;
-    pc_management_log: {
-      id: number;
-      work_type: string;
-      work_status: string;
-      work_description: string;
-      work_date: string;
-      created_by: string;
-    }[];
-  }
+export interface IPcAsset {
+  asset_id: number;
+  brand: string;
+  first_stock_date: string;
+  manufacture_date: string;
+  model_name: string;
+  pc_type: string;
+  serial_number: string;
+  usage_count: number;
+}
+
+export interface IAssetLog {
+  asset_id: number;
+  created_at: string;
+  created_by: string;
+  detailed_description: string;
+  employee_department: string | null;
+  employee_name: string | null;
+  employee_workspace: string | null;
+  install_status: string | null;
+  install_type: string | null;
+  is_available: string;
+  location: string;
+  log_id: number;
+  pc_assets: IPcAsset;
+  requester: string | null;
+  security_code: string | null;
+  usage_type: string | null;
+  work_date: string;
+  work_type: string;
+  is_new: boolean;
+}
   // 조인 조건을 위한 타입 정의
 interface JoinCondition {
   table: string;

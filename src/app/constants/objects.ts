@@ -52,6 +52,11 @@ export const PC_HP_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
     { value: '공용', label: '공용' },
     { value: '임대', label: '임대' },
   ];
+
+  export const PC_AVAILABLE_TYPE_OPTIONS: IDropDownOption[] = [
+    { value: '사용가능', label: '사용가능' },
+    { value: '사용불가', label: '사용불가' },
+  ];
   
   export const PC_LOCATION_TYPE_OPTIONS: IDropDownOption[] = [
     { value: '창고', label: '창고' },

@@ -142,6 +142,7 @@ export type Database = {
       employee_workspace : string;
       employee_department : string;
       employee_name : string;
+      is_new : boolean;
     }
     Insert: {
       asset_id: number;
@@ -162,6 +163,7 @@ export type Database = {
       employee_workspace : string;
       employee_department : string;
       employee_name : string;
+      is_new : boolean;
     }
     Update: {
       asset_id: number;
@@ -182,6 +184,7 @@ export type Database = {
       employee_workspace : string;
       employee_department : string;
       employee_name : string;
+      is_new : boolean;
     }
   };
   "employees": {

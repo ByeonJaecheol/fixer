@@ -6,12 +6,12 @@ import InputPcType from "@/app/_components/log/InputPcType";
 import InputSerial from "@/app/_components/log/InputSerial";
 import { useEffect, useRef, useState } from "react";
 import OkButton from "@/app/_components/common/input/button/OkButton";
-import SupabaseService from "@/api/supabase/supabaseApi";
+import SupabaseService, { IAssetLog } from "@/api/supabase/supabaseApi";
 import InputDate from "@/app/_components/log/InputDate";
 import { usePathname, useRouter } from "next/navigation";
 import InputLog from "@/app/_components/log/new/InputLog";
 import InputDropDown from "@/app/_components/log/new/InputDropDown";
-import { PC_BRAND_OPTIONS, PC_HP_DESKTOP_MODEL_OPTIONS, PC_HP_NOTEBOOK_MODEL_OPTIONS, PC_INSTALL_STATUS_OPTIONS, PC_INSTALL_TYPE_OPTIONS, PC_LG_NOTEBOOK_MODEL_OPTIONS, PC_LOCATION_TYPE_OPTIONS, PC_STATUS_OPTIONS, PC_TYPE_OPTIONS, PC_USAGE_TYPE_OPTIONS } from "@/app/constants/objects";
+import { PC_AVAILABLE_TYPE_OPTIONS, PC_BRAND_OPTIONS, PC_HP_DESKTOP_MODEL_OPTIONS, PC_HP_NOTEBOOK_MODEL_OPTIONS, PC_INSTALL_STATUS_OPTIONS, PC_INSTALL_TYPE_OPTIONS, PC_LG_NOTEBOOK_MODEL_OPTIONS, PC_LOCATION_TYPE_OPTIONS, PC_STATUS_OPTIONS, PC_TYPE_OPTIONS, PC_USAGE_TYPE_OPTIONS } from "@/app/constants/objects";
 import InputTextArea from "@/app/_components/log/new/InputTextArea";
 import InputToggle from "@/app/_components/log/new/InputToggle";
 import CommonRadio from "@/app/_components/common/input/CommonRadio";
@@ -23,21 +23,22 @@ export default function InputPcIn({workType}:{workType:string}) {
   const [pcType, setPcType] = useState<string>(PC_TYPE_OPTIONS[0].value);
   const [brand, setBrand] = useState<string>(PC_BRAND_OPTIONS[0].value);
   const [modelName, setModelName] = useState<string>("");  
-  const [serial, setSerial] = useState<string>("");
+  const [serial, setSerial] = useState<string|undefined>(undefined);
   const [firstStockDate, setFirstStockDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [manufactureDate, setManufactureDate] = useState<string>("");
+  const [isNew, setIsNew] = useState<boolean>(false);
   // 관리 로그 정보
   const [workDate, setWorkDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [requester, setRequester] = useState<string>("");
-  const [securityCode, setSecurityCode] = useState<string>("");
+  const [requester, setRequester] = useState<string|undefined>(undefined);
+  const [securityCode, setSecurityCode] = useState<string|undefined>(undefined);
   const [detailedDescription, setDetailedDescription] = useState<string>("");
   const [createdBy, setCreatedBy] = useState<string>("");
-  const [isAvailable, setIsAvailable] = useState<string>("");
+  const [isAvailable, setIsAvailable] = useState<string>(PC_AVAILABLE_TYPE_OPTIONS[0].value);
   const [usageCount, setUsageCount] = useState<number>(1);
   const [usageType, setUsageType] = useState<string>(PC_USAGE_TYPE_OPTIONS[0].value);
-  const [employeeWorkspace, setEmployeeWorkspace] = useState<string>("");
-  const [employeeDepartment, setEmployeeDepartment] = useState<string>("");
-  const [employeeName, setEmployeeName] = useState<string>("");
+  const [employeeWorkspace, setEmployeeWorkspace] = useState<string|undefined>(undefined);
+  const [employeeDepartment, setEmployeeDepartment] = useState<string|undefined>(undefined);
+  const [employeeName, setEmployeeName] = useState<string|undefined>(undefined);
   const [location, setLocation] = useState<string>(PC_LOCATION_TYPE_OPTIONS[0].value);
   const [install_type, setInstallType] = useState<string>(PC_INSTALL_TYPE_OPTIONS[0].value);
   const [install_status, setInstallStatus] = useState<string>(PC_INSTALL_STATUS_OPTIONS[0].value);
@@ -53,7 +54,7 @@ export default function InputPcIn({workType}:{workType:string}) {
   const handleInLogCreation = async () => {
     const supabaseService = SupabaseService.getInstance();
     //1.제조 조회
-    const existingAsset = await checkSerialNumber(serial,supabaseService);
+    const existingAsset = await checkSerialNumber(supabaseService,serial);
     console.log('existingAsset',existingAsset)
     if (existingAsset&&existingAsset.length>0) {
       alert('이미 존재하는 제조번호 입니다.');
@@ -74,7 +75,7 @@ export default function InputPcIn({workType}:{workType:string}) {
   const handleReturnLogCreation = async () => {
     const supabaseService = SupabaseService.getInstance();
     //1.제조 조회
-    const existingAsset = await checkSerialNumber(serial,supabaseService);
+    const existingAsset = await checkSerialNumber(supabaseService,serial);
     console.log('existingAsset',existingAsset)
     // 제조 번호 존재하지 않을시 pc 자산 생성
     // 반납 로그 생성 - 아직 pc_asset 에 등록되지 않은 반납 pc 일 경우
@@ -87,7 +88,7 @@ export default function InputPcIn({workType}:{workType:string}) {
     }else {
       // 제조 번호 존재하는 경우
       //1. work_type 이 반납인 동일 pc가 있는지 조회
-      const existingReturnPcAsset = await checkWorkTypeReturn(serial,supabaseService);
+      const existingReturnPcAsset = await checkWorkTypeReturn(supabaseService,serial);
       console.log('existingReturnPcAsset',existingReturnPcAsset)
       //2. 기존 asset_id 존재하는 PC에 대한 반납 로그 생성
       const logResult = await createPcLogReturn(existingAsset[0].asset_id,supabaseService);
@@ -99,7 +100,7 @@ export default function InputPcIn({workType}:{workType:string}) {
   const handleInstallLogCreation = async () => {
     const supabaseService = SupabaseService.getInstance();
     //1. 제조 번호 존재 여부 체크
-    const existingAsset = await checkSerialNumber(serial,supabaseService);
+    const existingAsset = await checkSerialNumber(supabaseService,serial);
     console.log('existingAsset',existingAsset)
     //2. 제조 번호 존재하지 않을 경우 리턴
     // 설치는 pc_assets에 등록된 것만 진행하기때문에 존재하지 않는 경우 리턴
@@ -117,7 +118,7 @@ export default function InputPcIn({workType}:{workType:string}) {
   const handleDisposeLogCreation = async () => {
     const supabaseService = SupabaseService.getInstance();
     //1. 제조 번호 존재 여부 체크
-    const existingAsset = await checkSerialNumber(serial,supabaseService);
+    const existingAsset = await checkSerialNumber(supabaseService,serial);
     console.log('existingAsset',existingAsset)
     //2. 제조 번호 존재하지 않을 경우 리턴
     // 설치는 pc_assets에 등록된 것만 진행하기때문에 존재하지 않는 경우 리턴
@@ -149,7 +150,7 @@ export default function InputPcIn({workType}:{workType:string}) {
 
     
     // 제조 중복 체크 함수, 
-    const checkSerialNumber = async (serial: string,supabaseService:SupabaseService) => {
+    const checkSerialNumber = async (supabaseService:SupabaseService,serial?: string,) => {
       const { data: existingAsset, error: existingAssetError } = await supabaseService.select({
         table: 'pc_assets',
         columns: '*',
@@ -181,7 +182,8 @@ export default function InputPcIn({workType}:{workType:string}) {
            serial_number: serial, 
            pc_type: pcType, 
            first_stock_date: workDate,
-           manufacture_date: manufactureDate
+           manufacture_date: manufactureDate,
+           usage_count: isNew?0:1,
          }
        });
        return result;
@@ -196,8 +198,9 @@ export default function InputPcIn({workType}:{workType:string}) {
            work_type: workType,
            work_date: firstStockDate,
            created_by: createdBy,
-           is_available : isAvailable,
+           is_available : isAvailable,//기본값 사용가능
            detailed_description: detailedDescription,
+           is_new : isNew,
          }
        });
        
@@ -206,6 +209,7 @@ export default function InputPcIn({workType}:{workType:string}) {
          router.refresh();
          return logResult.data;
         }
+        console.log('입고 로그 생성 실패',logResult)
         return null;
       }
 
@@ -291,6 +295,8 @@ export default function InputPcIn({workType}:{workType:string}) {
             employee_workspace : employeeWorkspace,
             employee_department : employeeDepartment,
             employee_name : employeeName,
+            
+
           }
       });
       console.log('폐기 로그 결과',logResult)
@@ -306,7 +312,7 @@ export default function InputPcIn({workType}:{workType:string}) {
       } 
 
       //work_type 이 반납이고 serial이 존재하는지 조회
-      const checkWorkTypeReturn = async (serial: string,supabaseService:SupabaseService) => {
+      const checkWorkTypeReturn = async (supabaseService:SupabaseService,serial?: string) => {
         // 제조 번호 존재하는 경우
         
         const { data: existingAsset, error: existingAssetError } = await supabaseService.select({
@@ -342,12 +348,12 @@ export default function InputPcIn({workType}:{workType:string}) {
    //3. 제조 번호 존재 시 pc 자산정보 세팅
     const setPcAssetInfo = async (serial: string) => {
     const supabaseService = SupabaseService.getInstance();
-    const existingAsset = await checkSerialNumber(serial,supabaseService);
+    const existingAsset = await checkSerialNumber(supabaseService,serial);
     if(!existingAsset||existingAsset.length===0){
       alert('제조 번호 존재하지 않습니다.');
       return;
     }
-    // 현재는 입고만 아니면 작동함
+    console.log('자동입력 데이터 결과',existingAsset)
     if(workType!=="입고"){
     // pc 자산정보 세팅
     //null 또는 undefined 대응
@@ -366,23 +372,27 @@ export default function InputPcIn({workType}:{workType:string}) {
         match: { asset_id: existingAsset[0].asset_id },
         limit: 1
       });
-
-      console.log('existingLog',existingLog)
+      const result : IAssetLog = existingLog[0];
+      if(!result){
+        alert('폐기 로그 조회 실패');
+        return;
+      }
+      console.log('폐기 자동입력 데이터 결과',result)
       // pc 자산정보 세팅
-    setPcType(existingLog[0].pc_type);
-    setBrand(existingLog[0].brand);
-    setModelName(existingLog[0].model_name);
-    setSerial(existingLog[0].serial_number);
-    setManufactureDate(existingLog[0].manufacture_date);
+    setPcType(existingAsset[0].pc_type?existingAsset[0].pc_type:"");
+    setBrand(existingAsset[0].brand?existingAsset[0].brand:"");
+    setModelName(existingAsset[0].model_name?existingAsset[0].model_name:"");
+    setSerial(existingAsset[0].serial_number?existingAsset[0].serial_number:"");
+    setManufactureDate(existingAsset[0].manufacture_date?existingAsset[0].manufacture_date:"");
     // log정보 세팅
-    setWorkDate(existingLog[0].work_date);
-    setSecurityCode(existingLog[0].security_code);
-    setRequester(existingLog[0].requester);
-    setEmployeeWorkspace(existingLog[0].employee_workspace);
-    setEmployeeDepartment(existingLog[0].employee_department);
-    setEmployeeName(existingLog[0].employee_name);
-    setUsageType(existingLog[0].usage_type);
-    setDetailedDescription(existingLog[0].detailed_description);
+    setWorkDate(result.work_date?result.work_date:"");
+    setSecurityCode(result.security_code?result.security_code:"");
+    setRequester(result.requester?result.requester:"");
+    setEmployeeWorkspace(result.employee_workspace?result.employee_workspace:"");
+    setEmployeeDepartment(result.employee_department?result.employee_department:"");
+    setEmployeeName(result.employee_name?result.employee_name:"");
+    setUsageType(result.usage_type?result.usage_type:"");
+    setDetailedDescription(result.detailed_description?result.detailed_description:"");
     
     }
    }
@@ -390,7 +400,26 @@ export default function InputPcIn({workType}:{workType:string}) {
 
   return (
     <>
-    <div className="text-sm font-semibold text-gray-700 px-4 sm:px-8 my-2">PC 자산 정보</div>
+    <div className="text-sm font-semibold text-gray-700 px-4 sm:px-8 my-2">
+      <div className="flex flex-row items-center gap-2">
+      <h1>PC 자산 정보</h1>
+      {workType==="입고"&&
+        <div className="flex items-center me-4">
+          <input type="checkbox" id="is-new-checkbox"
+          className="w-4 h-4 text-white  rounded-sm focus:ring-green-500 accent-green-500 focus:bg-green-500 focus:color-green-500 dark:focus:ring-green-600  focus:ring-2 "
+            checked={isNew}       
+            autoFocus={true}
+            onChange={(e)=>{
+              setIsNew(e.target.checked);
+            }}
+            />
+            <label htmlFor="is-new-checkbox" className="ms-1 text-sm font-medium ">신규 PC 등록</label>
+         
+        </div>
+      }
+      </div>
+
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-4 sm:px-8 mb-4">
         
         <InputDropDown
@@ -421,7 +450,7 @@ export default function InputPcIn({workType}:{workType:string}) {
           required={true}
           placeholder={workType!=="입고"?"제조번호 입력후 엔터 시 자동입력":"제조번호를 입력해주세요"}
           onKeyDown={()=>{
-            if(workType!=="입고"){
+            if(workType!=="입고"&&serial){
               setPcAssetInfo(serial);
             }
           }}
@@ -461,7 +490,7 @@ export default function InputPcIn({workType}:{workType:string}) {
         :
         (
         <InputDate
-          label={workType==="반납"?"반납일":workType==="설치"?"출고일":"입고일"}
+          label={workType==="반납"?"반납일":workType==="설치"?"출고일":"폐기일"}
           value={workDate}
           setValue={setWorkDate}
           name="workDate"
@@ -579,28 +608,15 @@ export default function InputPcIn({workType}:{workType:string}) {
           options={PC_INSTALL_STATUS_OPTIONS}
         />
         )}
-        {/* <InputDropDown
-         label={"설치유형"}
-         value={install_type}
-         setValue={setInstallType}
-         ref={ref}
-         options={PC_INSTALL_TYPE_OPTIONS}
-        />
-        <InputDropDown
-         label={"설치상태"}
-         value={install_status}
-         setValue={setInstallStatus}
-         ref={ref}
-         options={PC_INSTALL_STATUS_OPTIONS}
-        /> */}
-       
+      
 
 
 
      </div>
-    
+    {/* 디버깅 정보 */}
       {/* <div>
         <h3>디버깅 정보</h3>
+        <p>신규pc입고 : {isNew+""}</p>
         <p>workType: {workType}</p>
         <p>brand: {brand}</p>
         <p>modelName: {modelName}</p>
@@ -615,6 +631,8 @@ export default function InputPcIn({workType}:{workType:string}) {
             <h1>{install_type+""}</h1>
             <h1>{install_status+""}</h1>
       </div> */}
+
+
       <div className="w-full mb-4 px-4 sm:px-8">
        <InputTextArea
          label={"상세설명"}

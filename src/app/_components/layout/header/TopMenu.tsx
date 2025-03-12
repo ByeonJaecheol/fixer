@@ -20,17 +20,17 @@ const navigationItems = [
   {
     icon: DeviceTabletIcon,
     text: '장비대여',
-    href: ''
+    href: '/private/rent'
   },
   {
     icon: DocumentTextIcon,
     text: '자료실',
-    href: ''
+    href: 'http://192.168.108.66/redmine'
   },
   {
     icon: Cog6ToothIcon,
     text: '설정',
-    href: ''
+    href: '/private/setting'
   }
 ];
 
