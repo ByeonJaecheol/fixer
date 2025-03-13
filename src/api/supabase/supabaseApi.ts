@@ -47,6 +47,7 @@ export interface IPcAsset {
   pc_type: string;
   serial_number: string;
   usage_count: number;
+  is_disposed: boolean;
 }
 
 export interface IAssetLog {

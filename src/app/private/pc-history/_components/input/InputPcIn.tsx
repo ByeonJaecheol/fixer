@@ -34,7 +34,6 @@ export default function InputPcIn({workType}:{workType:string}) {
   const [detailedDescription, setDetailedDescription] = useState<string>("");
   const [createdBy, setCreatedBy] = useState<string>("");
   const [isAvailable, setIsAvailable] = useState<string>(PC_AVAILABLE_TYPE_OPTIONS[0].value);
-  const [usageCount, setUsageCount] = useState<number>(1);
   const [usageType, setUsageType] = useState<string>(PC_USAGE_TYPE_OPTIONS[0].value);
   const [employeeWorkspace, setEmployeeWorkspace] = useState<string|undefined>(undefined);
   const [employeeDepartment, setEmployeeDepartment] = useState<string|undefined>(undefined);
@@ -92,6 +91,11 @@ export default function InputPcIn({workType}:{workType:string}) {
       console.log('existingReturnPcAsset',existingReturnPcAsset)
       //2. 기존 asset_id 존재하는 PC에 대한 반납 로그 생성
       const logResult = await createPcLogReturn(existingAsset[0].asset_id,supabaseService);
+      //3. logResult 가 성공일 경우 사용 횟수 증가
+      console.log('반납 성공, 사용 횟수 증가 시작',existingAsset[0].usage_count)
+      await increaseUsageCount(existingAsset[0].asset_id,existingAsset[0].usage_count,supabaseService);
+      //4.페이지 새로고침
+      router.refresh();
       console.log('반납 로그 결과',logResult)
     }
     
@@ -111,7 +115,11 @@ export default function InputPcIn({workType}:{workType:string}) {
    
     //4. 설치 로그 생성 
     const result = await createPcLogInstall(existingAsset[0].asset_id,supabaseService);
+    //5. 사용 횟수 증가
+      await increaseUsageCount(existingAsset[0].asset_id,existingAsset[0].usage_count,supabaseService);
     console.log('설치 로그 결과',result)
+    //7. 페이지 새로고침
+    router.refresh();
   }
 
   
@@ -130,6 +138,12 @@ export default function InputPcIn({workType}:{workType:string}) {
     //4. 폐기 로그 생성 
     const result = await createPcLogDispose(existingAsset[0].asset_id,supabaseService);
     console.log('폐기 로그 결과',result)
+    //5. asset_id 의 is_disposed 를 true 로 변경
+    await updateIsDisposed(existingAsset[0].asset_id,true,supabaseService);
+    //6. 사용 횟수 증가
+    await increaseUsageCount(existingAsset[0].asset_id,existingAsset[0].usage_count,supabaseService);
+    //7. 페이지 새로고침
+    router.refresh();
   }
 
   useEffect(()=>{
@@ -237,7 +251,6 @@ export default function InputPcIn({workType}:{workType:string}) {
       console.log('반납 결과',logResult)
       if(logResult.success){
         alert('반납 완료');
-        router.refresh();
         return logResult.data;
       }else{
         alert('반납 실패');
@@ -269,7 +282,6 @@ export default function InputPcIn({workType}:{workType:string}) {
       console.log('설치 로그 결과',logResult)
       if(logResult.success){
         alert('설치 완료');
-        router.refresh();
         return logResult.data;
       }else{
         alert('설치 실패');
@@ -302,7 +314,6 @@ export default function InputPcIn({workType}:{workType:string}) {
       console.log('폐기 로그 결과',logResult)
       if(logResult.success){
         alert('폐기 완료');
-        router.refresh();
         return logResult.data;
       }else{
         alert('폐기 실패');
@@ -344,6 +355,43 @@ export default function InputPcIn({workType}:{workType:string}) {
       handleDisposeLogCreation();
     }
   }
+
+
+  // 사용 횟수 +1 증가
+  const increaseUsageCount = async (asset_id: string,usage_count:number,supabaseService:SupabaseService) => {
+    const result = await supabaseService.update({
+      table: 'pc_assets',
+      data: { usage_count: usage_count+1 },
+      match: { asset_id: asset_id },
+    });
+    if(result.success){
+      alert('사용 횟수 증가 완료');
+      console.log('사용 횟수 증가 결과',result)
+    }else{
+      alert('사용 횟수 증가 실패');
+      console.error('사용 횟수 증가 실패:', result);
+    }
+    console.log('사용 횟수 증가 결과',result)
+    return result;
+  }
+  // 폐기 로그 생성 시 is_disposed 를 true 로 변경
+  const updateIsDisposed = async (asset_id: string,is_disposed: boolean,supabaseService:SupabaseService) => {
+    const result = await supabaseService.update({
+      table: 'pc_assets',
+      data: { is_disposed: is_disposed },
+      match: { asset_id: asset_id },
+    });
+    if(result.success){
+      alert('is_disposed 변경 완료');
+      console.log('is_disposed 변경 결과',result)
+    }else{
+      alert('is_disposed 변경 실패');
+      console.error('is_disposed 변경 실패:', result);
+    }
+    
+  }
+
+
 
    //3. 제조 번호 존재 시 pc 자산정보 세팅
     const setPcAssetInfo = async (serial: string) => {

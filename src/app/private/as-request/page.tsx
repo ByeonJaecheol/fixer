@@ -1,89 +1,114 @@
-import { ComputerDesktopIcon, CommandLineIcon, PrinterIcon, GlobeAltIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
-import InputHistory from '@/app/_components/log/InputHistory';
-import Container from '../pc-inquiry/_components/Container';
 
-const categories = [
-  {
-    id: 'all',
-    name: '전체보기',
-    icon: ViewColumnsIcon,
-    color: 'text-gray-600'
-  },
-  {
-    id: 'hw',
-    name: 'H/W',
-    icon: ComputerDesktopIcon,
-    color: 'text-blue-600'
-  },
-  {
-    id: 'sw',
-    name: 'S/W',
-    icon: CommandLineIcon,
-    color: 'text-green-600'
-  },
-  {
-    id: 'printer',
-    name: '프린터',
-    icon: PrinterIcon,
-    color: 'text-purple-600'
-  },
-  {
-    id: 'network',
-    name: '네트워크',
-    icon: GlobeAltIcon,
-    color: 'text-orange-600'
+import SupabaseService, { IAssetLog } from '@/api/supabase/supabaseApi';
+import { supabase } from '@/app/utils/supabase';
+import { formatToKoreanTime } from '@/utils/utils';
+
+
+
+export default async function AsRequestPage() {
+  const gridStyle = {
+    gridTemplateColumns: "8% 8% 8% 8% 10% 5% 5% 10% 30%"
   }
-];
 
-export default function HistoryPage() {
+  
+  const getPcManagementLog = async () : Promise<any> => {
+    const supabaseService = SupabaseService.getInstance();
+    const { success, error, data } = await supabaseService.selectWithRelations({
+      table: 'pc_management_log',
+      columns: '*',
+      relations: [
+        { 
+          table: 'pc_assets',
+          columns: '*'  // 필요한 컬럼만 지정할 수도 있습니다 (예: 'asset_id,name,model')
+        }
+      ],
+      // 필요에 따라 추가 조건 설정
+      // match: { some_column: 'some_value' }
+      // order: { column: 'created_at', ascending: false }
+    });
+    if (success) {
+      return data;
+    } else {
+      console.error('Error fetching pc_management_log:', error);
+      return [];
+    }
+  }
+  const pcManagementLog = await getPcManagementLog();
+
   return (
-    <Container title="이력관리" description="카테고리별 이력을 확인하실 수 있습니다.">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="flex overflow-x-auto scrollbar-hide">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              className="group flex-shrink-0 flex flex-col items-center px-6 py-4 border-b-2 border-transparent hover:border-blue-500 focus:outline-none focus:border-blue-500 transition-colors duration-200"
-            >
-              <div className={`p-3 rounded-lg bg-gray-50 group-hover:bg-blue-50 transition-colors duration-200`}>
-                <category.icon className={`w-6 h-6 ${category.color} group-hover:text-blue-600`} />
-              </div>
-              <span className="mt-2 text-sm font-medium text-gray-700 group-hover:text-blue-600">
-                {category.name}
-              </span>
-            </button>
-          ))}
-        </div>
-        {/* 입력폼 */}
-        <InputHistory />
-        {/* 컨텐츠 영역 */}
-        <div className="p-6">
-          <div className="space-y-4">
-            {/* 임시 데이터 테이블 */}
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">날짜</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">구분</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">내용</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024-03-14</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">H/W</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">메모리 증설 요청</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">완료</span>
-                  </td>
-                </tr>
-                {/* 더 많은 행 추가 가능 */}
-              </tbody>
-            </table>
+    <div className="space-y-4">
+        <div className="overflow-x-auto">
+          <div className="inline-block min-w-full">
+            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+            {/* 헤더 부분 */}
+            <div className="grid border-b border-gray-200" style={gridStyle}>
+              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ID</div>
+              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">일자</div>
+              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업유형</div>
+              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">PC타입</div>
+              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">모델명</div>
+              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">가동</div>
+              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">횟수</div>
+              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">용도</div>
+              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
+            </div>
+              {/* 데이터 행 */}
+              {pcManagementLog.map((log: IAssetLog) => (
+                <div 
+                  key={log.log_id}
+                  style={gridStyle}
+                  className="grid border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150"
+                >
+                {/* id */}
+                  <div className="px-2 py-4 text-sm  text-gray-500 text-center bg-gray-50">{log.log_id}</div>
+                {/* 입고일 */}
+                  <div className="px-2 py-4 text-sm text-gray-500 text-center">{formatToKoreanTime(log.work_date, 'date')}</div>
+                {/* 작업유형 */}
+                  <div className="px-2 py-4 text-sm text-gray-500 text-center">
+                    {/* work_type 에 따라 색상 변경 */}
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium 
+                      ${log.work_type === "입고" ? "bg-blue-100 text-blue-800" : 
+                        log.work_type === "설치" ? "bg-orange-100 text-orange-800" : 
+                        log.work_type === "반납" ? "bg-green-100 text-green-800" : 
+                        log.work_type === "폐기" ? "bg-red-100 text-red-800" : 
+                        "bg-gray-100 text-gray-800"}`}>
+                      {log.work_type}
+                    </span>
+                  </div>
+                {/* pc타입 */}
+                  <div className="px-2 py-4 text-sm text-gray-500 text-center">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium 
+                      ${log.pc_assets.pc_type === null ? 
+                        "bg-gray-100 text-gray-800" : 
+                        log.pc_assets.pc_type === "데스크탑" ? 
+                        "bg-purple-100 text-purple-800" : 
+                        "bg-green-100 text-green-800"}`}>
+                      {log.pc_assets.pc_type === null ? "-" : log.pc_assets.pc_type === "데스크탑" ? "DESKTOP" : "NOTEBOOK"}
+                    </span>
+                  </div>
+                {/* 모델명 */}
+                  <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.model_name}</div>
+                {/* 가동 */}
+                  <div className="px-2 py-4 text-sm text-center">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium
+                      ${log.is_available ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                      {log.is_available===null ? "-" : log.is_available ? "Y" : "N"}
+                    </span>
+                  </div>
+                {/* 횟수 */}
+                  <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.usage_count ?? '-'}</div>
+                {/* 용도 */}
+                  <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.usage_type ?? '-'}</div>
+                
+                {/* 작업내용 */}
+                  <div className="px-2 py-4 text-sm text-gray-500 line-clamp-1 border-l border-gray-200" title={log.detailed_description}>
+                    {log.detailed_description ?? '-'}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </div>
-    </Container>
+          </div>
+          </div>
   );
 }

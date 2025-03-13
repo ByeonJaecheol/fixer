@@ -2,11 +2,12 @@ import { formatToKoreanTime } from "@/utils/utils";
 import { getPcManagementLog } from "@/api/supabase/supabaseTempApi";
 import InputPcIn from "../_components/input/InputPcIn";
 import Link from "next/link";
+import { IAssetLog } from "@/api/supabase/supabaseApi";
 
 
 export default async function DisposalPage() {
     const gridStyle = {
-       gridTemplateColumns: "8% 8% 8% 8% 12% 10% 5% 5% 5% 30%"
+       gridTemplateColumns: "8% 8% 8% 8% 12% 10% 6% 5% 5% 30%"
       //  id,작업유형,pc타입,모델명,제조번호,상태,가동,횟수,용도,입고일,작업내용
       }
     const pcManagementLog = await getPcManagementLog("pc_management_log","pc_assets","폐기","log_id",false);
@@ -28,13 +29,13 @@ export default async function DisposalPage() {
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">PC타입</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">모델명</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">제조번호</div>
-                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">가동</div>
+                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">폐기여부</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">횟수</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">용도</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
               </div>
                 {/* 데이터 행 */}
-                {pcManagementLog.map((log: any) => (
+                {pcManagementLog.map((log: IAssetLog) => (
                   <Link 
                     href={`/private/pc-history/disposal/detail/${log.log_id}`}
                     key={log.log_id}
@@ -67,11 +68,11 @@ export default async function DisposalPage() {
                   {/* 제조번호 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.serial_number}</div>
                   
-                  {/* 가동 */}
+                  {/* 폐기여부 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium
-                        ${log.is_available ==="사용가능" ? "bg-green-100 text-green-800" : log.is_available==="사용불가" ? "bg-red-100 text-red-800" : "bg-gray-100 text-gray-800"}`}>
-                        {log.is_available==="사용가능" ? "Y" : log.is_available==="사용불가" ? "N" : '-'}
+                        ${log.pc_assets.is_disposed ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}>
+                        {log.pc_assets.is_disposed ? "Y" : "N"}
                       </span>
                     </div>
                   {/* 횟수 */}

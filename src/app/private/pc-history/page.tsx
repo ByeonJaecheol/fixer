@@ -1,5 +1,5 @@
 
-import SupabaseService from '@/api/supabase/supabaseApi';
+import SupabaseService, { IAssetLog } from '@/api/supabase/supabaseApi';
 import { supabase } from '@/app/utils/supabase';
 import { formatToKoreanTime } from '@/utils/utils';
 
@@ -47,14 +47,13 @@ export default async function InventoryPage() {
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업유형</div>
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">PC타입</div>
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">모델명</div>
-              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">상태</div>
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">가동</div>
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">횟수</div>
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">용도</div>
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
             </div>
               {/* 데이터 행 */}
-              {pcManagementLog.map((log: any) => (
+              {pcManagementLog.map((log: IAssetLog) => (
                 <div 
                   key={log.log_id}
                   style={gridStyle}
@@ -89,13 +88,6 @@ export default async function InventoryPage() {
                   </div>
                 {/* 모델명 */}
                   <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.model_name}</div>
-                {/* 상태 */}
-                  <div className="px-2 py-4 text-sm text-center">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium
-                      ${log.status ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}>
-                      {log.status ?? '-'}
-                    </span>
-                  </div>
                 {/* 가동 */}
                   <div className="px-2 py-4 text-sm text-center">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium
@@ -104,7 +96,7 @@ export default async function InventoryPage() {
                     </span>
                   </div>
                 {/* 횟수 */}
-                  <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.usage_count ?? '-'}</div>
+                  <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.usage_count ?? '-'}</div>
                 {/* 용도 */}
                   <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.usage_type ?? '-'}</div>
                 

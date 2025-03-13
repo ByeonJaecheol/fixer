@@ -1,8 +1,9 @@
 import { formatToKoreanTime } from "@/utils/utils";
 import { getPcManagementLog } from "@/api/supabase/supabaseTempApi";
-import InputPcIn from "../_components/input/InputPcIn";
 import Link from "next/link";
 import { IAssetLog } from "@/api/supabase/supabaseApi";
+import InputPcIn from "../../pc-history/_components/input/InputPcIn";
+import AsLogInput from "../_components/AsLogInput";
 
 
 export default async function InstallPage() {
@@ -14,7 +15,7 @@ export default async function InstallPage() {
 
   return (
     <div>
-        <InputPcIn workType={"설치"} />
+        <AsLogInput workType={"H/W"} />
     
     <div className="p-6">
         <div className="space-y-4">

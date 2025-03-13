@@ -2,6 +2,7 @@ import { formatToKoreanTime } from "@/utils/utils";
 import { getPcManagementLog } from "@/api/supabase/supabaseTempApi";
 import InputPcIn from "../_components/input/InputPcIn";
 import Link from "next/link";
+import { IAssetLog } from "@/api/supabase/supabaseApi";
 
 
 export default async function ReturnPage() {
@@ -34,7 +35,7 @@ export default async function ReturnPage() {
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
               </div>
                 {/* 데이터 행 */}
-                {pcManagementLog.map((log: any) => (
+                {pcManagementLog.map((log: IAssetLog) => (
                   <Link 
                     href={`/private/pc-history/return/detail/${log.log_id}`}
                     key={log.log_id}

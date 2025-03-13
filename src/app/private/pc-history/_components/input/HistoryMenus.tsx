@@ -1,6 +1,13 @@
-import { ComputerDesktopIcon,PlusIcon,ArrowPathIcon, XMarkIcon,ArrowUturnDownIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
+import { ComputerDesktopIcon,PlusIcon,CpuChipIcon, XMarkIcon,ArrowUturnDownIcon, ViewColumnsIcon,GlobeAltIcon,PrinterIcon,WrenchScrewdriverIcon,BriefcaseIcon} from '@heroicons/react/24/outline';
 import Link from 'next/link';
-const categories = [
+export interface IHistoryCategory {
+    id: string;
+    name: string;
+    icon: React.ElementType;
+    color: string;
+    href: string;
+}
+export const pcHistoryCategories: IHistoryCategory[] = [
     {
       id: 'all',
       name: '전체보기',
@@ -17,7 +24,7 @@ const categories = [
     },
     {
       id: 'pc-new-install',
-      name: '설치',
+      name: '출고',
       icon: ComputerDesktopIcon,
       color: 'text-blue-600',
       href: '/private/pc-history/install'
@@ -38,12 +45,61 @@ const categories = [
     },
     
   ];
-
-  
-export default function HistoryMenus() {
+ export const asHistoryCategories = [
+    {
+      id: 'all',
+      name: '전체보기',
+      icon: ViewColumnsIcon,
+      color: 'text-gray-600',
+      href: '/private/as-request'
+    },
+    {
+      id: 'as-hw',
+      name: 'H/W',
+      icon: CpuChipIcon,
+      color: 'text-blue-600',
+      href: '/private/as-request/hardware'
+    },
+    {
+      id: 'as-sw',
+      name: 'S/W',
+      icon: ComputerDesktopIcon,
+      color: 'text-blue-600',
+      href: '/private/as-request/software'
+    },
+    {
+      id: 'as-network',
+      name: '네트워크',
+      icon: GlobeAltIcon,
+      color: 'text-blue-600',
+      href: '/private/as-request/network'
+    },
+    {
+      id: 'as-printer',
+      name: '프린터',
+      icon: PrinterIcon,
+      color: 'text-blue-600',
+      href: '/private/as-request/printer'
+    },
+    {
+      id: 'as-pcSetup',
+      name: '설치',
+      icon: WrenchScrewdriverIcon,
+      color: 'text-blue-600',
+      href: '/private/as-request/pc-setup'
+    },
+    {
+      id: 'as-other',
+      name: '기타',
+      icon: BriefcaseIcon,
+      color: 'text-blue-600',
+      href: '/private/as-request/other'
+    },
+  ];
+export default function HistoryMenus({categories}:{categories:IHistoryCategory[]}) {
     return (
         <div className="flex overflow-x-auto scrollbar-hide">
-          {categories.map((category) => (
+          {categories.map((category : IHistoryCategory) => (
             <Link
               key={category.id}
               href={category.href}

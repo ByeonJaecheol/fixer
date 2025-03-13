@@ -101,7 +101,10 @@ export type Database = {
           status : string;
           first_stock_date : string;
           manufacture_date : string;
+          is_disposed : boolean;
+          usage_count : number;
         
+
       };
       Insert: {
         brand: string;
@@ -111,6 +114,8 @@ export type Database = {
         status : string;
         first_stock_date : string;
         manufacture_date : string;
+        is_disposed : boolean;
+        usage_count : number;
       };
       Update: {
         brand: string;
@@ -120,6 +125,8 @@ export type Database = {
         status : string;
         first_stock_date : string;
         manufacture_date : string;
+        is_disposed : boolean;
+        usage_count : number;
       };
   }
   "pc_management_log": {
