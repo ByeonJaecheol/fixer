@@ -23,20 +23,20 @@ export default async function DisposalPage() {
               {/* 헤더 부분 */}
               <div className="grid border-b border-gray-200" style={gridStyle}>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ID</div>
-                <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">폐기일</div>
-                <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">작업유형</div>
-                <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PC타입</div>
-                <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">모델명</div>
-                <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">제조번호</div>
-                <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">가동</div>
-                <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">횟수</div>
-                <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">용도</div>
-                <div className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
+                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">폐기일</div>
+                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업유형</div>
+                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">PC타입</div>
+                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">모델명</div>
+                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">제조번호</div>
+                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">가동</div>
+                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">횟수</div>
+                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">용도</div>
+                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
               </div>
                 {/* 데이터 행 */}
                 {pcManagementLog.map((log: any) => (
                   <Link 
-                    href={`/private/pc-history/return/detail/${log.log_id}`}
+                    href={`/private/pc-history/disposal/detail/${log.log_id}`}
                     key={log.log_id}
                     style={gridStyle}
                     className="grid border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150"
@@ -44,15 +44,15 @@ export default async function DisposalPage() {
                   {/* id */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center bg-gray-50">{log.log_id}</div>
                   {/* 반납일 */}
-                    <div className="px-2 py-4 text-sm text-gray-500">{formatToKoreanTime(log.work_date, 'date')}</div>
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{formatToKoreanTime(log.work_date, 'date')}</div>
                   {/* 작업유형 */}
-                    <div className="px-2 py-4 text-sm text-gray-500">
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">
                       <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         {log.work_type}
                       </span>
                     </div>
                   {/* pc타입 */}
-                    <div className="px-2 py-4 text-sm text-gray-500">
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium 
                         ${log.pc_assets.pc_type === null ? 
                           "bg-gray-100 text-gray-800" : 
@@ -63,24 +63,24 @@ export default async function DisposalPage() {
                       </span>
                     </div>
                   {/* 모델명 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 font-medium">{log.pc_assets.model_name}</div>
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.model_name}</div>
                   {/* 제조번호 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 font-medium">{log.pc_assets.serial_number}</div>
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.serial_number}</div>
                   
                   {/* 가동 */}
-                    <div className="px-2 py-4 text-sm">
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium
                         ${log.is_available ==="사용가능" ? "bg-green-100 text-green-800" : log.is_available==="사용불가" ? "bg-red-100 text-red-800" : "bg-gray-100 text-gray-800"}`}>
                         {log.is_available==="사용가능" ? "Y" : log.is_available==="사용불가" ? "N" : '-'}
                       </span>
                     </div>
                   {/* 횟수 */}
-                    <div className="px-2 py-4 text-sm text-gray-500">{log.pc_assets.usage_count ?? '-'}</div>
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.usage_count ?? '-'}</div>
                   {/* 용도 */}
-                    <div className="px-2 py-4 text-sm text-gray-500">{log.usage_type ?? '-'}</div>
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.usage_type ?? '-'}</div>
                  
                   {/* 작업내용 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 line-clamp-1" title={log.detailed_description}>
+                    <div className="px-2 py-4 text-sm text-gray-500 line-clamp-1 border-l border-gray-200" title={log.detailed_description}>
                       {log.detailed_description ?? '-'}
                     </div>
                   </Link>

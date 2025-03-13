@@ -19,27 +19,28 @@ import { IDB_ASSET_LOG_DATA } from "@/app/constants/interfaces";
 
 export default function DetailPcInput({workType,pcManagementLog}:{workType:string,pcManagementLog:IDB_ASSET_LOG_DATA[]}) {
   // pc 자산 정보
-  const [pcType, setPcType] = useState<string>(pcManagementLog[0]?.pc_assets.pc_type);
-  const [brand, setBrand] = useState<string>(pcManagementLog[0]?.pc_assets.brand);
-  const [modelName, setModelName] = useState<string>(pcManagementLog[0]?.pc_assets.model_name);  
-  const [serial, setSerial] = useState<string>(pcManagementLog[0]?.pc_assets.serial_number);
-  const [firstStockDate, setFirstStockDate] = useState<string>(pcManagementLog[0]?.pc_assets.first_stock_date);
-  const [manufactureDate, setManufactureDate] = useState<string>(pcManagementLog[0]?.pc_assets.manufacture_date);
+  //undefined 처리
+  const [pcType, setPcType] = useState<string|undefined>(pcManagementLog[0]?.pc_assets.pc_type ?? undefined);
+  const [brand, setBrand] = useState<string|undefined>(pcManagementLog[0]?.pc_assets.brand ?? undefined);
+  const [modelName, setModelName] = useState<string|undefined>(pcManagementLog[0]?.pc_assets.model_name ?? undefined);  
+  const [serial, setSerial] = useState<string|undefined>(pcManagementLog[0]?.pc_assets.serial_number ?? undefined);
+  const [firstStockDate, setFirstStockDate] = useState<string|undefined>(pcManagementLog[0]?.pc_assets.first_stock_date ?? undefined);
+  const [manufactureDate, setManufactureDate] = useState<string|undefined>(pcManagementLog[0]?.pc_assets.manufacture_date ?? undefined);
   // 관리 로그 정보
-  const [workDate, setWorkDate] = useState<string>(pcManagementLog[0]?.work_date);
-  const [requester, setRequester] = useState<string>(pcManagementLog[0]?.requester);
-  const [securityCode, setSecurityCode] = useState<string>(pcManagementLog[0]?.security_code);
-  const [detailedDescription, setDetailedDescription] = useState<string>(pcManagementLog[0]?.detailed_description);
-  const [createdBy, setCreatedBy] = useState<string>(pcManagementLog[0]?.created_by);
-  const [status, setStatus] = useState<string>(pcManagementLog[0]?.status);
-  const [usageCount, setUsageCount] = useState<number>(pcManagementLog[0]?.usage_count);
-  const [usageType, setUsageType] = useState<string>(pcManagementLog[0]?.usage_type);
-  const [employeeWorkspace, setEmployeeWorkspace] = useState<string>(pcManagementLog[0]?.employee_workspace);
-  const [employeeDepartment, setEmployeeDepartment] = useState<string>(pcManagementLog[0]?.employee_department);
-  const [employeeName, setEmployeeName] = useState<string>(pcManagementLog[0]?.employee_name);
-  const [location, setLocation] = useState<string>(pcManagementLog[0]?.location);
-  const [install_type, setInstallType] = useState<string>(pcManagementLog[0]?.install_type);
-  const [install_status, setInstallStatus] = useState<string>(pcManagementLog[0]?.install_status);
+  const [workDate, setWorkDate] = useState<string|undefined>(pcManagementLog[0]?.work_date ?? undefined);
+  const [requester, setRequester] = useState<string|undefined>(pcManagementLog[0]?.requester ?? undefined);
+  const [securityCode, setSecurityCode] = useState<string|undefined>(pcManagementLog[0]?.security_code ?? undefined);
+  const [detailedDescription, setDetailedDescription] = useState<string|undefined>(pcManagementLog[0]?.detailed_description ?? undefined);
+  const [createdBy, setCreatedBy] = useState<string|undefined>(pcManagementLog[0]?.created_by ?? undefined);
+  const [status, setStatus] = useState<string|undefined>(pcManagementLog[0]?.status ?? undefined);
+  const [usageCount, setUsageCount] = useState<number>(pcManagementLog[0]?.usage_count ?? 0);
+  const [usageType, setUsageType] = useState<string|undefined>(pcManagementLog[0]?.usage_type ?? undefined);
+  const [employeeWorkspace, setEmployeeWorkspace] = useState<string|undefined>(pcManagementLog[0]?.employee_workspace ?? undefined);
+  const [employeeDepartment, setEmployeeDepartment] = useState<string|undefined>(pcManagementLog[0]?.employee_department ?? undefined);
+  const [employeeName, setEmployeeName] = useState<string|undefined>(pcManagementLog[0]?.employee_name ?? undefined);
+  const [location, setLocation] = useState<string|undefined>(pcManagementLog[0]?.location ?? undefined);
+  const [install_type, setInstallType] = useState<string|undefined>(pcManagementLog[0]?.install_type ?? undefined);
+  const [install_status, setInstallStatus] = useState<string|undefined>(pcManagementLog[0]?.install_status ?? undefined);
   // 추가 정보
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
@@ -118,41 +119,41 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         
         <InputDropDown
           label={"기종"}
-          value={pcType}
+          value={pcType ?? "-"}
           setValue={setPcType}
           ref={ref}
           options={PC_TYPE_OPTIONS}
         />
         <InputDropDown
           label={"제조사"}
-          value={brand}
+          value={brand ?? "-"}
           setValue={setBrand}
           ref={ref}
           options={PC_BRAND_OPTIONS}
         />
         <InputDropDown
           label={"모델명"}
-          value={modelName}
+          value={modelName ?? "-"}
           setValue={setModelName}
           ref={ref}
           options={getModelNameOptions()}
         />
           <InputLog
           label={"제조번호"}
-          value={serial}
+          value={serial ?? "-"}
           setValue={setSerial}
           required={true}
         />
 
         <InputDate
-          value={manufactureDate}
+          value={manufactureDate ?? "-"}
           setValue={setManufactureDate}
           name="manufactureDate"
           label="제조일"
           type="month"
         />
          <InputDate
-          value={firstStockDate}
+          value={firstStockDate ?? "-"}
           setValue={setFirstStockDate}
           name="firstStockDate"
           label="입고일"
@@ -172,7 +173,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         (
         <InputDate
           label={"작업일"}
-          value={workDate}
+          value={workDate ?? "-"}
           setValue={setWorkDate}
           name="workDate"
           type="date"
@@ -184,7 +185,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         (
        <InputLog
          label={"보안코드"}
-         value={securityCode}
+         value={securityCode ?? "-"}
          setValue={setSecurityCode}
        /> 
         )}
@@ -194,7 +195,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         (
        <InputDropDown
          label={"상태"}
-         value={status}
+         value={status ?? "-"}
          setValue={setStatus}
          ref={ref}
          options={PC_STATUS_OPTIONS}
@@ -207,7 +208,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         (
        <InputLog
          label={"의뢰인"}
-         value={requester}
+         value={requester ?? "-"}
          setValue={setRequester}
        />
         )}
@@ -217,7 +218,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         (
        <InputLog
          label={"사업장"}
-         value={employeeWorkspace}
+         value={employeeWorkspace ?? "-"}
          setValue={setEmployeeWorkspace}
        />
         )}
@@ -227,7 +228,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         (
        <InputLog
          label={"부서"}
-         value={employeeDepartment}
+         value={employeeDepartment ?? "-"}
          setValue={setEmployeeDepartment}
        />
         )}
@@ -237,7 +238,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         (
        <InputLog
          label={"사용자"}
-         value={employeeName}
+         value={employeeName ?? "-"}
          setValue={setEmployeeName}
        />
         )}
@@ -247,7 +248,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         (
        <InputDropDown
          label={"사용용도"}
-         value={usageType}
+         value={usageType ?? "-"}
          setValue={setUsageType}
          ref={ref}
          options={PC_USAGE_TYPE_OPTIONS}
@@ -261,7 +262,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         (   
      <InputDropDown
          label={"보관장소"}
-         value={location}
+         value={location ?? "-"}
          setValue={setLocation}
          ref={ref}
          options={PC_LOCATION_TYPE_OPTIONS}
@@ -275,7 +276,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         (
         <InputDropDown
           label={"설치유형"}
-          value={install_type}
+          value={install_type ?? "-"}
           setValue={setInstallType}
           ref={ref}
           options={PC_INSTALL_TYPE_OPTIONS}
@@ -287,7 +288,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         (
         <InputDropDown
           label={"설치상태"}
-          value={install_status}
+          value={install_status ?? "-"}
           setValue={setInstallStatus}
           ref={ref}
           options={PC_INSTALL_STATUS_OPTIONS}
@@ -313,7 +314,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
       <div className="w-full mb-4 px-4 sm:px-8">
        <InputTextArea
          label={"상세설명"}
-         value={detailedDescription}
+         value={detailedDescription ?? "-"}
          setValue={setDetailedDescription}
        />
       </div>
