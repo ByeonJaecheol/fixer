@@ -14,7 +14,7 @@ const navigationItems = [
   },
   {
     icon: WrenchIcon,
-    text: '수리이력',
+    text: '작업이력',
     href: '/private/as-request'
   },
   {

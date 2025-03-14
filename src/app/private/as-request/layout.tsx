@@ -3,7 +3,7 @@ import { asHistoryCategories } from "../pc-history/_components/input/HistoryMenu
 
 export default function Layout({children}:{children:React.ReactNode}) {
     return (
-        <BaseLayout title="수리 이력관리" description="수리 이력에 대한 이력을 확인하실 수 있습니다." categories={asHistoryCategories}>
+        <BaseLayout title="작업 이력관리" description="작업 이력에 대한 이력을 확인하실 수 있습니다." categories={asHistoryCategories}>
             {children}
         </BaseLayout>
     )

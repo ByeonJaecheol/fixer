@@ -5,7 +5,7 @@ import { IAssetLog } from "@/api/supabase/supabaseApi";
 import AsLogInput from "../_components/AsLogInput";
 
 
-export default async function InstallPage() {
+export default async function NetworkPage() {
     const gridStyle = {
        gridTemplateColumns: "8% 8% 8% 8% 12% 12% 5% 5%  35%"
       //  id,작업유형,pc타입,모델명,제조번호,상태,가동,횟수,용도,입고일,작업내용
@@ -14,7 +14,7 @@ export default async function InstallPage() {
 
   return (
     <div>
-        <AsLogInput workType={"H/W"} />
+        <AsLogInput workType={"네트워크"} />
     
     <div className="p-6">
         <div className="space-y-4">

@@ -75,18 +75,11 @@ export const pcHistoryCategories: IHistoryCategory[] = [
       href: '/private/as-request/network'
     },
     {
-      id: 'as-printer',
-      name: '프린터',
-      icon: PrinterIcon,
-      color: 'text-blue-600',
-      href: '/private/as-request/printer'
-    },
-    {
-      id: 'as-pcSetup',
-      name: '설치',
+      id: 'as-device',
+      name: '장비관리',
       icon: WrenchScrewdriverIcon,
       color: 'text-blue-600',
-      href: '/private/as-request/pc-setup'
+      href: '/private/as-request/device'
     },
     {
       id: 'as-other',

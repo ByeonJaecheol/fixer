@@ -1,4 +1,25 @@
+'use client';
+
+import CommonInputMultiCheckbox from "@/app/_components/common/input/CommonInputMultiCheckbox";
+import InputDate from "@/app/_components/log/InputDate";
+import InputLog from "@/app/_components/log/new/InputLog";
+import InputTextArea from "@/app/_components/log/new/InputTextArea";
+import { useState } from "react";
+
 export default function AsLogInput({workType}:{workType:string}) {
+  //workDate 초기값은 오늘 날짜, yyyy-mm-dd 형식
+  const [workDate, setWorkDate] = useState(new Date().toISOString().split('T')[0]);
+  const [employeeWorkspace, setEmployeeWorkspace] = useState<string|undefined>(undefined);
+  const [employeeDepartment, setEmployeeDepartment] = useState<string|undefined>(undefined);
+  const [employeeName, setEmployeeName] = useState<string|undefined>(undefined);
+  const [modelName, setModelName] = useState<string|undefined>(undefined);
+  const [symptom, setSymptom] = useState<string|undefined>(undefined);
+  const [serial, setSerial] = useState<string|undefined>(undefined);
+  const [program, setProgram] = useState<string[]>([]);
+  const [securityProgram, setSecurityProgram] = useState<string[]>([]);
+
+  const [detailedDescription, setDetailedDescription] = useState<string|undefined>(undefined);
+
     return (
         <>
         <div className="text-sm font-semibold text-gray-700 px-4 sm:px-8 my-2">
@@ -22,199 +43,82 @@ export default function AsLogInput({workType}:{workType:string}) {
     
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-4 sm:px-8 mb-4">
-            
-            {/* <InputDropDown
-              label={"기종"}
-              value={pcType}
-              setValue={setPcType}
-              ref={ref}
-              options={PC_TYPE_OPTIONS}
-            />
-            <InputDropDown
-              label={"제조사"}
-              value={brand}
-              setValue={setBrand}
-              ref={ref}
-              options={PC_BRAND_OPTIONS}
-            />
-            <InputDropDown
-              label={"모델명"}
-              value={modelName}
-              setValue={setModelName}
-              ref={ref}
-              options={getModelNameOptions()}
-            />
-              <InputLog
-              label={"제조번호"}
-              value={serial}
-              setValue={setSerial}
-              required={true}
-              placeholder={workType!=="입고"?"제조번호 입력후 엔터 시 자동입력":"제조번호를 입력해주세요"}
-              onKeyDown={()=>{
-                if(workType!=="입고"&&serial){
-                  setPcAssetInfo(serial);
-                }
-              }}
-    
-            />
-    
-            <InputDate
-              value={manufactureDate}
-              setValue={setManufactureDate}
-              name="manufactureDate"
-              label="제조일"
-              type="month"
-            />
-            {workType==="반납"||workType==="설치"?
-          null
-          :
-          (
-             <InputDate
-              value={firstStockDate}
-              setValue={setFirstStockDate}
-              name="firstStockDate"
-              label="입고일"
-              type="date"
-            />
-          )}
-    
-          </div>
-          {workType==="입고"?
-          null
-          :
-          (
-          <div className="text-sm font-semibold text-gray-700 px-4 sm:px-8 mb-2">입력 정보</div>
-          )}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-4 sm:px-8 mb-4">
-          {workType==="입고"?
-            <div></div>
-            :
-            (
-            <InputDate
-              label={workType==="반납"?"반납일":workType==="설치"?"출고일":"폐기일"}
+          <InputDate
+              label={"작업일"}
               value={workDate}
               setValue={setWorkDate}
               name="workDate"
               type="date"
             />
-            )}
-            {workType==="입고"?
-            <div></div>
-            :
-            (
-           <InputLog
-             label={"보안코드"}
-             value={securityCode}
-             setValue={setSecurityCode}
-           /> 
-            )}
-               {workType!=="반납"?
-            <div></div>
-            :
-            (
-           <InputDropDown
-             label={"상태"}
-             value={isAvailable}
-             setValue={setIsAvailable}
-             ref={ref}
-             options={PC_STATUS_OPTIONS}
-           />
-            )}
-           
-            {workType==="입고"?
-            <div></div>
-            :
-            (
-           <InputLog
-             label={"의뢰인"}
-             value={requester}
-             setValue={setRequester}
-           />
-            )}
-            {workType==="입고"?
-            <div></div>
-            :
-            (
-           <InputLog
-             label={"사업장"}
-             value={employeeWorkspace}
-             setValue={setEmployeeWorkspace}
-           />
-            )}
-            {workType==="입고"?
-            <div></div>
-            :
-            (
-           <InputLog
-             label={"부서"}
-             value={employeeDepartment}
-             setValue={setEmployeeDepartment}
-           />
-            )}
-            {workType==="입고"?
-            <div></div>
-            :
-            (
-           <InputLog
-             label={"사용자"}
-             value={employeeName}
-             setValue={setEmployeeName}
-           />
-            )}
-             {workType==="입고"?
-            <div></div>
-            :
-            (
-           <InputDropDown
-             label={"사용용도"}
-             value={usageType}
-             setValue={setUsageType}
-             ref={ref}
-             options={PC_USAGE_TYPE_OPTIONS}
+            {/* 사업장 */}
+            <InputLog
+              label={"사업장"}
+              value={employeeWorkspace}
+              setValue={setEmployeeWorkspace}
             />
-            )}
-            {workType!=="반납"?
-            null
-            :
-            (
-            <InputDropDown
-             label={"보관장소"}
-             value={location}
-             setValue={setLocation}
-             ref={ref}
-             options={PC_LOCATION_TYPE_OPTIONS}
+            {/* 부서 */}
+            <InputLog
+              label={"부서"}
+              value={employeeDepartment}
+              setValue={setEmployeeDepartment}
             />
-            )}
-            {workType!=="설치"?
-            null
-            :
-            (
-            <InputDropDown
-              label={"설치유형"}
-              value={install_type}
-              setValue={setInstallType}
-              ref={ref}
-              options={PC_INSTALL_TYPE_OPTIONS}
+            {/* 사용자 */}
+            <InputLog
+              label={"사용자"}
+              value={employeeName}
+              setValue={setEmployeeName}
+            />  
+            {/* 모델명 */}
+            <InputLog
+              label={"모델명"}
+              value={modelName}
+              setValue={setModelName}
+            />  
+       
+            {/* 증상 */}
+            <InputLog
+              label={"증상"}
+              value={symptom}
+              setValue={setSymptom}
             />
-            )}
-            {workType!=="설치"?
-            null
-            :
-            (
-            <InputDropDown
-              label={"설치상태"}
-              value={install_status}
-              setValue={setInstallStatus}
-              ref={ref}
-              options={PC_INSTALL_STATUS_OPTIONS}
-            />
-            )}
-           */}
-    
-    
-    
+
+          
          </div>
-        {/* 디버깅 정보 */}
+          {/* 작업유형 별 개별 값 시작*/}
+          <div className="flex flex-col gap-4 mb-4 rounded-lg  m-8">
+
+            <div className="">
+              {/* 제조번호 */}
+              {workType==="H/W"&&
+              <InputLog
+                label={"제조번호"}
+                value={serial}
+                setValue={setSerial}
+              />
+            } 
+            </div>
+            {workType==="S/W"&&
+            <div className="flex flex-col gap-y-4">
+              <h3 className="font-bold">S/W 선택항목</h3>
+              {/* 보안 프로그램 */}
+              <CommonInputMultiCheckbox 
+                title={"보안 프로그램 선택"}
+                value={securityProgram}
+                setValue={setSecurityProgram}
+                options={["Fasoo DRM","IT자산","ALYAC","ECM","Printer Chaser","Cert","Nac"]}
+              />
+              {/* 프로그램 선택 */}
+              <CommonInputMultiCheckbox 
+                title={"설치 프로그램 선택"}
+                value={program}
+                setValue={setProgram}
+                options={["캐드2006","캐드2010","캐드2011","캐드2013","캐드2020","크레오","오피스","한글", "PDF"]}
+              />
+            </div>
+            }
+          </div>
+          {/* 작업유형 별 개별 값 끝 */}
+          {/* 디버깅 정보 */}
           {/* <div>
             <h3>디버깅 정보</h3>
             <p>신규pc입고 : {isNew+""}</p>
@@ -235,12 +139,12 @@ export default function AsLogInput({workType}:{workType:string}) {
     
     
           <div className="w-full mb-4 px-4 sm:px-8">
-           {/* <InputTextArea
+           <InputTextArea
              label={"상세설명"}
              value={detailedDescription}
              setValue={setDetailedDescription}
-             placeholder={workType==="입고"?"TIP : 입고는 새 PC 등록에만 사용됩니다":workType==="반납"?"반납 상세설명을 입력해주세요":workType==="설치"?"TIP : 설치는 기존 pc 자산이 있는 경우에만 입력 가능합니다. 반납 혹은 입고로 PC자산을 생성 후 시도 하십시오.":workType==="폐기"?"TIP : 폐기는 기존 pc 자산이 있는 경우에만 입력 가능합니다. 폐기 확정인 경우에만 이용해주세요.":"-"}
-           /> */}
+             placeholder={""}
+           />
           </div>
           <div className="w-full flex justify-end mb-4 px-4 sm:px-8">
             {/* <div className="w-36 ">
