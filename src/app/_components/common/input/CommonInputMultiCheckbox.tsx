@@ -26,7 +26,7 @@ export default function CommonInputMultiCheckbox({title, value, setValue, option
                     <label key={option} className="flex items-center justify-center cursor-pointer text-sm">
                         <input
                             type="checkbox"
-                            className="w-4 h-4 mr-1 text-white  rounded-sm focus:ring-green-500 accent-green-500 focus:bg-green-500 focus:color-green-500 dark:focus:ring-green-600  focus:ring-2 cursor-pointer"
+                            className="w-4 h-4 mr-1 text-white  rounded-sm focus:ring-orange-500 accent-orange-500 focus:bg-orange-500 focus:color-orange-500 dark:focus:ring-orange-500  focus:ring-2 cursor-pointer"
                             value={option}
                             checked={checked.includes(option)}
                             onChange={() => handleChange(option)}

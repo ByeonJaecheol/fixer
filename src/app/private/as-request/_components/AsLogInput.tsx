@@ -24,23 +24,8 @@ export default function AsLogInput({workType}:{workType:string}) {
         <>
         <div className="text-sm font-semibold text-gray-700 px-4 sm:px-8 my-2">
           <div className="flex flex-row items-center gap-2">
-          <h1>{workType} 수리 정보</h1>
-          {/* {workType==="입고"&&
-            <div className="flex items-center me-4">
-              <input type="checkbox" id="is-new-checkbox"
-              className="w-4 h-4 text-white  rounded-sm focus:ring-green-500 accent-green-500 focus:bg-green-500 focus:color-green-500 dark:focus:ring-green-600  focus:ring-2 "
-                checked={isNew}       
-                autoFocus={true}
-                onChange={(e)=>{
-                  setIsNew(e.target.checked);
-                }}
-                />
-                <label htmlFor="is-new-checkbox" className="ms-1 text-sm font-medium ">신규 PC 등록</label>
-             
-            </div>
-          } */}
-          </div>
-    
+              <h1>{workType} 수리 정보</h1>
+          </div>  
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-4 sm:px-8 mb-4">
           <InputDate
@@ -77,7 +62,7 @@ export default function AsLogInput({workType}:{workType:string}) {
        
             {/* 증상 */}
             <InputLog
-              label={"증상"}
+              label={workType==="장비관리"?"분류":"증상"}
               value={symptom}
               setValue={setSymptom}
             />
