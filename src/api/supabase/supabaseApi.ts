@@ -71,6 +71,25 @@ export interface IAssetLog {
   work_type: string;
   is_new: boolean;
 }
+export interface IHardWareLog {
+  log_id : number
+  work_type: string;
+  work_date: string;
+  detailed_description: string;
+  created_by: string;
+  created_at: string;
+  employee_workspace : string;
+  employee_department : string;
+  employee_name : string;
+  serial_number: string;
+  security_code: string;
+  new_security_code : string
+  category : string
+  detail_category : string
+  model_name : string
+  question : string
+}
+
   // 조인 조건을 위한 타입 정의
 interface JoinCondition {
   table: string;

@@ -7,7 +7,7 @@ import { formatToKoreanTime } from '@/utils/utils';
 
 export default async function InventoryPage() {
   const gridStyle = {
-    gridTemplateColumns: "8% 8% 8% 8% 10% 5% 5% 5% 10% 30%"
+    gridTemplateColumns: "8% 8% 8% 8% 8% 8% 5% 5% 5% 10% 30%"
   }
 
   
@@ -24,7 +24,7 @@ export default async function InventoryPage() {
       ],
       // 필요에 따라 추가 조건 설정
       // match: { some_column: 'some_value' }
-      // order: { column: 'created_at', ascending: false }
+      order: { column: 'created_at', ascending: false }
     });
     if (success) {
       return data;
@@ -47,6 +47,7 @@ export default async function InventoryPage() {
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업유형</div>
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">PC타입</div>
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">모델명</div>
+              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">코드번호</div>
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">가동</div>
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">횟수</div>
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">용도</div>
@@ -88,6 +89,8 @@ export default async function InventoryPage() {
                   </div>
                 {/* 모델명 */}
                   <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.model_name}</div>
+                {/* 모델명 */}
+                  <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.security_code}</div>
                 {/* 가동 */}
                   <div className="px-2 py-4 text-sm text-center">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium

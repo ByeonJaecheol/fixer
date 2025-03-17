@@ -194,6 +194,60 @@ export type Database = {
       is_new : boolean;
     }
   };
+  "as_management_log": {
+    Row: {
+      work_type: string;
+      work_date: string;
+      detailed_description: string;
+      created_by: string;
+      created_at: string;
+      employee_workspace : string;
+      employee_department : string;
+      employee_name : string;
+      serial_number: string;
+      security_code: string;
+      new_security_code : string
+      category : string
+      detail_category : string
+      model_name : string
+      question : string
+
+    }
+    Insert: {
+      work_type: string;
+      work_date: string;
+      detailed_description: string;
+      created_by: string;
+      created_at: string;
+      employee_workspace : string;
+      employee_department : string;
+      employee_name : string;
+      serial_number: string;
+      security_code: string;
+      new_security_code : string
+      category : string
+      detail_category : string
+      model_name : string
+      question : string
+    }
+    Update: {
+      work_type: string;
+      work_date: string;
+      detailed_description: string;
+      created_by: string;
+      created_at: string;
+      employee_workspace : string;
+      employee_department : string;
+      employee_name : string;
+      serial_number: string;
+      security_code: string;
+      new_security_code : string
+      category : string
+      detail_category : string
+      model_name : string
+      question : string
+    }
+  };
   "employees": {
     Row: {
       name: string;

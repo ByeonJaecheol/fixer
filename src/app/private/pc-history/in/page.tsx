@@ -1,5 +1,5 @@
 import SupabaseService, { IAssetLog } from "@/api/supabase/supabaseApi";
-import InputPcIn from "../_components/input/InputPcIn";
+import PcLogInput from "../_components/input/PcLogInput";
 import { formatToKoreanTime } from "@/utils/utils";
 import Link from "next/link"; 
 import { log } from "console";
@@ -36,7 +36,7 @@ export default async function AddPcHistory() {
   console.log(pcManagementLog);
   return (
     <div>
-        <InputPcIn workType={"입고"} />
+        <PcLogInput workType={"입고"} />
         {pcManagementLog && pcManagementLog.length > 0 && (
           <LinstIn pcManagementLog={pcManagementLog} />
         )}

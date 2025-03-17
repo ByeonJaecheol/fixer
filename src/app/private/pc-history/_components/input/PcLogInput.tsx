@@ -15,10 +15,11 @@ import { PC_AVAILABLE_TYPE_OPTIONS, PC_BRAND_OPTIONS, PC_HP_DESKTOP_MODEL_OPTION
 import InputTextArea from "@/app/_components/log/new/InputTextArea";
 import InputToggle from "@/app/_components/log/new/InputToggle";
 import CommonRadio from "@/app/_components/common/input/CommonRadio";
+import { checkSerialNumber } from "@/app/utils/util";
 
 
 
-export default function InputPcIn({workType}:{workType:string}) {
+export default function PcLogInput({workType}:{workType:string}) {
   // pc 자산 정보
   const [pcType, setPcType] = useState<string>(PC_TYPE_OPTIONS[0].value);
   const [brand, setBrand] = useState<string>(PC_BRAND_OPTIONS[0].value);
@@ -163,17 +164,7 @@ export default function InputPcIn({workType}:{workType:string}) {
   }
 
     
-    // 제조 중복 체크 함수, 
-    const checkSerialNumber = async (supabaseService:SupabaseService,serial?: string,) => {
-      const { data: existingAsset, error: existingAssetError } = await supabaseService.select({
-        table: 'pc_assets',
-        columns: '*',
-        match: { serial_number: serial },
-        limit: 1
-      });
-      return existingAsset;
-    }
-
+   
     // // 보안코드 중복 체크 함수, 
     // const checkSecurityCode = async (securityCode: string,supabaseService:SupabaseService) => {
     //   const { data: existingSecurityCode, error: existingSecurityCodeError } = await supabaseService.select({

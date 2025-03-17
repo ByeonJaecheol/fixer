@@ -1,6 +1,6 @@
 import { formatToKoreanTime } from "@/utils/utils";
 import { getPcManagementLog } from "@/api/supabase/supabaseTempApi";
-import InputPcIn from "../_components/input/InputPcIn";
+import PcLogInput from "../_components/input/PcLogInput";
 import Link from "next/link";
 import { IAssetLog } from "@/api/supabase/supabaseApi";
 
@@ -14,7 +14,7 @@ export default async function ReturnPage() {
 
   return (
     <div>
-        <InputPcIn workType={"반납"} />
+        <PcLogInput workType={"반납"} />
     
     <div className="p-6">
         <div className="space-y-4">
