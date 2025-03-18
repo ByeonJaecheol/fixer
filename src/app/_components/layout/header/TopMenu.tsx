@@ -1,4 +1,4 @@
-import { ComputerDesktopIcon, DeviceTabletIcon, DocumentTextIcon, Cog6ToothIcon, ChatBubbleBottomCenterIcon,WrenchIcon } from '@heroicons/react/24/outline';
+import { ComputerDesktopIcon, DeviceTabletIcon, DocumentTextIcon, Cog6ToothIcon, ChatBubbleBottomCenterIcon,WrenchIcon, CalendarIcon, ChartBarIcon, QrCodeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
 const navigationItems = [
@@ -21,6 +21,21 @@ const navigationItems = [
     icon: DeviceTabletIcon,
     text: '장비대여',
     href: '/private/rent'
+  },
+  {
+    icon: CalendarIcon,
+    text: '일정',
+    href: '/private/schedule'
+  },
+  {
+    icon: ChartBarIcon,
+    text: '보고서',
+    href: '/private/report'
+  },
+  {
+    icon: QrCodeIcon,
+    text: 'QR코드',
+    href: '/private/qrcode'
   },
   {
     icon: DocumentTextIcon,

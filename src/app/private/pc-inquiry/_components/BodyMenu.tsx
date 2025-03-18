@@ -19,7 +19,7 @@ export default function BodyMenu({InquiryOption}:{InquiryOption:IInquiryOption[]
         {   InquiryOption.map((option, index) => (
           <Link
             key={index}
-            href={`/private/pc-inquiry/${option.title.toLowerCase().replace(/\s+/g, '-')}`}
+            href={``}
             className="group relative h-64 rounded-2xl overflow-hidden border border-gray-100 transition-all duration-300 hover:shadow-xl hover:scale-105"
           >
             <div className={`absolute inset-0 bg-gradient-to-br ${option.bgColor} ${option.hoverColor} transition-colors duration-300`} />
