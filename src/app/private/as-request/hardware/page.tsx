@@ -6,7 +6,7 @@ import AsLogInput from "../_components/AsLogInput";
 import { supabase } from "@/app/utils/supabase";
 
 
-export default async function InstallPage() {
+export default async function HardwarePage() {
     const gridStyle = {
        gridTemplateColumns: "8% 8% 8% 8% 8% 6% 6% 6% 21% 21%"
       //  id,작업유형,pc타입,모델명,제조번호,상태,가동,횟수,용도,입고일,작업내용
@@ -17,8 +17,8 @@ export default async function InstallPage() {
           table: 'as_management_log',
           columns: '*',
           // 필요에 따라 추가 조건 설정
-          // match: { some_column: 'some_value' }
-          // order: { column: 'created_at', ascending: false }
+          match: { work_type: 'H/W' },
+          order: { column: 'created_at', ascending: false }
         });
         if (success) {
           return data;
@@ -54,7 +54,7 @@ export default async function InstallPage() {
                 {/* 데이터 행 */}
                 {asManagementLog.map((log: IHardWareLog) => (
                   <Link 
-                    href={`/private/pc-history/install/detail/${log.log_id}`}
+                    href={`/private/as-request/hardware/detail/${log.log_id}`}
                     key={log.log_id}
                     style={gridStyle}
                     className="grid border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150"

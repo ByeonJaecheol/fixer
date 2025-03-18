@@ -6,8 +6,7 @@ import CommonInputSingleCheckbox from "@/app/_components/common/input/CommonInpu
 import InputDate from "@/app/_components/log/InputDate";
 import InputLog from "@/app/_components/log/new/InputLog";
 import InputTextArea from "@/app/_components/log/new/InputTextArea";
-import { supabase } from "@/app/utils/supabase";
-import { checkSerialNumber } from "@/app/utils/util";
+import { checkSerialNumber, fetchDataBySecurityCode } from "@/app/utils/util";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -56,10 +55,42 @@ export default function AsLogInput({workType}:{workType:string}) {
       console.log('코드변경 로그 결과',changeCodeResult)
     }
   }
+  // S/W 로그 생성
+  const handleSoftwareLogCreation = async () => {
+    const supabaseService = SupabaseService.getInstance();
+    const logResult = await createSoftwareLog(supabaseService);
+    //4.페이지 새로고침
+    router.refresh();
+    console.log('S/W 로그 결과',logResult)
+  }
+
+  //네트워크 로그 생성
+  const handleNetworkLogCreation = async () => {
+    const supabaseService = SupabaseService.getInstance();
+    const logResult = await createNetworkLog(supabaseService);
+    //4.페이지 새로고침
+    router.refresh();
+    console.log('네트워크 로그 결과',logResult)
+  }
+
+  //장비관리 로그 생성
+  const handleDeviceLogCreation = async () => {
+    const supabaseService = SupabaseService.getInstance();
+    const logResult = await createDeviceLog(supabaseService);
+    //4.페이지 새로고침
+    router.refresh();
+  }
+  // 기타 로그 생성
+  const handleOtherLogCreation = async () => {
+    const supabaseService = SupabaseService.getInstance();
+    const logResult = await createOtherLog(supabaseService);
+    //4.페이지 새로고침
+    router.refresh();
+  }
 
   //작성 버튼 입고 반납 구분
   const handleWriteButton = () => {
-    if(!serial){
+    if(workType==="H/W"&&!serial){
       alert('제조 번호를 입력해주세요.');
       return;
     }
@@ -67,12 +98,16 @@ export default function AsLogInput({workType}:{workType:string}) {
       handleHardWareLogCreation();
     }
     if(workType==="S/W"){
+      handleSoftwareLogCreation();
     }
     if(workType==="네트워크"){
+      handleNetworkLogCreation();
     }
     if(workType==="장비관리"){
+      handleDeviceLogCreation();
     }
     if(workType==="기타"){
+      handleOtherLogCreation();
     }
   }
 
@@ -85,6 +120,7 @@ export default function AsLogInput({workType}:{workType:string}) {
             work_type: workType,
             work_date: workDate, //반납일
             created_by: 'pcsub1@ket.com',
+            model_name : modelName,
             serial_number : serial,
             security_code : securityCode,
             new_security_code : newSecurityCode,
@@ -92,7 +128,7 @@ export default function AsLogInput({workType}:{workType:string}) {
             employee_workspace : employeeWorkspace,
             employee_department : employeeDepartment,
             employee_name : employeeName,
-            category : category,
+            question : question,
             detail_category : detailCategory,
           }
         });
@@ -106,7 +142,120 @@ export default function AsLogInput({workType}:{workType:string}) {
           return null;
         }
       }
-    
+
+    // S/W 로그 생성
+    const createSoftwareLog = async (supabaseService:SupabaseService) => {
+      console.log('S/W 로그 시작')
+      const logResult = await supabaseService.insert({
+        table: 'as_management_log',
+        data: {
+            work_type: workType,
+            work_date: workDate, //반납일
+            model_name : modelName,
+            created_by: 'pcsub1@ket.com',
+            employee_workspace : employeeWorkspace,
+            employee_department : employeeDepartment,
+            employee_name : employeeName,
+            category : category,
+            question : question,
+            detailed_description: detailedDescription,
+        }
+      })
+      console.log('S/W 결과',logResult)
+      if(logResult.success){
+        alert('S/W 완료');
+        return logResult.data;
+      }else{
+        alert('S/W 실패');
+        console.error('S/W 실패:', logResult);
+        return null;
+      }
+    }
+    //네트워크 로그 생성
+    const createNetworkLog = async (supabaseService:SupabaseService) => {
+      console.log('네트워크 로그 시작')
+      const logResult = await supabaseService.insert({
+        table: 'as_management_log',
+        data: {
+          work_type: workType,
+          work_date: workDate, //반납일
+          model_name : modelName,
+          created_by: 'pcsub1@ket.com',
+          employee_workspace : employeeWorkspace,
+          employee_department : employeeDepartment,
+          employee_name : employeeName,
+          question : question,
+          detailed_description: detailedDescription,
+        }     
+      })
+      console.log('네트워크 결과',logResult)
+      if(logResult.success){
+        alert('네트워크 완료');
+        return logResult.data;
+      }else{
+        alert('네트워크 실패');
+        console.error('네트워크 실패:', logResult);
+        return null;
+      }
+    } 
+
+    //장비관리 로그 생성
+    const createDeviceLog = async (supabaseService:SupabaseService) => {
+      console.log('장비관리 로그 시작')
+      const logResult = await supabaseService.insert({
+        table: 'as_management_log',
+        data: {
+          work_type: workType,
+          work_date: workDate, //반납일
+          model_name : modelName,
+          created_by: 'pcsub1@ket.com',
+          employee_workspace : employeeWorkspace,
+          employee_department : employeeDepartment,
+          employee_name : employeeName,
+          category : category,
+          detail_category : detailCategory,
+          question : question,
+          detailed_description: detailedDescription,
+        } 
+      })
+      console.log('장비관리 결과',logResult)
+      if(logResult.success){
+        alert('장비관리 완료');
+          return logResult.data;
+      }else{
+        alert('장비관리 실패');
+        console.error('장비관리 실패:', logResult);
+        return null;
+      }
+
+    }
+    // 기타 로그 생성
+    const createOtherLog = async (supabaseService:SupabaseService) => {
+      console.log('기타 로그 시작')
+      const logResult = await supabaseService.insert({
+        table: 'as_management_log',
+        data: {
+          work_type: workType,
+          work_date: workDate, //반납일
+          model_name : modelName,
+          created_by: 'pcsub1@ket.com',
+          employee_workspace : employeeWorkspace,
+          employee_department : employeeDepartment,
+          employee_name : employeeName,
+          question : question,
+          detailed_description: detailedDescription,
+        }
+      })
+      console.log('기타 결과',logResult)
+      if(logResult.success){
+        alert('기타 완료');
+        return logResult.data;
+      }else{
+        alert('기타 실패');
+        console.error('기타 실패:', logResult);
+        return null;
+      }
+    }
         //보안코드 변경 로그 생성 - pc_Managemnet_log
         const createPcLogChangeCode = async (assetData : IPcAsset, supabaseService:SupabaseService) => {
           const logResult = await supabaseService.insert({
@@ -134,67 +283,7 @@ export default function AsLogInput({workType}:{workType:string}) {
         }
         } 
 
-   // 보안코드로 로그 및 자산 정보 조회 함수
-   const fetchDataBySecurityCode = async (securityCode: string) => {
-      if (!securityCode.trim()) {
-        alert('보안코드를 입력해주세요.');
-        return;
-      }
-      
-      try {
-        // SupabaseService 인스턴스 가져오기
-        const supabaseService = SupabaseService.getInstance();
-        
-        // selectWithRelations 함수를 사용하여 관계 데이터 함께 조회
-        const { success, error, data } = await supabaseService.selectWithRelations({
-          table: 'pc_management_log',
-          columns: '*',
-          relations: [
-            { 
-              table: 'pc_assets',
-              columns: '*'  // 필요한 컬럼만 지정할 수도 있음
-            }
-          ],
-          match: { security_code: securityCode },
-          order: { column: 'created_at', ascending: false },
-          limit: 1
-        });
-        
-        console.log(`보안코드 ${securityCode} 조회 결과:`, success, data);
-        
-        if (!success || !data || data.length === 0) {
-          alert('해당 보안코드의 자산을 찾을 수 없습니다.');
-          return null;
-        }
-        
-        // 조회된 데이터 (첫 번째 결과)
-        const result: IAssetLog = data[0];
-        
-        // 폼 필드 자동 채우기
-        setEmployeeWorkspace(result.employee_workspace ?? "-");
-        setEmployeeDepartment(result.employee_department ?? "-");
-        setEmployeeName(result.employee_name ?? "-");
-        
-        // pc_assets 관계 데이터 확인 및 설정
-        if (result.pc_assets) {
-          setModelName(result.pc_assets.model_name ?? "-");
-          setSerial(result.pc_assets.serial_number ?? "-");
-          
-          // 추가 필드 설정 (필요에 따라)
-          // setBrand(result.pc_assets.brand ?? "-");
-          // setPcType(result.pc_assets.pc_type ?? "-");
-          // setStatus(result.pc_assets.status ?? "-");
-        } else {
-          console.warn('PC 자산 정보가 없습니다.');
-        }
-        
-        return result;
-      } catch (error) {
-        console.error('데이터 조회 중 오류 발생:', error);
-        alert('데이터를 불러오는 중 오류가 발생했습니다.');
-        return null;
-      }
-    };
+ 
  
     return (
         <>
@@ -264,7 +353,7 @@ export default function AsLogInput({workType}:{workType:string}) {
                     label={"기존 보안코드"}
                     value={securityCode}
                     setValue={setSecurityCode}
-                    onKeyDown={()=>fetchDataBySecurityCode(securityCode??"")}
+                    onKeyDown={()=>fetchDataBySecurityCode(securityCode??"",setEmployeeWorkspace,setEmployeeDepartment,setEmployeeName,setModelName,setSerial)}
                     placeholder="보안코드 입력 후 엔터시 자동입력"
                   />
                   <InputLog
@@ -351,6 +440,7 @@ export default function AsLogInput({workType}:{workType:string}) {
               onClick={handleWriteButton}
               isLoading={isLoading}
               buttonText={"작성"}
+              color={"blue"}
             />
             </div>
           </div>
