@@ -53,10 +53,10 @@ export default function TopMenu() {
   return (
     <header className="bg-white shadow-sm">
       <nav className="max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16">
+        <div className="flex p-2">
           
           {/* 네비게이션 메뉴 */}
-          <div className="flex">
+          <div className="flex flex-wrap gap-x-4">
             {navigationItems.map((item, index) => (
               <Link 
                 key={index} 

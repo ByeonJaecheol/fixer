@@ -1,9 +1,7 @@
 import { createClient } from '@/app/utils/server'
-import { signOut } from '../../../login/action'
 import LoginErrorModal from '../../../private/_components/LoginErrorModal'
 import LoginedUser from './LoginedUser'
 import { APP_NAME } from '@/app/constants/constNames'
-import { PowerIcon } from '@heroicons/react/24/solid'
 import LogoutButton from './LogoutButton'
 import Link from 'next/link'
 export default async function PrivateHeader() {
