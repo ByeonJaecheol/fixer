@@ -5,19 +5,17 @@ import { login } from "@/app/login/action";
 import { useEffect, useState } from "react";
 
 export default function LoginForm() {
-  const [remember, setRemember] = useState(localStorage.getItem('remember') ? true : false)
-  const [email, setEmail] = useState(localStorage.getItem('email') || '')
+  const [remember, setRemember] = useState(false)
+  const [email, setEmail] = useState('')
 
   useEffect(()=>{
+    const remember = localStorage.getItem('remember')
+    const email = localStorage.getItem('email')
     if(remember){
-      localStorage.setItem('remember', 'true')
-      localStorage.setItem('email',email)
-    }else{
-      localStorage.removeItem('remember')
-      localStorage.removeItem('email')
+      setRemember(remember === 'true')
+      setEmail(email || '')
     }
-  },[remember,email])
-
+  },[])
   const handleRemember = () => {
       setRemember(!remember)
       
@@ -46,8 +44,8 @@ export default function LoginForm() {
       </div>
       <div>{remember+""}</div>
       <div>{email+"@"}</div>
-      <div>{localStorage.getItem('remember')}</div>
-      <div>{localStorage.getItem('email')}</div>
+      {/* <div>{localStorage.getItem('remember')}</div> */}
+      {/* <div>{localStorage.getItem('email')}</div> */}
 
       {/* <button formAction={signup} className="bg-violet-700 text-white px-4 py-2 rounded-lg hover:bg-violet-800 transition-colors">Sign up</button> */}
       </div>

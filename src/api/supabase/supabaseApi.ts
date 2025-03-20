@@ -155,7 +155,12 @@ class SupabaseService {
       return { success: false, error, data: null };
     }
   }
-  
+  // sql 실행
+  async execute({ sql }: { sql: string }) {
+    const { data, error } = await this.supabase.rpc('run_query', { query: sql });
+    return { data, error };
+  }
+
   // 데이터 조회
   async select({ table, columns = '*', match, order, limit }: SelectOptions) {
     try {
