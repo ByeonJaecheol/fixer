@@ -1,17 +1,10 @@
-import { createClient } from '@/app/utils/server'
-import LoginErrorModal from '../../../private/_components/LoginErrorModal'
+
 import LoginedUser from './LoginedUser'
 import { APP_NAME } from '@/app/constants/constNames'
 import LogoutButton from './LogoutButton'
 import Link from 'next/link'
-export default async function PrivateHeader() {
-  const supabase = await createClient()
 
-  const { data, error } = await supabase.auth.getUser()
-  if (error || !data?.user) {
-    console.log('error', error)
-    return <LoginErrorModal/>
-  }
+export default function PrivateHeader() {
 
   return (
     <div className='flex justify-between items-center p-4 gap-x-2'>
@@ -22,9 +15,8 @@ export default async function PrivateHeader() {
     >
       {APP_NAME}
     </Link>
-      <div className='flex justify-between items-center'>
-        <LoginedUser data={data.user} />
-        <LogoutButton />
+      <div className=''>
+        <LoginedUser />
       </div>
     </div>
   )

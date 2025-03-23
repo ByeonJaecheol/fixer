@@ -7,10 +7,13 @@ import InputDate from "@/app/_components/log/InputDate";
 import InputLog from "@/app/_components/log/new/InputLog";
 import InputTextArea from "@/app/_components/log/new/InputTextArea";
 import { checkSerialNumber, fetchDataBySecurityCode } from "@/app/utils/util";
+import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function AsLogInput({workType}:{workType:string}) {
+  const { user } = useUser();
+  const createdBy = user?.email;
   //workDate 초기값은 오늘 날짜, yyyy-mm-dd 형식
   const [workDate, setWorkDate] = useState(new Date().toISOString().split('T')[0]);
   const [employeeWorkspace, setEmployeeWorkspace] = useState<string|undefined>(undefined);
@@ -28,7 +31,6 @@ export default function AsLogInput({workType}:{workType:string}) {
   // 기타 값
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
-  const [createdBy, setCreatedBy] = useState("")
 
   // H/W 로그 생성
   const handleHardWareLogCreation = async () => {
@@ -119,7 +121,7 @@ export default function AsLogInput({workType}:{workType:string}) {
           data: {
             work_type: workType,
             work_date: workDate, //반납일
-            created_by: 'pcsub1@ket.com',
+            created_by: createdBy,
             model_name : modelName,
             serial_number : serial,
             security_code : securityCode,
@@ -152,7 +154,7 @@ export default function AsLogInput({workType}:{workType:string}) {
             work_type: workType,
             work_date: workDate, //반납일
             model_name : modelName,
-            created_by: 'pcsub1@ket.com',
+            created_by: createdBy,
             employee_workspace : employeeWorkspace,
             employee_department : employeeDepartment,
             employee_name : employeeName,
@@ -180,7 +182,7 @@ export default function AsLogInput({workType}:{workType:string}) {
           work_type: workType,
           work_date: workDate, //반납일
           model_name : modelName,
-          created_by: 'pcsub1@ket.com',
+          created_by: createdBy,
           employee_workspace : employeeWorkspace,
           employee_department : employeeDepartment,
           employee_name : employeeName,
@@ -208,7 +210,7 @@ export default function AsLogInput({workType}:{workType:string}) {
           work_type: workType,
           work_date: workDate, //반납일
           model_name : modelName,
-          created_by: 'pcsub1@ket.com',
+          created_by: createdBy,
           employee_workspace : employeeWorkspace,
           employee_department : employeeDepartment,
           employee_name : employeeName,
@@ -238,7 +240,7 @@ export default function AsLogInput({workType}:{workType:string}) {
           work_type: workType,
           work_date: workDate, //반납일
           model_name : modelName,
-          created_by: 'pcsub1@ket.com',
+          created_by: createdBy,
           employee_workspace : employeeWorkspace,
           employee_department : employeeDepartment,
           employee_name : employeeName,
@@ -264,7 +266,7 @@ export default function AsLogInput({workType}:{workType:string}) {
               asset_id: assetData.asset_id,
               work_type: "변경",
               work_date: workDate,
-              created_by: "pcsub1@ket.com",
+              created_by: createdBy,
               security_code : newSecurityCode,
               detailed_description: detailedDescription,
               employee_workspace : employeeWorkspace,

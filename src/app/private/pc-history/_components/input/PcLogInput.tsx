@@ -16,10 +16,13 @@ import InputTextArea from "@/app/_components/log/new/InputTextArea";
 import InputToggle from "@/app/_components/log/new/InputToggle";
 import CommonRadio from "@/app/_components/common/input/CommonRadio";
 import { checkSerialNumber } from "@/app/utils/util";
+import { useUser } from "@/context/UserContext";
 
 
 
 export default function PcLogInput({workType}:{workType:string}) {
+  const { user } = useUser();
+  const createdBy = user?.email;
   // pc 자산 정보
   const [pcType, setPcType] = useState<string>(PC_TYPE_OPTIONS[0].value);
   const [brand, setBrand] = useState<string>(PC_BRAND_OPTIONS[0].value);
@@ -33,7 +36,6 @@ export default function PcLogInput({workType}:{workType:string}) {
   const [requester, setRequester] = useState<string|undefined>(undefined);
   const [securityCode, setSecurityCode] = useState<string|undefined>(undefined);
   const [detailedDescription, setDetailedDescription] = useState<string>("");
-  const [createdBy, setCreatedBy] = useState<string>("");
   const [isAvailable, setIsAvailable] = useState<string>(PC_AVAILABLE_TYPE_OPTIONS[0].value);
   const [usageType, setUsageType] = useState<string>(PC_USAGE_TYPE_OPTIONS[0].value);
   const [employeeWorkspace, setEmployeeWorkspace] = useState<string|undefined>(undefined);
@@ -93,8 +95,6 @@ export default function PcLogInput({workType}:{workType:string}) {
       //2. 기존 asset_id 존재하는 PC에 대한 반납 로그 생성
       const logResult = await createPcLogReturn(existingAsset[0].asset_id,supabaseService);
       //3. logResult 가 성공일 경우 사용 횟수 증가
-      console.log('반납 성공, 사용 횟수 증가 시작',existingAsset[0].usage_count)
-      await increaseUsageCount(existingAsset[0].asset_id,existingAsset[0].usage_count,supabaseService);
       //4.페이지 새로고침
       router.refresh();
       console.log('반납 로그 결과',logResult)
@@ -116,8 +116,6 @@ export default function PcLogInput({workType}:{workType:string}) {
    
     //4. 설치 로그 생성 
     const result = await createPcLogInstall(existingAsset[0].asset_id,supabaseService);
-    //5. 사용 횟수 증가
-      await increaseUsageCount(existingAsset[0].asset_id,existingAsset[0].usage_count,supabaseService);
     console.log('설치 로그 결과',result)
     //7. 페이지 새로고침
     router.refresh();
@@ -141,8 +139,6 @@ export default function PcLogInput({workType}:{workType:string}) {
     console.log('폐기 로그 결과',result)
     //5. asset_id 의 is_disposed 를 true 로 변경
     await updateIsDisposed(existingAsset[0].asset_id,true,supabaseService);
-    //6. 사용 횟수 증가
-    await increaseUsageCount(existingAsset[0].asset_id,existingAsset[0].usage_count,supabaseService);
     //7. 페이지 새로고침
     router.refresh();
   }
@@ -227,7 +223,7 @@ export default function PcLogInput({workType}:{workType:string}) {
           asset_id: asset_id,
           work_type: workType,
           work_date: workDate, //반납일
-          created_by: 'pcsub1@ket.com',
+          created_by: createdBy,
           is_available : isAvailable,
           location : location,
           security_code : securityCode,
@@ -263,6 +259,7 @@ export default function PcLogInput({workType}:{workType:string}) {
             requester : requester,
             detailed_description: detailedDescription,
             usage_type : usageType,
+            is_available : '사용가능',
             employee_workspace : employeeWorkspace,
             employee_department : employeeDepartment,
             employee_name : employeeName,
@@ -348,23 +345,6 @@ export default function PcLogInput({workType}:{workType:string}) {
   }
 
 
-  // 사용 횟수 +1 증가
-  const increaseUsageCount = async (asset_id: string,usage_count:number,supabaseService:SupabaseService) => {
-    const result = await supabaseService.update({
-      table: 'pc_assets',
-      data: { usage_count: usage_count+1 },
-      match: { asset_id: asset_id },
-    });
-    if(result.success){
-      alert('사용 횟수 증가 완료');
-      console.log('사용 횟수 증가 결과',result)
-    }else{
-      alert('사용 횟수 증가 실패');
-      console.error('사용 횟수 증가 실패:', result);
-    }
-    console.log('사용 횟수 증가 결과',result)
-    return result;
-  }
   // 폐기 로그 생성 시 is_disposed 를 true 로 변경
   const updateIsDisposed = async (asset_id: string,is_disposed: boolean,supabaseService:SupabaseService) => {
     const result = await supabaseService.update({

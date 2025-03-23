@@ -1,5 +1,5 @@
 
-export default function OkButton({ onClick, isLoading, buttonText, color }: { onClick: () => void, isLoading: boolean, buttonText: string, color: string }) {
+export default function OkButton({ onClick, isLoading, buttonText, color }: { onClick: () => void, isLoading: boolean, buttonText: string, color?: string }) {
   return (
     <button
     onClick={onClick}

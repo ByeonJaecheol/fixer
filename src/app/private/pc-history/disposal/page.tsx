@@ -14,7 +14,7 @@ export default async function DisposalPage() {
 
   return (
     <div>
-        <PcLogInput workType={"폐기"} />
+        <PcLogInput workType={"폐기"} createdBy={""} />
     
     <div className="p-6">
         <div className="space-y-4">
