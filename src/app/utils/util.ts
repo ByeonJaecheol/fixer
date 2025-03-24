@@ -1,4 +1,5 @@
 import SupabaseService, { IAssetLog, IPcAsset } from "@/api/supabase/supabaseApi";
+import { EmployeeData } from "../private/_components/EmployeesSelectModal";
 
  // 제조 중복 체크 함수, 
 export const checkSerialNumber = async (supabaseService:SupabaseService,serial?: string,) => {
@@ -90,3 +91,19 @@ return result;
       return null;
     }
   };
+
+
+  // 사원명으로 사원 정보 조회 함수
+  export const fetchEmployeeDataByName = async (employeeName: string) => {
+    const supabaseService = SupabaseService.getInstance();
+    const { data, error } = await supabaseService.select({
+      table: 'employees_data',
+      columns: '*',
+      match: { 이름 : employeeName },
+    });
+    // 아이뒤, 이름, 부서 가 모두 동일할 경우 중복 제거
+    const uniqueData = data.filter((item:EmployeeData, index:number, self:EmployeeData[]) =>
+      index === self.findIndex((t:EmployeeData) => t.아이뒤 === item.아이뒤 && t.이름 === item.이름 && t.부서 === item.부서)    
+    );
+    return uniqueData;
+  }

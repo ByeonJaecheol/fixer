@@ -18,7 +18,7 @@ export default async function PrivatePage() {
   //pc_assets 테이블에서 모델명, 수량 조회하는 방법
   // 방법 1: 모델명 그룹화
   const fetchPcAssetsCountTest = async () => {
-  const { data: mCount, error: mCountError } = await supabase
+    const { data: mCount, error: mCountError } = await supabase
     .from('pc_assets')
     .select('model_name, count(*)')
 
@@ -80,9 +80,9 @@ return (
           <Bar dataKey="count" fill="#8884d8" />
         </BarChart>
       </ResponsiveContainer> */}
-      <div className="w-1/2         h-full ">
+      {/* <div className="w-1/2         h-full ">
         <SimpleBar title="모델별 재고 현황" yName="수량" seriesName="재고 수량" inventoryData={modelCount}/>
-      </div>
+      </div> */}
     </div>
   )
 }

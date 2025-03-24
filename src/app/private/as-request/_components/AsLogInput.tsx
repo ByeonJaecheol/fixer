@@ -6,10 +6,11 @@ import CommonInputSingleCheckbox from "@/app/_components/common/input/CommonInpu
 import InputDate from "@/app/_components/log/InputDate";
 import InputLog from "@/app/_components/log/new/InputLog";
 import InputTextArea from "@/app/_components/log/new/InputTextArea";
-import { checkSerialNumber, fetchDataBySecurityCode } from "@/app/utils/util";
+import { checkSerialNumber, fetchDataBySecurityCode, fetchEmployeeDataByName } from "@/app/utils/util";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import EmployeesSelectModal, { EmployeeData } from "../../_components/EmployeesSelectModal";
 
 export default function AsLogInput({workType}:{workType:string}) {
   const { user } = useUser();
@@ -285,10 +286,26 @@ export default function AsLogInput({workType}:{workType:string}) {
         }
         } 
 
- 
- 
+        // 사원명으로 사원 정보 조회 결과 확인 후 선택 가능
+
+        const [employeeData, setEmployeeData] = useState<EmployeeData[]>([]);
+        const [isModalOpen, setIsModalOpen] = useState(false);
+        
+        const handleEmployeeDataByName = async (employeeName: string) => {
+          // 사원명 입력 후 엔터시 사원 정보 조회
+          const employeeData = await fetchEmployeeDataByName(employeeName);
+          // 사원 정보 확인 후 사업장과 부서 선택
+          if(employeeData.length>0){
+            console.log('사원 정보',employeeData)
+            setEmployeeData(employeeData);
+            setIsModalOpen(true);
+          }
+        }
+
     return (
         <>
+        <EmployeesSelectModal employeeData={employeeData} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} setEmployeeDepartment={setEmployeeDepartment} setEmployeeName={setEmployeeName}/>
+        
         <div className="text-sm font-semibold text-gray-700 px-4 sm:px-8 my-2">
           <div className="flex flex-row items-center gap-2">
               <h1>{workType} 수리 정보</h1>
@@ -320,7 +337,9 @@ export default function AsLogInput({workType}:{workType:string}) {
               label={"사용자"}
               value={employeeName}
               setValue={setEmployeeName}
+              onKeyDown={()=>handleEmployeeDataByName(employeeName??"")}
             />  
+          
             {/* 모델명 */}
             <InputLog
               label={"모델명"}
@@ -375,7 +394,7 @@ export default function AsLogInput({workType}:{workType:string}) {
                   title={"분류"}
                   value={category??""}
                   setValue={setSecurityProgram}
-                  options={["보안","프로그램","OS","바이러스","IE","드라이버"]}
+                  options={["보안","프로그램","OS","바이러스"]}
                 />
               </div>
             }
@@ -426,7 +445,6 @@ export default function AsLogInput({workType}:{workType:string}) {
                 <h1>{install_type+""}</h1>
                 <h1>{install_status+""}</h1>
           </div> */}
-    
     
           <div className="w-full mb-4 px-4 sm:px-8">
            <InputTextArea

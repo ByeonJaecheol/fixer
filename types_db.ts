@@ -265,6 +265,41 @@ export type Database = {
       workplace: string;
     }
   };
+  "employees_data": {
+    Row: {
+      이름: string;
+      아이뒤: string;
+      사번: string;
+      회사: string;
+      부서: string;
+      직위: string;
+      직책: string;
+      성별: string;
+      퇴사여부: string;
+    }
+    Insert: {
+      이름: string;
+      아이뒤: string;
+      사번: string;
+      회사: string;
+      부서: string;
+      직위: string;
+      직책: string;
+      성별: string;
+      퇴사여부: string;
+    }
+    Update: {
+      이름: string;
+      아이뒤: string;
+      사번: string;
+      회사: string;
+      부서: string;
+      직위: string;
+      직책: string;
+      성별: string;
+      퇴사여부: string;
+    }
+  };
 }
     Views: {
       [_ in never]: never

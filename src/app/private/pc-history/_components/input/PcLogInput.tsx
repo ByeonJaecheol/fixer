@@ -15,8 +15,9 @@ import { PC_AVAILABLE_TYPE_OPTIONS, PC_BRAND_OPTIONS, PC_HP_DESKTOP_MODEL_OPTION
 import InputTextArea from "@/app/_components/log/new/InputTextArea";
 import InputToggle from "@/app/_components/log/new/InputToggle";
 import CommonRadio from "@/app/_components/common/input/CommonRadio";
-import { checkSerialNumber } from "@/app/utils/util";
+import { checkSerialNumber, fetchEmployeeDataByName } from "@/app/utils/util";
 import { useUser } from "@/context/UserContext";
+import EmployeesSelectModal, { EmployeeData } from "@/app/private/_components/EmployeesSelectModal";
 
 
 
@@ -416,9 +417,25 @@ export default function PcLogInput({workType}:{workType:string}) {
     }
    }
    
+       // 사원명으로 사원 정보 조회 결과 확인 후 선택 가능
+
+       const [employeeData, setEmployeeData] = useState<EmployeeData[]>([]);
+       const [isModalOpen, setIsModalOpen] = useState(false);
+       
+       const handleEmployeeDataByName = async (employeeName: string) => {
+         // 사원명 입력 후 엔터시 사원 정보 조회
+         const employeeData = await fetchEmployeeDataByName(employeeName);
+         // 사원 정보 확인 후 사업장과 부서 선택
+         if(employeeData.length>0){
+           console.log('사원 정보',employeeData)
+           setEmployeeData(employeeData);
+           setIsModalOpen(true);
+         }
+       }
 
   return (
     <>
+    <EmployeesSelectModal employeeData={employeeData} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} setEmployeeDepartment={setEmployeeDepartment} setEmployeeName={setEmployeeName}/>
     <div className="text-sm font-semibold text-gray-700 px-4 sm:px-8 my-2">
       <div className="flex flex-row items-center gap-2">
       <h1>PC 자산 정보</h1>
@@ -577,6 +594,7 @@ export default function PcLogInput({workType}:{workType:string}) {
          label={"사용자"}
          value={employeeName}
          setValue={setEmployeeName}
+         onKeyDown={()=>handleEmployeeDataByName(employeeName??"")}
        />
         )}
          {workType==="입고"?
