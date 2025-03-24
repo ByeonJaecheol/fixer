@@ -22,3 +22,14 @@ export function formatToKoreanTime(inputDate: string, format: "date" | "month"):
   
     return ""; // 예외 처리 (올바른 format이 아닐 경우 빈 문자열 반환)
   }
+
+  // detailed_description 30자 이상일 경우 30자 이후는 ... 처리
+  export function truncateDescription(description: string|undefined,maxLength:number): string {
+    if (!description) {
+      return "-";
+    }
+    if (description.length <= maxLength) {
+      return description;
+    }
+    return description.slice(0, maxLength) + "...";
+  }

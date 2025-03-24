@@ -1,14 +1,14 @@
 
 import SupabaseService, { IAssetLog, IHardWareLog } from '@/api/supabase/supabaseApi';
 import { supabase } from '@/app/utils/supabase';
-import { formatToKoreanTime } from '@/utils/utils';
+import { formatToKoreanTime, truncateDescription } from '@/utils/utils';
 import Link from 'next/link';
 
 
 
 export default async function AsRequestPage() {
   const gridStyle = {
-    gridTemplateColumns: "8% 8% 8% 8% 10% 5%  20% 30%"
+    gridTemplateColumns: "8% 8% 8% 8% 8% 10% 5%  15% 30%"
   }
 
   
@@ -40,6 +40,7 @@ export default async function AsRequestPage() {
           {/* 헤더 부분 */}
           <div className="grid border-b border-gray-200" style={gridStyle}>
           <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ID</div>
+          <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작성자</div>
           <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업유형</div>
             <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업일</div>
             <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">모델명</div>
@@ -58,6 +59,8 @@ export default async function AsRequestPage() {
               >
               {/* id */}
                 <div className="px-2 py-4 text-sm text-gray-500 text-center bg-gray-50">{log.log_id}</div>
+                {/* 작성자 */}
+                <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.created_by?log.created_by.split("@")[0]:"-"}</div>
                 {/* 입고일 */}
                 <div className="px-2 py-4 text-sm text-gray-500 text-center">{formatToKoreanTime(log.work_date, 'date')}</div>
                  {/* 작업유형 */}
@@ -73,7 +76,9 @@ export default async function AsRequestPage() {
                     </span>
                   </div>
               {/* 모델명 */}
-                <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.model_name ?? '-'}</div>
+                <div className="px-2 py-4 text-sm text-gray-500 text-center">
+                {truncateDescription(log.model_name,9)}
+                </div>
             
               {/* 부서 */}
                 <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.employee_department ?? '-'}</div>
@@ -81,12 +86,12 @@ export default async function AsRequestPage() {
                 <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.employee_name ?? '-'}</div>
 
               {/* 문의내용 */}
-              <div className="px-2 py-4 text-sm text-gray-500 line-clamp-1 border-l border-gray-200"  title={log.question}>
-                  {log.question ?? '-//'}
-                  </div>
+              <div className="px-2 py-4 text-sm text-gray-500 border-l border-gray-200"  title={log.question}>
+                {truncateDescription(log.question,30)}
+              </div>
               {/* 작업내용 */}
-                <div className="px-2 py-4 text-sm text-gray-500 line-clamp-1 border-l border-gray-200"  title={log.detailed_description}>
-                  {log.detailed_description ?? '-'}
+                <div className="px-2 py-4 text-sm text-gray-500 overflow-hidden border-l border-gray-200"  title={log.detailed_description}>
+                  {truncateDescription(log.detailed_description,30)}
                 </div>
               </Link>
             ))}

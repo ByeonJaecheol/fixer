@@ -1,4 +1,4 @@
-import { formatToKoreanTime } from "@/utils/utils";
+import { formatToKoreanTime, truncateDescription } from "@/utils/utils";
 import { getPcManagementLog } from "@/api/supabase/supabaseTempApi";
 import PcLogInput from "../_components/input/PcLogInput";
 import Link from "next/link";
@@ -7,7 +7,7 @@ import { IAssetLog } from "@/api/supabase/supabaseApi";
 
 export default async function InstallPage() {
     const gridStyle = {
-       gridTemplateColumns: "8% 8% 8% 8% 12% 12% 5% 5%  35%"
+       gridTemplateColumns: "8% 8% 8% 8% 8% 10% 12% 5% 35%"
       //  id,작업유형,pc타입,모델명,제조번호,상태,가동,횟수,용도,입고일,작업내용
       }
     const pcManagementLog = await getPcManagementLog("pc_management_log","pc_assets","설치","log_id",false);
@@ -24,12 +24,12 @@ export default async function InstallPage() {
               {/* 헤더 부분 */}
               <div className="grid border-b border-gray-200" style={gridStyle}>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ID</div>
+                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작성자</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">출고일</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업유형</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">PC타입</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">모델명</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">제조번호</div>
-                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">횟수</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">용도</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
               </div>
@@ -43,7 +43,9 @@ export default async function InstallPage() {
                   >
                   {/* id */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center bg-gray-50">{log.log_id}</div>
-                    {/* 입고일 */}
+                    {/* 작성자 */}
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.created_by?log.created_by.split("@")[0]:"-"}</div>
+                    {/* 출고일 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{formatToKoreanTime(log.work_date, 'date')}</div>
                   {/* 작업유형 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">
@@ -66,15 +68,12 @@ export default async function InstallPage() {
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.model_name}</div>
                   {/* 제조번호 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.serial_number}</div>
-                
-                  {/* 횟수 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.usage_count ?? '-'}</div>
                   {/* 용도 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.usage_type ?? '-'}</div>
                   
                   {/* 작업내용 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 line-clamp-1 border-l border-gray-200" title={log.detailed_description}>
-                      {log.detailed_description ?? '-'}
+                    <div className="px-2 py-4 text-sm text-gray-500 border-l border-gray-200" title={log.detailed_description}>
+                    {truncateDescription(log.detailed_description,30  )}
                     </div>
                   </Link>
                 ))}

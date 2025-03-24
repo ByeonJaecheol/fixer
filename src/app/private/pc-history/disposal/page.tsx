@@ -1,4 +1,4 @@
-import { formatToKoreanTime } from "@/utils/utils";
+import { formatToKoreanTime, truncateDescription } from "@/utils/utils";
 import { getPcManagementLog } from "@/api/supabase/supabaseTempApi";
 import PcLogInput from "../_components/input/PcLogInput";
 import Link from "next/link";
@@ -7,14 +7,14 @@ import { IAssetLog } from "@/api/supabase/supabaseApi";
 
 export default async function DisposalPage() {
     const gridStyle = {
-       gridTemplateColumns: "8% 8% 8% 8% 12% 10% 6% 5% 5% 30%"
+       gridTemplateColumns: "8% 8% 8% 8% 8% 12% 10% 6% 5% 30%"
       //  id,작업유형,pc타입,모델명,제조번호,상태,가동,횟수,용도,입고일,작업내용
       }
     const pcManagementLog = await getPcManagementLog("pc_management_log","pc_assets","폐기","log_id",false);
 
   return (
     <div>
-        <PcLogInput workType={"폐기"} createdBy={""} />
+        <PcLogInput workType={"폐기"} />
     
     <div className="p-6">
         <div className="space-y-4">
@@ -24,13 +24,13 @@ export default async function DisposalPage() {
               {/* 헤더 부분 */}
               <div className="grid border-b border-gray-200" style={gridStyle}>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ID</div>
+                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작성자</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">폐기일</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업유형</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">PC타입</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">모델명</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">제조번호</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">폐기여부</div>
-                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">횟수</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">용도</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
               </div>
@@ -44,6 +44,8 @@ export default async function DisposalPage() {
                   >
                   {/* id */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center bg-gray-50">{log.log_id}</div>
+                  {/* 작성자 */}
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.created_by?log.created_by.split("@")[0]:"-"}</div>
                   {/* 반납일 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{formatToKoreanTime(log.work_date, 'date')}</div>
                   {/* 작업유형 */}
@@ -64,7 +66,9 @@ export default async function DisposalPage() {
                       </span>
                     </div>
                   {/* 모델명 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.model_name}</div>
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">
+                    {truncateDescription(log.pc_assets.model_name,9)}
+                    </div>
                   {/* 제조번호 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.serial_number}</div>
                   
@@ -81,8 +85,8 @@ export default async function DisposalPage() {
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.usage_type ?? '-'}</div>
                  
                   {/* 작업내용 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 line-clamp-1 border-l border-gray-200" title={log.detailed_description}>
-                      {log.detailed_description ?? '-'}
+                    <div className="px-2 py-4 text-sm text-gray-500 border-l border-gray-200" title={log.detailed_description}>
+                    {truncateDescription(log.detailed_description,30)}
                     </div>
                   </Link>
                 ))}

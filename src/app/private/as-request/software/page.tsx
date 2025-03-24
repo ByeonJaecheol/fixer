@@ -1,4 +1,4 @@
-import { formatToKoreanTime } from "@/utils/utils";
+import { formatToKoreanTime, truncateDescription } from "@/utils/utils";
 import { getPcManagementLog } from "@/api/supabase/supabaseTempApi";
 import Link from "next/link";
 import SupabaseService, { IAssetLog, IHardWareLog } from "@/api/supabase/supabaseApi";
@@ -7,7 +7,7 @@ import AsLogInput from "../_components/AsLogInput";
 
 export default async function SoftwarePage() {
     const gridStyle = {
-       gridTemplateColumns: "8% 8% 8% 8% 12% 12% 18% 18%"
+       gridTemplateColumns: "8% 8% 8% 8% 8% 12% 12% 18% 18%"
       //  id,작업유형,pc타입,모델명,제조번호,상태,가동,횟수,용도,입고일,작업내용
       }
       const getHardWareManagementLog = async () : Promise<any> => {
@@ -40,6 +40,7 @@ export default async function SoftwarePage() {
               {/* 헤더 부분 */}
               <div className="grid border-b border-gray-200" style={gridStyle}>
               <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ID</div>
+              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작성자</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업일</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">모델명</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">부서</div>
@@ -58,10 +59,14 @@ export default async function SoftwarePage() {
                   >
                   {/* id */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center bg-gray-50">{log.log_id}</div>
+                    {/* 작성자 */}
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.created_by?log.created_by.split("@")[0]:"-"}</div>
                     {/* 입고일 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{formatToKoreanTime(log.work_date, 'date')}</div>
                   {/* 모델명 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.model_name ?? '-'}</div>
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">
+                    {truncateDescription(log.model_name,9)}
+                    </div>
                 
                   {/* 부서 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.employee_department ?? '-'}</div>
@@ -71,12 +76,12 @@ export default async function SoftwarePage() {
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.category ?? '-'}</div>
 
                   {/* 문의내용 */}
-                  <div className="px-2 py-4 text-sm text-gray-500 line-clamp-1 border-l border-gray-200"  title={log.question}>
-                      {log.question ?? '-//'}
+                  <div className="px-2 py-4 text-sm text-gray-500 border-l border-gray-200"  title={log.question}>
+                      {truncateDescription(log.question,30)}
                       </div>
                   {/* 작업내용 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 line-clamp-1 border-l border-gray-200"  title={log.detailed_description}>
-                      {log.detailed_description ?? '-'}
+                    <div className="px-2 py-4 text-sm text-gray-500 border-l border-gray-200"  title={log.detailed_description}>
+                    {truncateDescription(log.detailed_description,30)}
                     </div>
                   </Link>
                 ))}

@@ -1,10 +1,10 @@
 import { IAssetLog } from "@/api/supabase/supabaseApi";
-import { formatToKoreanTime } from "@/utils/utils";
+import { formatToKoreanTime, truncateDescription } from "@/utils/utils";
 import Link from "next/link";
 
 export default function LinstIn({pcManagementLog}:{pcManagementLog:IAssetLog[]|undefined}){
     const gridStyle = {
-        gridTemplateColumns: "8% 8% 6% 5% 5% 12% 12% 6% 5% 30%"
+        gridTemplateColumns: "8% 8% 8% 6% 5% 5% 10% 12% 6% 30%"
       }
     return(
         <div className="p-6">
@@ -15,14 +15,14 @@ export default function LinstIn({pcManagementLog}:{pcManagementLog:IAssetLog[]|u
               {/* 헤더 부분 */}
               <div className="grid border-b border-gray-200" style={gridStyle}>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ID</div>
+                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작성자</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">입고일</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업유형</div>
-                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">신규</div>
+                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">상태</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">PC타입</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">모델명</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">제조번호</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">가동여부</div>
-                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">횟수</div>
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
               </div>
                 {/* 데이터 행 */}
@@ -35,6 +35,8 @@ export default function LinstIn({pcManagementLog}:{pcManagementLog:IAssetLog[]|u
                   >
                   {/* id */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center bg-gray-50">{log.log_id}</div>
+                  {/* 작성자 */}
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.created_by?log.created_by.split("@")[0]:"-"}</div>
                   {/* 입고일 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{formatToKoreanTime(log.work_date, 'date')}</div>
                   {/* 작업유형 */}
@@ -59,7 +61,9 @@ export default function LinstIn({pcManagementLog}:{pcManagementLog:IAssetLog[]|u
                       </span>
                     </div>
                   {/* 모델명 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.model_name}</div>
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">
+                    {truncateDescription(log.pc_assets.model_name,9)}
+                    </div>
                     {/* 제조번호 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.serial_number}</div>
                   {/* 가동여부 */}
@@ -69,12 +73,10 @@ export default function LinstIn({pcManagementLog}:{pcManagementLog:IAssetLog[]|u
                         {log.is_available ? "Y" : "N"}
                       </span>
                     </div>
-                  
-                  {/* 횟수 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.usage_count ?? '-'}</div>
                   {/* 작업내용 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 line-clamp-1 border-l border-gray-200" title={log.detailed_description}>
-                      {log.detailed_description ?? '-'}
+                    <div className="px-2 py-4 text-sm text-gray-500 border-l border-gray-200" title={log.detailed_description}>
+                    {truncateDescription(log.detailed_description,30)}
+
                     </div>
                   </Link>
                 ))}
