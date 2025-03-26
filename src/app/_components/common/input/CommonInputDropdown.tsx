@@ -3,8 +3,8 @@ import { tailwindDesign } from "@/design/tailwindDesign";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 
   
-export default function CommonInputDropdown({ value, setValue, type, name, placeholder, required, ref, options }:
-     { value: string, setValue: (value: string) => void, type: string, name: string, placeholder?: string, required?: boolean, ref: React.Ref<HTMLSelectElement>, options: IDropDownOption[]   }) {
+export default function CommonInputDropdown({ value, setValue, type, name, placeholder, required, ref, options, disabled }:
+     { value: string, setValue: (value: string) => void, type: string, name: string, placeholder?: string, required?: boolean, ref: React.Ref<HTMLSelectElement>, options: IDropDownOption[], disabled?:boolean }) {
     return (
         <>
            <div className="relative">
@@ -15,11 +15,13 @@ export default function CommonInputDropdown({ value, setValue, type, name, place
         onChange={(e) => setValue(e.target.value)}
         ref={ref}
         required={required}
+        disabled={disabled}
         className={`
           ${tailwindDesign.input}
           appearance-none
           pr-10
           cursor-pointer
+          ${disabled ? 'cursor-not-allowed bg-gray-200' : 'cursor-pointer'}
         `}
       >
         {placeholder && (

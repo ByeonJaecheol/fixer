@@ -14,6 +14,7 @@ export const PC_TYPE_OPTIONS: IDropDownOption[] = [
 export const PC_BRAND_OPTIONS: IDropDownOption[] = [
     { value: 'HP', label: 'HP' },
     { value: 'LG', label: 'LG' },
+    { value: '삼성', label: '삼성' },
   ];
 
 export const PC_STATUS_OPTIONS: IDropDownOption[] = [
@@ -28,13 +29,17 @@ export const PC_HP_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
     { value: 'Z420', label: 'Z420' },
     { value: 'Z400', label: 'Z400' },
   ];
-
-  export const PC_HP_NOTEBOOK_MODEL_OPTIONS: IDropDownOption[] = [
-    { value: 'G10', label: 'G10' },
-    { value: 'G8', label: 'G8' },
-    { value: 'G5', label: 'G5' },
-    { value: 'G3', label: 'G3' },
+  
+export const PC_HP_NOTEBOOK_MODEL_OPTIONS: IDropDownOption[] = [
+      { value: 'G10', label: 'G10' },
+      { value: 'G8', label: 'G8' },
+      { value: 'G5', label: 'G5' },
+      { value: 'G3', label: 'G3' },
+    ];
+export const PC_LG_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
+    { value: '없음', label: '없음' },
   ];
+
 
   export const PC_LG_NOTEBOOK_MODEL_OPTIONS: IDropDownOption[] = [
     { value: '15ZB970-GP50ML', label: '15ZB970-GP50ML' },
@@ -46,6 +51,15 @@ export const PC_HP_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
     { value: '15ZD95Q-GX56K', label: '15ZD95Q-GX56K' },
   ];
   
+  export const PC_SAMSUNG_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
+    { value: 'DB-P600', label: 'DB-P600' },
+    { value: 'DB-400T2A', label: 'DB-400T2A' },
+    { value: 'DB-400T3A', label: 'DB-400T3A' },
+  ];
+
+  export const PC_SAMSUNG_NOTEBOOK_MODEL_OPTIONS: IDropDownOption[] = [
+    { value: '없음', label: '없음' },
+  ];
 
   export const PC_USAGE_TYPE_OPTIONS: IDropDownOption[] = [
     { value: '개인', label: '개인' },

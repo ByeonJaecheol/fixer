@@ -11,11 +11,11 @@ import InputDate from "@/app/_components/log/InputDate";
 import { usePathname, useRouter } from "next/navigation";
 import InputLog from "@/app/_components/log/new/InputLog";
 import InputDropDown from "@/app/_components/log/new/InputDropDown";
-import { PC_AVAILABLE_TYPE_OPTIONS, PC_BRAND_OPTIONS, PC_HP_DESKTOP_MODEL_OPTIONS, PC_HP_NOTEBOOK_MODEL_OPTIONS, PC_INSTALL_STATUS_OPTIONS, PC_INSTALL_TYPE_OPTIONS, PC_LG_NOTEBOOK_MODEL_OPTIONS, PC_LOCATION_TYPE_OPTIONS, PC_STATUS_OPTIONS, PC_TYPE_OPTIONS, PC_USAGE_TYPE_OPTIONS } from "@/app/constants/objects";
+import { PC_AVAILABLE_TYPE_OPTIONS, PC_BRAND_OPTIONS, PC_HP_DESKTOP_MODEL_OPTIONS, PC_HP_NOTEBOOK_MODEL_OPTIONS, PC_INSTALL_STATUS_OPTIONS, PC_INSTALL_TYPE_OPTIONS, PC_LG_DESKTOP_MODEL_OPTIONS, PC_LG_NOTEBOOK_MODEL_OPTIONS, PC_LOCATION_TYPE_OPTIONS, PC_SAMSUNG_DESKTOP_MODEL_OPTIONS, PC_SAMSUNG_NOTEBOOK_MODEL_OPTIONS, PC_STATUS_OPTIONS, PC_TYPE_OPTIONS, PC_USAGE_TYPE_OPTIONS } from "@/app/constants/objects";
 import InputTextArea from "@/app/_components/log/new/InputTextArea";
 import InputToggle from "@/app/_components/log/new/InputToggle";
 import CommonRadio from "@/app/_components/common/input/CommonRadio";
-import { checkSerialNumber, fetchEmployeeDataByName } from "@/app/utils/util";
+import { checkSerialNumber, fetchEmployeeDataByName, generateSecurityCode } from "@/app/utils/util";
 import { useUser } from "@/context/UserContext";
 import EmployeesSelectModal, { EmployeeData } from "@/app/private/_components/EmployeesSelectModal";
 
@@ -29,13 +29,15 @@ export default function PcLogInput({workType}:{workType:string}) {
   const [brand, setBrand] = useState<string>(PC_BRAND_OPTIONS[0].value);
   const [modelName, setModelName] = useState<string>("");  
   const [serial, setSerial] = useState<string|undefined>(undefined);
+  const [securityCode, setSecurityCode] = useState<string|undefined>(undefined);
   const [firstStockDate, setFirstStockDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [manufactureDate, setManufactureDate] = useState<string>("");
+  // 제조일자 초기값 세팅 yyyy-mm 타입, mm은 01월로 세팅 
+  const [manufactureDate, setManufactureDate] = useState<string>(new Date().toISOString().split('T')[0].split('-')[0]+'-01');
   const [isNew, setIsNew] = useState<boolean>(false);
   // 관리 로그 정보
   const [workDate, setWorkDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [requester, setRequester] = useState<string|undefined>(undefined);
-  const [securityCode, setSecurityCode] = useState<string|undefined>(undefined);
+  const [newSecurityCode, setNewSecurityCode] = useState<string|undefined>(undefined);
   const [detailedDescription, setDetailedDescription] = useState<string>("");
   const [isAvailable, setIsAvailable] = useState<string>(PC_AVAILABLE_TYPE_OPTIONS[0].value);
   const [usageType, setUsageType] = useState<string>(PC_USAGE_TYPE_OPTIONS[0].value);
@@ -67,9 +69,32 @@ export default function PcLogInput({workType}:{workType:string}) {
     const result = await createPcAsset();
     console.log('pc 자산 생성 결과',result)
     //3.입고 로그 생성
-    const logResult = await createPcLog(result.data[0].asset_id,supabaseService);
+    const logResult = await createPcLog(result.data[0].asset_id,result.data[0].security_code,supabaseService);
     console.log('입고 로그 결과',logResult)
   }
+
+
+  // 설치 로그 생성
+  const handleInstallLogCreation = async () => {
+    const supabaseService = SupabaseService.getInstance();
+    //1. 제조 번호 존재 여부 체크
+    const existingAsset = await checkSerialNumber(supabaseService,serial);
+    console.log('existingAsset',existingAsset)
+    //2. 제조 번호 존재하지 않을 경우 리턴
+    // 설치는 pc_assets에 등록된 것만 진행하기때문에 존재하지 않는 경우 리턴
+    if(!existingAsset||existingAsset.length===0){
+      alert('제조 번호가 존재하지 않습니다. 등록 후 사용하세요');
+      return;
+    }
+   
+    //4. 설치 로그 생성 
+    const result = await createPcLogInstall(existingAsset[0].asset_id,existingAsset[0].security_code,supabaseService);
+    console.log('설치 로그 결과',result)
+    //7. 페이지 새로고침
+    router.refresh();
+  }
+
+
 
   // 반납 로그 생성 : 반납 로그 생성 시 제조 번호 존재 여부 체크, 
   // 제조 번호 존재 시 사용 횟수 증가, 
@@ -83,44 +108,14 @@ export default function PcLogInput({workType}:{workType:string}) {
     // 제조 번호 존재하지 않을시 pc 자산 생성
     // 반납 로그 생성 - 아직 pc_asset 에 등록되지 않은 반납 pc 일 경우
     if (!existingAsset||existingAsset.length===0) {
-      console.log('제조 번호 존재하지 않으므로 자산생성 시작')
-      const result = await createPcAsset();
-      console.log('pc 자산 생성 결과',result)
-      const logResult = await createPcLogReturn(result.data[0].asset_id,supabaseService);
-      console.log('반납 로그 결과',logResult)
-    }else {
-      // 제조 번호 존재하는 경우
-      //1. work_type 이 반납인 동일 pc가 있는지 조회
-      const existingReturnPcAsset = await checkWorkTypeReturn(supabaseService,serial);
-      console.log('existingReturnPcAsset',existingReturnPcAsset)
-      //2. 기존 asset_id 존재하는 PC에 대한 반납 로그 생성
-      const logResult = await createPcLogReturn(existingAsset[0].asset_id,supabaseService);
-      //3. logResult 가 성공일 경우 사용 횟수 증가
-      //4.페이지 새로고침
-      router.refresh();
-      console.log('반납 로그 결과',logResult)
-    }
-    
-  } 
-
-  const handleInstallLogCreation = async () => {
-    const supabaseService = SupabaseService.getInstance();
-    //1. 제조 번호 존재 여부 체크
-    const existingAsset = await checkSerialNumber(supabaseService,serial);
-    console.log('existingAsset',existingAsset)
-    //2. 제조 번호 존재하지 않을 경우 리턴
-    // 설치는 pc_assets에 등록된 것만 진행하기때문에 존재하지 않는 경우 리턴
-    if(!existingAsset||existingAsset.length===0){
-      alert('제조 번호가 존재하지 않습니다.');
+      alert('제조 번호가 존재하지 않습니다. 등록 후 시도 하십시오.');
       return;
     }
-   
-    //4. 설치 로그 생성 
-    const result = await createPcLogInstall(existingAsset[0].asset_id,supabaseService);
-    console.log('설치 로그 결과',result)
-    //7. 페이지 새로고침
-    router.refresh();
-  }
+      const logResult = await createPcLogReturn(existingAsset[0].asset_id,supabaseService);
+      console.log('핸들 반납 로그 결과',logResult)
+      //4.페이지 새로고침
+      router.refresh();
+    }
 
   
   const handleDisposeLogCreation = async () => {
@@ -144,9 +139,12 @@ export default function PcLogInput({workType}:{workType:string}) {
     router.refresh();
   }
 
+  // PC타입 브랜드 자동 입력
   useEffect(()=>{
+    if(pcType)
     setModelName(getModelNameOptions()[0]?.value)
   },[pcType,brand])
+  // PC타입 브랜드 자동 입력
   function getModelNameOptions() {
     if (pcType === "데스크탑"&&brand==="HP") {
       return PC_HP_DESKTOP_MODEL_OPTIONS;
@@ -156,6 +154,15 @@ export default function PcLogInput({workType}:{workType:string}) {
     }
     if (pcType === "노트북"&&brand==="LG") {
       return PC_LG_NOTEBOOK_MODEL_OPTIONS;
+    }
+    if (pcType === "데스크탑"&&brand==="LG") {
+      return PC_LG_DESKTOP_MODEL_OPTIONS;
+    }
+    if (pcType === "데스크탑"&&brand==="삼성") {
+      return PC_SAMSUNG_DESKTOP_MODEL_OPTIONS;
+    }
+    if (pcType === "노트북"&&brand==="삼성") {
+      return PC_SAMSUNG_NOTEBOOK_MODEL_OPTIONS;
     }
     return [];
   }
@@ -182,6 +189,7 @@ export default function PcLogInput({workType}:{workType:string}) {
            brand: brand, 
            model_name: modelName, 
            serial_number: serial, 
+           security_code: [securityCode],
            pc_type: pcType, 
            first_stock_date: workDate,
            manufacture_date: manufactureDate,
@@ -192,11 +200,12 @@ export default function PcLogInput({workType}:{workType:string}) {
        }
 
       //  입고 로그 생성
-      const createPcLog = async (asset_id: string,supabaseService:SupabaseService) => {
+      const createPcLog = async (asset_id: string,security_code: string,supabaseService:SupabaseService) => {
         const logResult = await supabaseService.insert({
          table: 'pc_management_log',
          data: {
            asset_id: asset_id,
+           security_code: security_code,
            work_type: workType,
            work_date: firstStockDate,
            created_by: createdBy,
@@ -208,46 +217,19 @@ export default function PcLogInput({workType}:{workType:string}) {
        
        if(logResult.success){
          alert('입고 완료');
-         router.refresh();
+         router.replace('/private/pc-history/in');
          return logResult.data;
         }
         console.log('입고 로그 생성 실패',logResult)
         return null;
       }
 
-      // 반납 로그 생성
-      const createPcLogReturn = async (asset_id: string,supabaseService:SupabaseService) => {
-        console.log('반납 시작')
-      const logResult = await supabaseService.insert({
-        table: 'pc_management_log',
-        data: {
-          asset_id: asset_id,
-          work_type: workType,
-          work_date: workDate, //반납일
-          created_by: createdBy,
-          is_available : isAvailable,
-          location : location,
-          security_code : securityCode,
-          requester : requester,
-          detailed_description: detailedDescription,
-          usage_type : usageType,
-          employee_workspace : employeeWorkspace,
-          employee_department : employeeDepartment,
-          employee_name : employeeName,
+      // 설치(출고) 로그 생성
+      const createPcLogInstall = async (asset_id: string,security_code_array: string[],supabaseService:SupabaseService) => {
+        if(!securityCode){
+          alert('보안코드를 입력해주세요');
+          return;
         }
-      });
-      console.log('반납 결과',logResult)
-      if(logResult.success){
-        alert('반납 완료');
-        return logResult.data;
-      }else{
-        alert('반납 실패');
-        console.error('반납 실패:', logResult);
-        return null;
-      }
-      }
-
-      const createPcLogInstall = async (asset_id: string,supabaseService:SupabaseService) => {
         const logResult = await supabaseService.insert({
           table: 'pc_management_log',
           data: {
@@ -255,8 +237,8 @@ export default function PcLogInput({workType}:{workType:string}) {
             work_type: workType,
             work_date: workDate,
             created_by: createdBy,
+            security_code : newSecurityCode,
             location : location,
-            security_code : securityCode,
             requester : requester,
             detailed_description: detailedDescription,
             usage_type : usageType,
@@ -270,7 +252,10 @@ export default function PcLogInput({workType}:{workType:string}) {
       });
       console.log('설치 로그 결과',logResult)
       if(logResult.success){
+            // 보안코드 변경시 보안코드 변경 로그 생성
+        updatePcAssetsSecurityCode(asset_id,newSecurityCode,supabaseService);
         alert('설치 완료');
+        router.replace('/private/pc-history/install');
         return logResult.data;
       }else{
         alert('설치 실패');
@@ -279,8 +264,48 @@ export default function PcLogInput({workType}:{workType:string}) {
       }
       } 
 
+      // 반납 로그 생성
+      const createPcLogReturn = async (asset_id: string,supabaseService:SupabaseService) => {
+        if(!securityCode){
+          alert('보안코드를 입력해주세요');
+          return;
+        }
+      const logResult = await supabaseService.insert({
+        table: 'pc_management_log',
+        data: {
+          asset_id: asset_id,
+          work_type: workType,
+          work_date: workDate, //반납일
+          created_by: createdBy,
+          is_available : isAvailable,
+          location : location,
+          security_code : newSecurityCode,
+          requester : requester,
+          detailed_description: detailedDescription,
+          usage_type : usageType,
+          employee_workspace : employeeWorkspace,
+          employee_department : employeeDepartment,
+          employee_name : employeeName,
+        }
+      });
+      console.log('반납 결과',logResult)
+      if(logResult.success){
+        alert('반납 완료');
+        updatePcAssetsSecurityCode(asset_id,newSecurityCode,supabaseService);
+        router.replace('/private/pc-history/return');
+        return logResult.data;
+      }else{
+        alert('반납 실패');
+        console.error('반납 실패:', logResult);
+        return null;
+      }
+      }
+
+     
+
       //폐기 로그 생성
       const createPcLogDispose = async (asset_id: string,supabaseService:SupabaseService) => {
+        
         const logResult = await supabaseService.insert({
           table: 'pc_management_log',
           data: {
@@ -303,6 +328,7 @@ export default function PcLogInput({workType}:{workType:string}) {
       console.log('폐기 로그 결과',logResult)
       if(logResult.success){
         alert('폐기 완료');
+        router.replace('/private/pc-history/dispose');
         return logResult.data;
       }else{
         alert('폐기 실패');
@@ -311,8 +337,8 @@ export default function PcLogInput({workType}:{workType:string}) {
       }
       } 
 
-      //work_type 이 반납이고 serial이 존재하는지 조회
-      const checkWorkTypeReturn = async (supabaseService:SupabaseService,serial?: string) => {
+  //work_type 이 반납이고 serial이 존재하는지 조회
+  const checkWorkTypeReturn = async (supabaseService:SupabaseService,serial?: string) => {
         // 제조 번호 존재하는 경우
         
         const { data: existingAsset, error: existingAssetError } = await supabaseService.select({
@@ -322,7 +348,7 @@ export default function PcLogInput({workType}:{workType:string}) {
           limit: 1
         });
         return existingAsset;
-      }
+  }
 
 
   //작성 버튼 입고 반납 구분
@@ -364,16 +390,56 @@ export default function PcLogInput({workType}:{workType:string}) {
   }
 
 
+  // securityCode와 newSecurityCode가 다를 경우 pc_assets 테이블에서 security_code []에 newSecurityCode 추가
+  const updatePcAssetsSecurityCode = async (asset_id: string,newSecurityCode: string|undefined,supabaseService:SupabaseService) => {
+    //get asset_id
+    alert('보안코드 변경 시작')
+    const { data: existingAsset, error: existingAssetError } = await supabaseService.select({
+      table: 'pc_assets',
+      columns: '*',
+      match: { asset_id: asset_id },
+      limit: 1
+    });
+    if(!existingAsset||existingAsset.length===0){
+      alert('pc 자산 조회 실패');
+      return;
+    }
+    if(existingAsset[0].security_code.includes(newSecurityCode)){
+      alert('보안코드가 이미 존재합니다.');
+      return;
+    }
+    
+    const existingSecurityCode = existingAsset[0].security_code;
+    const UpdateResult = await supabaseService.update({
+      table: 'pc_assets',
+      data: {
+        security_code : [newSecurityCode,existingSecurityCode],
+      },
+      match: { asset_id: asset_id },
+      });
+    if(UpdateResult.success){
+      alert('보안코드 변경 완료');
+      console.log('보안코드 변경 결과',UpdateResult)
+    }else{
+      alert('보안코드 변경 실패');
+      console.error('보안코드 변경 실패:', UpdateResult);
+    }
+  
+    return UpdateResult;
+    
+  }
+  
 
-   //3. 제조 번호 존재 시 pc 자산정보 세팅
+
+   //3. [자동완성] 제조 번호 존재 시 pc 자산정보 세팅
     const setPcAssetInfo = async (serial: string) => {
     const supabaseService = SupabaseService.getInstance();
     const existingAsset = await checkSerialNumber(supabaseService,serial);
     if(!existingAsset||existingAsset.length===0){
-      alert('제조 번호 존재하지 않습니다.');
+      alert('제조 번호가 존재하지 않습니다. 등록 후 시도 하십시오.');
       return;
     }
-    console.log('자동입력 데이터 결과',existingAsset)
+    console.log('자동입력 PC 자산 데이터 결과',existingAsset)
     if(workType!=="입고"){
     // pc 자산정보 세팅
     //null 또는 undefined 대응
@@ -381,6 +447,7 @@ export default function PcLogInput({workType}:{workType:string}) {
     setBrand(existingAsset[0].brand?existingAsset[0].brand:"");
     setModelName(existingAsset[0].model_name?existingAsset[0].model_name:"");
     setSerial(existingAsset[0].serial_number?existingAsset[0].serial_number:"");
+    setSecurityCode(existingAsset[0].security_code?existingAsset[0].security_code[0]:"");
     setManufactureDate(existingAsset[0].manufacture_date?existingAsset[0].manufacture_date:"");
     }   
     // 폐기 로그 생성 시 정보 세팅
@@ -403,10 +470,10 @@ export default function PcLogInput({workType}:{workType:string}) {
     setBrand(existingAsset[0].brand?existingAsset[0].brand:"");
     setModelName(existingAsset[0].model_name?existingAsset[0].model_name:"");
     setSerial(existingAsset[0].serial_number?existingAsset[0].serial_number:"");
+    setSecurityCode(existingAsset[0].security_code?existingAsset[0].security_code[0]:"");
     setManufactureDate(existingAsset[0].manufacture_date?existingAsset[0].manufacture_date:"");
     // log정보 세팅
     setWorkDate(result.work_date?result.work_date:"");
-    setSecurityCode(result.security_code?result.security_code:"");
     setRequester(result.requester?result.requester:"");
     setEmployeeWorkspace(result.employee_workspace?result.employee_workspace:"");
     setEmployeeDepartment(result.employee_department?result.employee_department:"");
@@ -464,6 +531,7 @@ export default function PcLogInput({workType}:{workType:string}) {
           setValue={setPcType}
           ref={ref}
           options={PC_TYPE_OPTIONS}
+          disabled={workType!=="입고"}
         />
         <InputDropDown
           label={"제조사"}
@@ -471,6 +539,7 @@ export default function PcLogInput({workType}:{workType:string}) {
           setValue={setBrand}
           ref={ref}
           options={PC_BRAND_OPTIONS}
+          disabled={workType!=="입고"}
         />
         <InputDropDown
           label={"모델명"}
@@ -478,6 +547,7 @@ export default function PcLogInput({workType}:{workType:string}) {
           setValue={setModelName}
           ref={ref}
           options={getModelNameOptions()}
+          disabled={workType!=="입고"}
         />
           <InputLog
           label={"제조번호"}
@@ -492,13 +562,14 @@ export default function PcLogInput({workType}:{workType:string}) {
           }}
 
         />
-
         <InputDate
           value={manufactureDate}
           setValue={setManufactureDate}
           name="manufactureDate"
           label="제조일"
+          secondLabel={((user?.email==="pcsub1@ket.com"||user?.email==="admin@ket.com")&&manufactureDate)?generateSecurityCode(manufactureDate):undefined}
           type="month"
+          disabled={workType!=="입고"}
         />
         {workType==="반납"||workType==="설치"?
       null
@@ -510,9 +581,15 @@ export default function PcLogInput({workType}:{workType:string}) {
           name="firstStockDate"
           label="입고일"
           type="date"
+          disabled={workType!=="입고"}
         />
       )}
-
+       <InputLog
+         label={"보안코드"}
+         value={securityCode}
+         setValue={setSecurityCode}
+         disabled={workType!=="입고"||isNew}
+       /> 
       </div>
       {workType==="입고"?
       null
@@ -533,16 +610,29 @@ export default function PcLogInput({workType}:{workType:string}) {
           type="date"
         />
         )}
-        {workType==="입고"?
-        <div></div>
-        :
-        (
-       <InputLog
-         label={"보안코드"}
-         value={securityCode}
-         setValue={setSecurityCode}
+
+         {workType==="입고"?
+         <div></div>
+         :
+         (
+        <InputLog
+          label={"의뢰인"}
+          value={requester}
+          setValue={setRequester}
+        />
+         )}
+         {workType==="입고"?
+         <div></div>
+         :
+         (
+          <InputLog
+         label={"신규 보안코드"}
+         value={newSecurityCode}
+         setValue={setNewSecurityCode}
+         placeholder="보안코드 변경시 입력"
        /> 
-        )}
+         )}
+
            {workType!=="반납"?
         <div></div>
         :
@@ -553,17 +643,6 @@ export default function PcLogInput({workType}:{workType:string}) {
          setValue={setIsAvailable}
          ref={ref}
          options={PC_STATUS_OPTIONS}
-       />
-        )}
-       
-        {workType==="입고"?
-        <div></div>
-        :
-        (
-       <InputLog
-         label={"의뢰인"}
-         value={requester}
-         setValue={setRequester}
        />
         )}
         {workType==="입고"?
@@ -651,7 +730,7 @@ export default function PcLogInput({workType}:{workType:string}) {
 
      </div>
     {/* 디버깅 정보 */}
-      {/* <div>
+      <div>
         <h3>디버깅 정보</h3>
         <p>신규pc입고 : {isNew+""}</p>
         <p>workType: {workType}</p>
@@ -667,7 +746,7 @@ export default function PcLogInput({workType}:{workType:string}) {
          <h1>{location}</h1>
             <h1>{install_type+""}</h1>
             <h1>{install_status+""}</h1>
-      </div> */}
+      </div>
 
 
       <div className="w-full mb-4 px-4 sm:px-8">

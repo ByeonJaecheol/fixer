@@ -123,6 +123,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
           setValue={setPcType}
           ref={ref}
           options={PC_TYPE_OPTIONS}
+          disabled={true}
         />
         <InputDropDown
           label={"제조사"}
@@ -130,6 +131,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
           setValue={setBrand}
           ref={ref}
           options={PC_BRAND_OPTIONS}
+          disabled={true}
         />
         <InputDropDown
           label={"모델명"}
@@ -137,12 +139,14 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
           setValue={setModelName}
           ref={ref}
           options={getModelNameOptions()}
-        />
+          disabled={true}
+          />
           <InputLog
           label={"제조번호"}
           value={serial ?? "-"}
           setValue={setSerial}
           required={true}
+          disabled={true}
         />
 
         <InputDate
@@ -151,6 +155,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
           name="manufactureDate"
           label="제조일"
           type="month"
+          disabled={true}
         />
          <InputDate
           value={firstStockDate ?? "-"}
@@ -158,6 +163,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
           name="firstStockDate"
           label="입고일"
           type="date"
+          disabled={true}
         />
       </div>
       {workType==="입고"?

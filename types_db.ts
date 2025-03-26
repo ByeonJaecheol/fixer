@@ -97,6 +97,7 @@ export type Database = {
           brand: string;
           model_name: string;
           serial_number: string;
+          security_code: string[];
           pc_type: string;
           status : string;
           first_stock_date : string;
@@ -110,6 +111,7 @@ export type Database = {
         brand: string;
         model_name: string;
         serial_number: string;
+        security_code: string[];
         pc_type: string;
         status : string;
         first_stock_date : string;
@@ -121,6 +123,7 @@ export type Database = {
         brand: string;
         model_name: string;
         serial_number: string;
+        security_code: string[];
         pc_type: string;
         status : string;
         first_stock_date : string;

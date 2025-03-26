@@ -2,6 +2,7 @@ import SupabaseService, { IAssetLog, IPcAsset } from "@/api/supabase/supabaseApi
 import { EmployeeData } from "../private/_components/EmployeesSelectModal";
 
  // 제조 중복 체크 함수, 
+//  pc_assets 테이블에서 제조 번호가 일치하는 자산 조회 후 일치하는 자산 리턴
 export const checkSerialNumber = async (supabaseService:SupabaseService,serial?: string,) => {
     const { data: existingAsset, error: existingAssetError } = await supabaseService.select({
       table: 'pc_assets',
@@ -107,3 +108,51 @@ return result;
     );
     return uniqueData;
   }
+
+
+  /**
+   * 제조일자를 기반으로 보안 코드를 생성합니다.
+   * YYYY-MM 형식의 날짜를 받아 XNYN 형식의 코드를 반환합니다.
+   * X: 연도 세번째 자리를 알파벳으로 변환 (0=A, 1=B, 2=C...)
+   * N: 원래 숫자 그대로 사용
+   * Y: 월의 첫번째 자리를 알파벳으로 변환 (0=A, 1=B...)
+   * 
+   * 예시:
+   * 2024-01 => C4A1 (2[C]4[A]1)
+   * 2018-06 => B1A6 (1[B]8[A]6)
+   * 2019-11 => B1B1 (1[B]9[B]1)
+   * 
+   * @param manufactureDate YYYY-MM 형식의 제조일자
+   * @returns 생성된 보안 코드
+   */
+  export const generateSecurityCode = (manufactureDate: string): string => {
+    // 날짜가 없는 경우 빈 문자열 반환
+    if (!manufactureDate) return '';
+
+    const [year, month] = manufactureDate.split('-');
+    
+    // 연도의 세번째 자리 숫자를 알파벳으로 변환 (0=A, 1=B, 2=C...)
+    const thirdDigitYear = parseInt(year[2]);
+    const yearAlphabet = String.fromCharCode(65 + thirdDigitYear); // 65는 'A'의 ASCII 코드
+
+    // 월의 첫번째 자리 숫자를 알파벳으로 변환 (0=A, 1=B...)
+    const firstDigitMonth = parseInt(month[0]);
+    const monthAlphabet = String.fromCharCode(65 + firstDigitMonth);
+
+    // 최종 코드 생성: [연도알파벳][연도마지막자리][월알파벳][월마지막자리]
+    const securityCode = `${yearAlphabet}${year[3]}${monthAlphabet}${month[1]}`;
+
+    return securityCode;
+  }
+
+  // 테스트 코드
+  const testDates = [
+    '2024-01', // 예상: C4A1
+    '2018-06', // 예상: B1A6
+    '2019-11', // 예상: B1B1
+  ];
+
+  testDates.forEach(date => {
+    console.log(`${date} => ${generateSecurityCode(date)}`);
+  });
+
