@@ -3,6 +3,7 @@ import LoginedUser from './LoginedUser'
 import { APP_NAME } from '@/app/constants/constNames'
 import LogoutButton from './LogoutButton'
 import Link from 'next/link'
+import HeaderSearchBar from './HeaderSearchBar'
 
 export default function PrivateHeader() {
 
@@ -15,9 +16,11 @@ export default function PrivateHeader() {
     >
       {APP_NAME}
     </Link>
-      <div className=''>
+    {/* 자산검색 추가 */}
+    <div className='flex flex-row items-center gap-x-2'>
+      <HeaderSearchBar />
         <LoginedUser />
-      </div>
+    </div>
     </div>
   )
 }   

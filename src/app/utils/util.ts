@@ -1,4 +1,4 @@
-import SupabaseService, { IAssetLog, IPcAsset } from "@/api/supabase/supabaseApi";
+import SupabaseService, { IPcManagementLog, IPcAsset } from "@/api/supabase/supabaseApi";
 import { EmployeeData } from "../private/_components/EmployeesSelectModal";
 
  // 제조 중복 체크 함수, 
@@ -25,7 +25,6 @@ const supabaseService = SupabaseService.getInstance();
         pc_type: assetData.pc_type, 
         first_stock_date: assetData.first_stock_date,
         manufacture_date: assetData.manufacture_date,
-        usage_count: isNew?0:1,
         }
     });
 return result;
@@ -65,7 +64,7 @@ return result;
       }
       
       // 조회된 데이터 (첫 번째 결과)
-      const result: IAssetLog = data[0];
+      const result: IPcManagementLog = data[0];
       
       // 폼 필드 자동 채우기
       setEmployeeWorkspace(result.employee_workspace ?? "-");

@@ -1,4 +1,4 @@
-import SupabaseService, { IAssetLog } from "@/api/supabase/supabaseApi";
+import SupabaseService, { IPcManagementLog } from "@/api/supabase/supabaseApi";
 import PcLogInput from "../_components/input/PcLogInput";
 import { formatToKoreanTime } from "@/utils/utils";
 import Link from "next/link"; 
@@ -9,7 +9,7 @@ export default async function AddPcHistory() {
   const gridStyle = {
     gridTemplateColumns: "8% 8% 6% 8% 10% 12% 5% 5% 10% 30%"
   }
-  const getPcManagementLog = async () : Promise<IAssetLog[]> => {
+  const getPcManagementLog = async () : Promise<IPcManagementLog[]> => {
     const supabaseService = SupabaseService.getInstance();
     const { success, error, data } = await supabaseService.selectWithRelations({
       table: 'pc_management_log',
@@ -23,7 +23,7 @@ export default async function AddPcHistory() {
       match: { work_type: '입고' },
       // 필요에 따라 추가 조건 설정
       // match: { some_column: 'some_value' }
-      order: { column: 'log_id', ascending: false },
+      order: { column: 'work_date', ascending: false },
     });
     if (success) {
       return data;

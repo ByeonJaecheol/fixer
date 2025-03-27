@@ -6,7 +6,7 @@ import InputPcType from "@/app/_components/log/InputPcType";
 import InputSerial from "@/app/_components/log/InputSerial";
 import { useEffect, useRef, useState } from "react";
 import OkButton from "@/app/_components/common/input/button/OkButton";
-import SupabaseService, { IAssetLog } from "@/api/supabase/supabaseApi";
+import SupabaseService, { IPcManagementLog } from "@/api/supabase/supabaseApi";
 import InputDate from "@/app/_components/log/InputDate";
 import { usePathname, useRouter } from "next/navigation";
 import InputLog from "@/app/_components/log/new/InputLog";
@@ -69,7 +69,7 @@ export default function PcLogInput({workType}:{workType:string}) {
     const result = await createPcAsset();
     console.log('pc 자산 생성 결과',result)
     //3.입고 로그 생성
-    const logResult = await createPcLog(result.data[0].asset_id,result.data[0].security_code,supabaseService);
+    const logResult = await createPcLog(result.data[0].asset_id,supabaseService);
     console.log('입고 로그 결과',logResult)
   }
 
@@ -193,19 +193,18 @@ export default function PcLogInput({workType}:{workType:string}) {
            pc_type: pcType, 
            first_stock_date: workDate,
            manufacture_date: manufactureDate,
-           usage_count: isNew?0:1,
          }
        });
        return result;
        }
 
       //  입고 로그 생성
-      const createPcLog = async (asset_id: string,security_code: string,supabaseService:SupabaseService) => {
+      const createPcLog = async (asset_id: string,supabaseService:SupabaseService) => {
         const logResult = await supabaseService.insert({
          table: 'pc_management_log',
          data: {
            asset_id: asset_id,
-           security_code: security_code,
+           security_code: securityCode,
            work_type: workType,
            work_date: firstStockDate,
            created_by: createdBy,
@@ -459,7 +458,7 @@ export default function PcLogInput({workType}:{workType:string}) {
         match: { asset_id: existingAsset[0].asset_id },
         limit: 1
       });
-      const result : IAssetLog = existingLog[0];
+      const result : IPcManagementLog = existingLog[0];
       if(!result){
         alert('폐기 로그 조회 실패');
         return;
@@ -730,7 +729,7 @@ export default function PcLogInput({workType}:{workType:string}) {
 
      </div>
     {/* 디버깅 정보 */}
-      <div>
+      {/* <div>
         <h3>디버깅 정보</h3>
         <p>신규pc입고 : {isNew+""}</p>
         <p>workType: {workType}</p>
@@ -746,7 +745,7 @@ export default function PcLogInput({workType}:{workType:string}) {
          <h1>{location}</h1>
             <h1>{install_type+""}</h1>
             <h1>{install_status+""}</h1>
-      </div>
+      </div> */}
 
 
       <div className="w-full mb-4 px-4 sm:px-8">

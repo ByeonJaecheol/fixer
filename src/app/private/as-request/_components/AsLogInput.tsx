@@ -1,6 +1,6 @@
 'use client';
 
-import SupabaseService, { IAssetLog, IPcAsset } from "@/api/supabase/supabaseApi";
+import SupabaseService, { IPcManagementLog, IPcAsset } from "@/api/supabase/supabaseApi";
 import OkButton from "@/app/_components/common/input/button/OkButton";
 import CommonInputSingleCheckbox from "@/app/_components/common/input/CommonInputSingleCheckbox";
 import InputDate from "@/app/_components/log/InputDate";

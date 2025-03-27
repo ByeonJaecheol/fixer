@@ -1,7 +1,7 @@
 import { formatToKoreanTime, truncateDescription } from "@/utils/utils";
 import { getPcManagementLog } from "@/api/supabase/supabaseTempApi";
 import Link from "next/link";
-import SupabaseService, { IAssetLog, IHardWareLog } from "@/api/supabase/supabaseApi";
+import SupabaseService, { IPcManagementLog, IAsManagementLog } from "@/api/supabase/supabaseApi";
 import AsLogInput from "../_components/AsLogInput";
 
 
@@ -17,7 +17,7 @@ export default async function NetworkPage() {
           columns: '*',
           // 필요에 따라 추가 조건 설정
           match: { work_type: '네트워크' },
-          order: { column: 'created_at', ascending: false }
+          order: { column: 'work_date', ascending: false }
         });
         if (success) {
           return data;
@@ -48,7 +48,7 @@ export default async function NetworkPage() {
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">조치내용</div>
               </div>
                 {/* 데이터 행 */}
-                {asManagementLog.map((log: IHardWareLog) => (
+                {asManagementLog.map((log: IAsManagementLog) => (
                   <Link 
                     href={`/private/as-request/network/detail/${log.log_id}`}
                     key={log.log_id}

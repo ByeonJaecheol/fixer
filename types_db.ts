@@ -103,7 +103,6 @@ export type Database = {
           first_stock_date : string;
           manufacture_date : string;
           is_disposed : boolean;
-          usage_count : number;
         
 
       };
@@ -117,7 +116,6 @@ export type Database = {
         first_stock_date : string;
         manufacture_date : string;
         is_disposed : boolean;
-        usage_count : number;
       };
       Update: {
         brand: string;
@@ -129,7 +127,6 @@ export type Database = {
         first_stock_date : string;
         manufacture_date : string;
         is_disposed : boolean;
-        usage_count : number;
       };
   }
   "pc_management_log": {
@@ -148,7 +145,6 @@ export type Database = {
       install_type : boolean;
       install_status : boolean;
       usage_type : string;
-      usage_count : number;
       employee_workspace : string;
       employee_department : string;
       employee_name : string;
@@ -169,7 +165,6 @@ export type Database = {
       install_type : boolean;
       install_status : boolean;
       usage_type : string;
-      usage_count : number;
       employee_workspace : string;
       employee_department : string;
       employee_name : string;
@@ -189,7 +184,6 @@ export type Database = {
       location : string;
       install_type : boolean;
       install_status : boolean;
-      usage_count : number;
       usage_type : string;
       employee_workspace : string;
       employee_department : string;

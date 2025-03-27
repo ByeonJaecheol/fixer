@@ -22,7 +22,6 @@ export interface IPcAsset {
     requester: string;
     security_code: string;
     status: '사용가능' | '수리대기' | '사용불가' | '폐기';
-    usage_count: number;
     usage_type: string;
     work_date: string; // YYYY-MM-DD 형식
     work_type: string;

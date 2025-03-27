@@ -2,7 +2,7 @@ import { formatToKoreanTime, truncateDescription } from "@/utils/utils";
 import { getPcManagementLog } from "@/api/supabase/supabaseTempApi";
 import PcLogInput from "../_components/input/PcLogInput";
 import Link from "next/link";
-import { IAssetLog } from "@/api/supabase/supabaseApi";
+import { IPcManagementLog } from "@/api/supabase/supabaseApi";
 
 
 export default async function DisposalPage() {
@@ -10,7 +10,7 @@ export default async function DisposalPage() {
        gridTemplateColumns: "8% 8% 8% 8% 8% 12% 10% 6% 5% 30%"
       //  id,작업유형,pc타입,모델명,제조번호,상태,가동,횟수,용도,입고일,작업내용
       }
-    const pcManagementLog = await getPcManagementLog("pc_management_log","pc_assets","폐기","log_id",false);
+    const pcManagementLog = await getPcManagementLog("pc_management_log","pc_assets","폐기","work_date",false);
 
   return (
     <div>
@@ -35,7 +35,7 @@ export default async function DisposalPage() {
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
               </div>
                 {/* 데이터 행 */}
-                {pcManagementLog.map((log: IAssetLog) => (
+                {pcManagementLog.map((log: IPcManagementLog) => (
                   <Link 
                     href={`/private/pc-history/disposal/detail/${log.log_id}`}
                     key={log.log_id}
@@ -79,8 +79,6 @@ export default async function DisposalPage() {
                         {log.pc_assets.is_disposed ? "Y" : "N"}
                       </span>
                     </div>
-                  {/* 횟수 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.pc_assets.usage_count ?? '-'}</div>
                   {/* 용도 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.usage_type ?? '-'}</div>
                  

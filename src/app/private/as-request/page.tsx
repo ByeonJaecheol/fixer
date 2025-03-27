@@ -1,5 +1,5 @@
 
-import SupabaseService, { IAssetLog, IHardWareLog } from '@/api/supabase/supabaseApi';
+import SupabaseService, { IPcManagementLog, IAsManagementLog } from '@/api/supabase/supabaseApi';
 import { supabase } from '@/app/utils/supabase';
 import { formatToKoreanTime, truncateDescription } from '@/utils/utils';
 import Link from 'next/link';
@@ -50,9 +50,9 @@ export default async function AsRequestPage() {
             <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">조치내용</div>
           </div>
             {/* 데이터 행 */}
-            {asManagementLog.map((log: IHardWareLog) => (
+            {asManagementLog.map((log: IAsManagementLog) => (
               <Link 
-                href={`/private/as-request/hardware/detail/${log.log_id}`}
+                href={`/private/as-request/${log.work_type==="H/W"?"hardware":log.work_type==="S/W"?"software":log.work_type==="네트워크"?"network":log.work_type==="장비관리"?"device":"other"}/detail/${log.log_id}`}
                 key={log.log_id}
                 style={gridStyle}
                 className="grid border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150"

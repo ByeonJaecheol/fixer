@@ -2,7 +2,7 @@ import { formatToKoreanTime, truncateDescription } from "@/utils/utils";
 import { getPcManagementLog } from "@/api/supabase/supabaseTempApi";
 import PcLogInput from "../_components/input/PcLogInput";
 import Link from "next/link";
-import { IAssetLog } from "@/api/supabase/supabaseApi";
+import { IPcManagementLog } from "@/api/supabase/supabaseApi";
 
 
 export default async function InstallPage() {
@@ -10,7 +10,7 @@ export default async function InstallPage() {
        gridTemplateColumns: "8% 8% 8% 8% 8% 10% 12% 5% 35%"
       //  id,작업유형,pc타입,모델명,제조번호,상태,가동,횟수,용도,입고일,작업내용
       }
-    const pcManagementLog = await getPcManagementLog("pc_management_log","pc_assets","설치","log_id",false);
+    const pcManagementLog = await getPcManagementLog("pc_management_log","pc_assets","설치","work_date",false);
 
   return (
     <div>
@@ -34,7 +34,7 @@ export default async function InstallPage() {
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
               </div>
                 {/* 데이터 행 */}
-                {pcManagementLog.map((log: IAssetLog) => (
+                {pcManagementLog.map((log: IPcManagementLog) => (
                   <Link 
                     href={`/private/pc-history/install/detail/${log.log_id}`}
                     key={log.log_id}

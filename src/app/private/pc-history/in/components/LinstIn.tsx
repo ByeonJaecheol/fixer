@@ -1,8 +1,8 @@
-import { IAssetLog } from "@/api/supabase/supabaseApi";
+import { IPcManagementLog } from "@/api/supabase/supabaseApi";
 import { formatToKoreanTime, truncateDescription } from "@/utils/utils";
 import Link from "next/link";
 
-export default function LinstIn({pcManagementLog}:{pcManagementLog:IAssetLog[]|undefined}){
+export default function LinstIn({pcManagementLog}:{pcManagementLog:IPcManagementLog[]|undefined}){
     const gridStyle = {
         gridTemplateColumns: "8% 8% 8% 6% 5% 5% 10% 12% 6% 30%"
       }
@@ -26,7 +26,7 @@ export default function LinstIn({pcManagementLog}:{pcManagementLog:IAssetLog[]|u
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
               </div>
                 {/* 데이터 행 */}
-                {pcManagementLog && pcManagementLog.map((log: IAssetLog) => (
+                {pcManagementLog && pcManagementLog.map((log: IPcManagementLog) => (
                   <Link 
                     href={`/private/pc-history/in/detail/${log.log_id}`}
                     key={log.log_id}

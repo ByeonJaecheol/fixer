@@ -16,6 +16,7 @@
     "@supabase/supabase-js": "^2.49.1",
     "@types/lodash": "^4.17.15",
     "@types/papaparse": "^5.3.15",
+    "date-fns": "^4.1.0",
     "echarts": "^5.6.0",
     "echarts-for-react": "^3.0.3",
     "js-cookie": "^3.0.5",

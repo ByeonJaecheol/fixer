@@ -28,6 +28,8 @@ export const PC_HP_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
     { value: 'Z440', label: 'Z440' },
     { value: 'Z420', label: 'Z420' },
     { value: 'Z400', label: 'Z400' },
+    { value: 'Z620', label: 'Z620' },
+    { value: 'Z640', label: 'Z640' },
   ];
   
 export const PC_HP_NOTEBOOK_MODEL_OPTIONS: IDropDownOption[] = [

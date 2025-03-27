@@ -33,7 +33,6 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
   const [detailedDescription, setDetailedDescription] = useState<string|undefined>(pcManagementLog[0]?.detailed_description ?? undefined);
   const [createdBy, setCreatedBy] = useState<string|undefined>(pcManagementLog[0]?.created_by ?? undefined);
   const [status, setStatus] = useState<string|undefined>(pcManagementLog[0]?.status ?? undefined);
-  const [usageCount, setUsageCount] = useState<number>(pcManagementLog[0]?.usage_count ?? 0);
   const [usageType, setUsageType] = useState<string|undefined>(pcManagementLog[0]?.usage_type ?? undefined);
   const [employeeWorkspace, setEmployeeWorkspace] = useState<string|undefined>(pcManagementLog[0]?.employee_workspace ?? undefined);
   const [employeeDepartment, setEmployeeDepartment] = useState<string|undefined>(pcManagementLog[0]?.employee_department ?? undefined);

@@ -1,4 +1,4 @@
-import { ComputerDesktopIcon, DeviceTabletIcon, DocumentTextIcon, Cog6ToothIcon, ChatBubbleBottomCenterIcon,WrenchIcon, CalendarIcon, ChartBarIcon, QrCodeIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, ComputerDesktopIcon, DeviceTabletIcon, DocumentTextIcon, Cog6ToothIcon, ChatBubbleBottomCenterIcon,WrenchIcon, CalendarIcon, ChartBarIcon, QrCodeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
 const navigationItems = [
@@ -6,6 +6,11 @@ const navigationItems = [
     icon: ChatBubbleBottomCenterIcon,
     text: '문의접수',
     href: '/private/pc-inquiry'
+  },
+  {
+    icon: MagnifyingGlassIcon,
+    text: '자산검색',
+    href: '/private/pc-assets'
   },
   {
     icon: ComputerDesktopIcon,
@@ -56,7 +61,7 @@ export default function TopMenu() {
         <div className="flex p-2">
           
           {/* 네비게이션 메뉴 */}
-          <div className="flex flex-wrap gap-x-4">
+          <div className="flex flex-wrap gap-x-2">
             {navigationItems.map((item, index) => (
               <Link 
                 key={index} 

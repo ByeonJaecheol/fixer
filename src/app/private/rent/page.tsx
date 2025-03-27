@@ -1,4 +1,4 @@
-import SupabaseService, { IAssetLog } from "@/api/supabase/supabaseApi";
+import SupabaseService, { IPcManagementLog } from "@/api/supabase/supabaseApi";
 import { supabase } from "@/app/utils/supabase";
 import Image from "next/image";
 import Z4G5 from "../../../../public/pcImage/z4g5.png"
@@ -7,7 +7,7 @@ import Container from "../pc-inquiry/_components/Container";
 
 export default async function RentPage() {
   
-  const getPcManagementLog = async () : Promise<IAssetLog[]> => {
+  const getPcManagementLog = async () : Promise<IPcManagementLog[]> => {
     const supabaseService = SupabaseService.getInstance();
     const { success, error, data } = await supabaseService.selectWithRelations({
       table: 'pc_management_log',
@@ -44,7 +44,7 @@ export default async function RentPage() {
           </div>
           <div className="w-full flex flex-row gap-x-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6">
-              {pcManagementLog?.map((item: IAssetLog) => (
+              {pcManagementLog?.map((item: IPcManagementLog) => (
                 <div 
                   key={item.log_id} 
                   className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden"

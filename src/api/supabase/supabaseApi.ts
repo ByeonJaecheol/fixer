@@ -46,11 +46,11 @@ export interface IPcAsset {
   model_name: string;
   pc_type: string;
   serial_number: string;
-  usage_count: number;
+  security_code: string[];
   is_disposed: boolean;
 }
 
-export interface IAssetLog {
+export interface IPcManagementLog {
   asset_id: number;
   created_at: string;
   created_by: string;
@@ -71,7 +71,7 @@ export interface IAssetLog {
   work_type: string;
   is_new: boolean;
 }
-export interface IHardWareLog {
+export interface IAsManagementLog {
   log_id : number
   work_type: string;
   work_date: string;
