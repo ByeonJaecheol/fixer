@@ -45,11 +45,12 @@ export const PC_LG_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
 
   export const PC_LG_NOTEBOOK_MODEL_OPTIONS: IDropDownOption[] = [
     { value: '15ZB970-GP50ML', label: '15ZB970-GP50ML' },
+    { value: '15ZB970-GR50KN', label: '15ZB970-GR50KN' },
+    { value: '15ZB970-GPHML', label: '15ZB970-GPHML' },
+    { value: '15ZB995-GP50ML', label: '15ZB995-GP50ML' },
     { value: '15Z960M', label: '15Z960M' },
     { value: '15Z960G', label: '15Z960G' },
-    { value: '15ZB970-GPHML', label: '15ZB970-GPHML' },
     { value: '15ZD970', label: '15ZD970' },
-    { value: '15ZB995-GP50ML', label: '15ZB995-GP50ML' },
     { value: '15ZD95Q-GX56K', label: '15ZD95Q-GX56K' },
   ];
   

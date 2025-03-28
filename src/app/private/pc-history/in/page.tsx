@@ -23,7 +23,7 @@ export default async function AddPcHistory() {
       match: { work_type: '입고' },
       // 필요에 따라 추가 조건 설정
       // match: { some_column: 'some_value' }
-      order: { column: 'work_date', ascending: false },
+      order: { column: 'created_at', ascending: false },
     });
     if (success) {
       return data;
@@ -37,6 +37,9 @@ export default async function AddPcHistory() {
   return (
     <div>
         <PcLogInput workType={"입고"} />
+
+        
+        
         {pcManagementLog && pcManagementLog.length > 0 && (
           <LinstIn pcManagementLog={pcManagementLog} />
         )}

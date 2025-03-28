@@ -127,17 +127,22 @@ return result;
   export const generateSecurityCode = (manufactureDate: string): string => {
     // 날짜가 없는 경우 빈 문자열 반환
     if (!manufactureDate) return '';
-
+    // manufactureDate 형식이 yyyy-mm 형식인지 확인
+    if (!/^\d{4}-\d{2}$/.test(manufactureDate)) {
+      // alert('제조일자 형식이 올바르지 않습니다. yyyy-mm 형식으로 입력해주세요.');
+      return '';
+    }
+  
     const [year, month] = manufactureDate.split('-');
     
     // 연도의 세번째 자리 숫자를 알파벳으로 변환 (0=A, 1=B, 2=C...)
     const thirdDigitYear = parseInt(year[2]);
     const yearAlphabet = String.fromCharCode(65 + thirdDigitYear); // 65는 'A'의 ASCII 코드
-
+    
     // 월의 첫번째 자리 숫자를 알파벳으로 변환 (0=A, 1=B...)
     const firstDigitMonth = parseInt(month[0]);
     const monthAlphabet = String.fromCharCode(65 + firstDigitMonth);
-
+  
     // 최종 코드 생성: [연도알파벳][연도마지막자리][월알파벳][월마지막자리]
     const securityCode = `${yearAlphabet}${year[3]}${monthAlphabet}${month[1]}`;
 

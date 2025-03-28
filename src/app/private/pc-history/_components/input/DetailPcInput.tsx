@@ -147,15 +147,13 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
           required={true}
           disabled={true}
         />
-
-        <InputDate
+        <InputLog
+          label="제조일"
           value={manufactureDate ?? "-"}
           setValue={setManufactureDate}
-          name="manufactureDate"
-          label="제조일"
-          type="month"
           disabled={true}
         />
+      
          <InputDate
           value={firstStockDate ?? "-"}
           setValue={setFirstStockDate}

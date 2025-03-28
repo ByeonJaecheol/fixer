@@ -32,7 +32,7 @@ export default function PcLogInput({workType}:{workType:string}) {
   const [securityCode, setSecurityCode] = useState<string|undefined>(undefined);
   const [firstStockDate, setFirstStockDate] = useState<string>(new Date().toISOString().split('T')[0]);
   // 제조일자 초기값 세팅 yyyy-mm 타입, mm은 01월로 세팅 
-  const [manufactureDate, setManufactureDate] = useState<string>(new Date().toISOString().split('T')[0].split('-')[0]+'-01');
+  const [manufactureDate, setManufactureDate] = useState<string|undefined>(undefined);
   const [isNew, setIsNew] = useState<boolean>(false);
   // 관리 로그 정보
   const [workDate, setWorkDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -606,15 +606,15 @@ export default function PcLogInput({workType}:{workType:string}) {
           }}
 
         />
-        <InputDate
-          value={manufactureDate}
-          setValue={setManufactureDate}
-          name="manufactureDate"
+        <InputLog
           label="제조일"
           secondLabel={((user?.email==="pcsub1@ket.com"||user?.email==="admin@ket.com")&&manufactureDate)?generateSecurityCode(manufactureDate):undefined}
-          type="month"
+          value={manufactureDate}
+          setValue={setManufactureDate}
           disabled={workType!=="입고"}
+          placeholder={workType==="입고"?"yyyy-mm 형식으로 입력해주세요":undefined}
         />
+        
         {workType==="반납"||workType==="설치"?
       null
       :
