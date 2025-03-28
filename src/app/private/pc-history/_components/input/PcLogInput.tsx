@@ -37,7 +37,7 @@ export default function PcLogInput({workType}:{workType:string}) {
   // 관리 로그 정보
   const [workDate, setWorkDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [requester, setRequester] = useState<string|undefined>(undefined);
-  const [newSecurityCode, setNewSecurityCode] = useState<string|undefined>(undefined);
+  const [newSecurityCode, setNewSecurityCode] = useState<string|undefined>();
   const [detailedDescription, setDetailedDescription] = useState<string>("");
   const [isAvailable, setIsAvailable] = useState<string>(PC_AVAILABLE_TYPE_OPTIONS[0].value);
   const [usageType, setUsageType] = useState<string>(PC_USAGE_TYPE_OPTIONS[0].value);
@@ -390,8 +390,15 @@ export default function PcLogInput({workType}:{workType:string}) {
 
 
   // securityCode와 newSecurityCode가 다를 경우 pc_assets 테이블에서 security_code []에 newSecurityCode 추가
+  //설치로그와 반납로그에 사용중
   const updatePcAssetsSecurityCode = async (asset_id: string,newSecurityCode: string|undefined,supabaseService:SupabaseService) => {
-    //get asset_id
+    if(!newSecurityCode){
+      return;
+    }
+    if(newSecurityCode===securityCode){
+      alert('보안코드가 동일합니다.');
+      return;
+    }
     alert('보안코드 변경 시작')
     const { data: existingAsset, error: existingAssetError } = await supabaseService.select({
       table: 'pc_assets',
@@ -408,14 +415,52 @@ export default function PcLogInput({workType}:{workType:string}) {
       return;
     }
     
-    const existingSecurityCode = existingAsset[0].security_code;
+    // 기존 보안 코드를 파싱하여 배열로 변환
+    const parseSecurityCodes = (existingCodes: any): string[] => {
+      // 빈 값 처리
+      if (!existingCodes) return [];
+      
+      // 이미 배열인 경우
+      if (Array.isArray(existingCodes)) {
+        return existingCodes.flatMap(code => {
+          if (typeof code !== 'string') return String(code);
+          try {
+            const parsed = JSON.parse(code);
+            return Array.isArray(parsed) ? parsed : code;
+          } catch {
+            return code;
+          }
+        });
+      }
+      
+      // 문자열인 경우
+      if (typeof existingCodes === 'string') {
+        try {
+          const parsed = JSON.parse(existingCodes);
+          return Array.isArray(parsed) ? parsed : [existingCodes];
+        } catch {
+          return [existingCodes];
+        }
+      }
+      
+      // 그 외의 경우
+      return [String(existingCodes)];
+    };
+
+    // 기존 코드를 배열로 변환하고 새 코드를 추가
+    const existingSecurityCodes = parseSecurityCodes(existingAsset[0].security_code);
+    const updatedSecurityCodes = [newSecurityCode, ...existingSecurityCodes];
+
+    // 중복 제거
+    const uniqueSecurityCodes = [...new Set(updatedSecurityCodes)];
+
     const UpdateResult = await supabaseService.update({
       table: 'pc_assets',
       data: {
-        security_code : [newSecurityCode,existingSecurityCode],
+        security_code: uniqueSecurityCodes,
       },
       match: { asset_id: asset_id },
-      });
+    });
     if(UpdateResult.success){
       alert('보안코드 변경 완료');
       console.log('보안코드 변경 결과',UpdateResult)
@@ -631,7 +676,6 @@ export default function PcLogInput({workType}:{workType:string}) {
          placeholder="보안코드 변경시 입력"
        /> 
          )}
-
            {workType!=="반납"?
         <div></div>
         :
