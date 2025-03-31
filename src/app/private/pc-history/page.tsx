@@ -74,7 +74,7 @@ export default async function PcHistoryPage() {
                 <SerialNumber serialNumber={log.pc_assets.serial_number} />
                 <SecurityCode securityCode={log.security_code} />
                 <UsageType usageType={log.usage_type} />
-                <Link href={`/private/pc-history/${log.work_type==="입고"?"in":log.work_type==="설치"?"install":log.work_type==="폐기"?"disposal":log.work_type==="반납"?"return":"other"}/detail/${log.log_id}`}>
+                <Link href={`/private/pc-history/${log.work_type==="입고"?"in":log.work_type==="설치"?"install":log.work_type==="폐기"?"disposal":log.work_type==="반납"?"return":log.work_type==="변경"?"change":"other"}/detail/${log.log_id}`}>
                   <DetailDescription description={log.detailed_description} />
                 </Link>
                </div> 

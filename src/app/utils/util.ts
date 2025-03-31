@@ -30,6 +30,7 @@ const supabaseService = SupabaseService.getInstance();
 return result;
 }
 
+
   // 보안코드로 로그 및 자산 정보 조회 함수
   export const fetchDataBySecurityCode = async (securityCode: string,setEmployeeWorkspace: (value: string) => void,setEmployeeDepartment: (value: string) => void,setEmployeeName: (value: string) => void,setModelName: (value: string) => void,setSerial: (value: string) => void) => {
     if (!securityCode.trim()) {

@@ -6,6 +6,7 @@ export interface IPcAsset {
     model_name: string;
     pc_type: string;
     serial_number: string;
+    security_code: string[];
   }
   
  export interface IDB_ASSET_LOG_DATA {

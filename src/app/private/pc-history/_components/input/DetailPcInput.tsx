@@ -29,7 +29,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
   // 관리 로그 정보
   const [workDate, setWorkDate] = useState<string|undefined>(pcManagementLog[0]?.work_date ?? undefined);
   const [requester, setRequester] = useState<string|undefined>(pcManagementLog[0]?.requester ?? undefined);
-  const [securityCode, setSecurityCode] = useState<string|undefined>(pcManagementLog[0]?.security_code ?? undefined);
+  const [securityCode, setSecurityCode] = useState<string|undefined>(pcManagementLog[0]?.pc_assets.security_code[0] ?? undefined);
   const [detailedDescription, setDetailedDescription] = useState<string|undefined>(pcManagementLog[0]?.detailed_description ?? undefined);
   const [createdBy, setCreatedBy] = useState<string|undefined>(pcManagementLog[0]?.created_by ?? undefined);
   const [status, setStatus] = useState<string|undefined>(pcManagementLog[0]?.status ?? undefined);
@@ -40,6 +40,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
   const [location, setLocation] = useState<string|undefined>(pcManagementLog[0]?.location ?? undefined);
   const [install_type, setInstallType] = useState<string|undefined>(pcManagementLog[0]?.install_type ?? undefined);
   const [install_status, setInstallStatus] = useState<string|undefined>(pcManagementLog[0]?.install_status ?? undefined);
+  const [newSecurityCode, setNewSecurityCode] = useState<string|undefined>(undefined);
   // 추가 정보
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
@@ -59,6 +60,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
           serial_number: serial,
           first_stock_date: firstStockDate,
           manufacture_date: manufactureDate,
+          
         },
         match: { asset_id: pcManagementLog[0].pc_assets.asset_id },
       });
@@ -111,6 +113,92 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
     return [];
   }
 
+  
+  // securityCode와 newSecurityCode가 다를 경우 pc_assets 테이블에서 security_code []에 newSecurityCode 추가
+  //설치로그와 반납로그에 사용중
+  // 수정에서는 보안코드 변경이 되면 좋지만 복잡해서 읿단 보류
+  const updatePcAssetsSecurityCode = async (asset_id: string,newSecurityCode: string|undefined,supabaseService:SupabaseService) => {
+    if(!newSecurityCode){
+      return;
+    }
+    if(newSecurityCode===securityCode){
+      alert('보안코드가 동일합니다.');
+      return;
+    }
+    alert('보안코드 변경 시작')
+    const { data: existingAsset, error: existingAssetError } = await supabaseService.select({
+      table: 'pc_assets',
+      columns: '*',
+      match: { asset_id: asset_id },
+      limit: 1
+    });
+    if(!existingAsset||existingAsset.length===0){
+      alert('pc 자산 조회 실패');
+      return;
+    }
+    if(existingAsset[0].security_code.includes(newSecurityCode)){
+      alert('보안코드가 이미 존재합니다.');
+      return;
+    }
+    
+    // 기존 보안 코드를 파싱하여 배열로 변환
+    const parseSecurityCodes = (existingCodes: any): string[] => {
+      // 빈 값 처리
+      if (!existingCodes) return [];
+      
+      // 이미 배열인 경우
+      if (Array.isArray(existingCodes)) {
+        return existingCodes.flatMap(code => {
+          if (typeof code !== 'string') return String(code);
+          try {
+            const parsed = JSON.parse(code);
+            return Array.isArray(parsed) ? parsed : code;
+          } catch {
+            return code;
+          }
+        });
+      }
+      
+      // 문자열인 경우
+      if (typeof existingCodes === 'string') {
+        try {
+          const parsed = JSON.parse(existingCodes);
+          return Array.isArray(parsed) ? parsed : [existingCodes];
+        } catch {
+          return [existingCodes];
+        }
+      }
+      
+      // 그 외의 경우
+      return [String(existingCodes)];
+    };
+
+    // 기존 코드를 배열로 변환하고 새 코드를 추가
+    const existingSecurityCodes = parseSecurityCodes(existingAsset[0].security_code);
+    const updatedSecurityCodes = [newSecurityCode, ...existingSecurityCodes];
+
+    // 중복 제거
+    const uniqueSecurityCodes = [...new Set(updatedSecurityCodes)];
+
+    const UpdateResult = await supabaseService.update({
+      table: 'pc_assets',
+      data: {
+        security_code: uniqueSecurityCodes,
+      },
+      match: { asset_id: asset_id },
+    });
+    if(UpdateResult.success){
+      alert('보안코드 변경 완료');
+      console.log('보안코드 변경 결과',UpdateResult)
+    }else{
+      alert('보안코드 변경 실패');
+      console.error('보안코드 변경 실패:', UpdateResult);
+    }
+  
+    return UpdateResult;
+    
+  }
+
   return (
     <>
     <div className="text-sm font-semibold text-gray-700 px-4 sm:px-8 my-2">PC 자산 정보</div>
@@ -153,15 +241,24 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
           setValue={setManufactureDate}
           disabled={true}
         />
-      
-         <InputDate
+           <InputLog
+          label="최초입고일"
           value={firstStockDate ?? "-"}
           setValue={setFirstStockDate}
-          name="firstStockDate"
-          label="입고일"
-          type="date"
           disabled={true}
         />
+      
+        {workType==="입고"?
+        <div></div>
+        :
+        (
+       <InputLog
+         label={"보안코드"}
+         value={securityCode ?? "-"}
+         setValue={setSecurityCode}
+         disabled={true}
+       /> 
+        )}
       </div>
       {workType==="입고"?
       null
@@ -182,17 +279,32 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
           type="date"
         />
         )}
+     
+        
         {workType==="입고"?
         <div></div>
         :
         (
        <InputLog
-         label={"보안코드"}
-         value={securityCode ?? "-"}
-         setValue={setSecurityCode}
-       /> 
+         label={"의뢰인"}
+         value={requester ?? "-"}
+         setValue={setRequester}
+       />
         )}
-           {workType==="입고"?
+
+          {workType==="입고"?
+         <div></div>
+         :
+         (
+          <InputLog
+         label={"신규 보안코드"}
+         value={newSecurityCode}
+         setValue={setNewSecurityCode}
+         placeholder="보안코드 변경시 입력"
+       /> 
+         )} 
+
+        {workType==="입고"?
         <div></div>
         :
         (
@@ -204,17 +316,8 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
          options={PC_STATUS_OPTIONS}
        />
         )}
-       
-        {workType==="입고"?
-        <div></div>
-        :
-        (
-       <InputLog
-         label={"의뢰인"}
-         value={requester ?? "-"}
-         setValue={setRequester}
-       />
-        )}
+
+        
         {workType==="입고"?
         <div></div>
         :

@@ -30,7 +30,7 @@ export default function PcLogInput({workType}:{workType:string}) {
   const [modelName, setModelName] = useState<string>("");  
   const [serial, setSerial] = useState<string|undefined>(undefined);
   const [securityCode, setSecurityCode] = useState<string|undefined>(undefined);
-  const [firstStockDate, setFirstStockDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [firstStockDate, setFirstStockDate] = useState<string|undefined>(undefined);
   // 제조일자 초기값 세팅 yyyy-mm 타입, mm은 01월로 세팅 
   const [manufactureDate, setManufactureDate] = useState<string|undefined>(undefined);
   const [isNew, setIsNew] = useState<boolean>(false);
@@ -206,7 +206,7 @@ export default function PcLogInput({workType}:{workType:string}) {
            asset_id: asset_id,
            security_code: securityCode,
            work_type: workType,
-           work_date: firstStockDate,
+           work_date: workDate,
            created_by: createdBy,
            is_available : isAvailable,//기본값 사용가능
            detailed_description: detailedDescription,
@@ -493,6 +493,7 @@ export default function PcLogInput({workType}:{workType:string}) {
     setSerial(existingAsset[0].serial_number?existingAsset[0].serial_number:"");
     setSecurityCode(existingAsset[0].security_code?existingAsset[0].security_code[0]:"");
     setManufactureDate(existingAsset[0].manufacture_date?existingAsset[0].manufacture_date:"");
+    setFirstStockDate(existingAsset[0].first_stock_date?existingAsset[0].first_stock_date:"");
     }   
     // 폐기 로그 생성 시 정보 세팅
     if(workType==="폐기"){
@@ -516,6 +517,7 @@ export default function PcLogInput({workType}:{workType:string}) {
     setSerial(existingAsset[0].serial_number?existingAsset[0].serial_number:"");
     setSecurityCode(existingAsset[0].security_code?existingAsset[0].security_code[0]:"");
     setManufactureDate(existingAsset[0].manufacture_date?existingAsset[0].manufacture_date:"");
+    setFirstStockDate(existingAsset[0].first_stock_date?existingAsset[0].first_stock_date:"");
     // log정보 세팅
     setWorkDate(result.work_date?result.work_date:"");
     setRequester(result.requester?result.requester:"");
@@ -606,6 +608,19 @@ export default function PcLogInput({workType}:{workType:string}) {
           }}
 
         />
+        {workType!=="입고"?
+        null
+        :
+        (
+        <InputDate
+          label="작성일"
+          value={workDate}
+          setValue={setWorkDate}
+          name="workDate"
+          type="date"
+          disabled={workType!=="입고"}
+        />
+        )}
         <InputLog
           label="제조일"
           secondLabel={((user?.email==="pcsub1@ket.com"||user?.email==="admin@ket.com")&&manufactureDate)?generateSecurityCode(manufactureDate):undefined}
@@ -614,20 +629,15 @@ export default function PcLogInput({workType}:{workType:string}) {
           disabled={workType!=="입고"}
           placeholder={workType==="입고"?"yyyy-mm 형식으로 입력해주세요":undefined}
         />
-        
-        {workType==="반납"||workType==="설치"?
-      null
-      :
-      (
-         <InputDate
+        <InputLog
+          label="최초입고일"
+          secondLabel={((user?.email==="pcsub1@ket.com"||user?.email==="admin@ket.com")&&firstStockDate)?generateSecurityCode(firstStockDate):undefined}
           value={firstStockDate}
           setValue={setFirstStockDate}
-          name="firstStockDate"
-          label="입고일"
-          type="date"
           disabled={workType!=="입고"}
+          placeholder={workType==="입고"?"yyyy-mm 혹은 yyyy-mm-dd":undefined}
         />
-      )}
+    
        <InputLog
          label={"보안코드"}
          value={securityCode}

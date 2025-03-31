@@ -90,6 +90,10 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
          // log.format 데이터 처리
     try {
       // 전체 format 데이터를 먼저 파싱
+      if(!log.format){
+        return;
+      }
+
       const parseLogValue : LogType = JSON.parse(log.format);
       
       // 파싱된 데이터로 formData 설정

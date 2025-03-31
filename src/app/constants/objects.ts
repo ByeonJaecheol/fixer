@@ -30,6 +30,7 @@ export const PC_HP_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
     { value: 'Z400', label: 'Z400' },
     { value: 'Z620', label: 'Z620' },
     { value: 'Z640', label: 'Z640' },
+    { value: 'Z8G4', label: 'Z8G4' },
   ];
   
 export const PC_HP_NOTEBOOK_MODEL_OPTIONS: IDropDownOption[] = [
@@ -83,11 +84,13 @@ export const PC_LG_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
   export const PC_INSTALL_TYPE_OPTIONS: IDropDownOption[] = [
     { value: '신규', label: '신규' },
     { value: '교체', label: '교체' },
+    { value: '유지', label: '유지' },
   ];  
 
   export const PC_INSTALL_STATUS_OPTIONS: IDropDownOption[] = [
     { value: '새PC', label: '새PC' },
     { value: '재배치', label: '재배치' },
+    
   ];  
   
 

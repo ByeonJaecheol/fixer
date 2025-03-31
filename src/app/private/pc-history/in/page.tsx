@@ -33,7 +33,7 @@ export default async function AddPcHistory() {
     }
   }
   const pcManagementLog = await getPcManagementLog();
-  console.log(pcManagementLog);
+  console.log('입고 페이지 - 로그',pcManagementLog);
   return (
     <div>
         <PcLogInput workType={"입고"} />

@@ -10,7 +10,7 @@ export default async function InstallPage() {
        gridTemplateColumns: "8% 8% 8% 8% 8% 10% 12% 5% 35%"
       //  id,작업유형,pc타입,모델명,제조번호,상태,가동,횟수,용도,입고일,작업내용
       }
-    const pcManagementLog = await getPcManagementLog("pc_management_log","pc_assets","설치","work_date",false);
+    const pcManagementLog = await getPcManagementLog("pc_management_log","pc_assets","설치","log_id",false);
 
   return (
     <div>
