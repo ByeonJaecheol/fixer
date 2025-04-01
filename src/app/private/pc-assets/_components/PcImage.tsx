@@ -12,6 +12,7 @@ import Z400 from '../../../../../public/pcImage/Z400.jpg'
 import Z620 from '../../../../../public/pcImage/Z620.jpg'
 import Z640 from '../../../../../public/pcImage/Z640.jpg'
 import LG from '../../../../../public/pcImage/LG.jpg'
+import SAMSUNG from '../../../../../public/pcImage/SAMSUNG.jpg'
 import { ComputerDesktopIcon } from '@heroicons/react/24/outline'
 import Image, { StaticImageData } from 'next/image';
 import { useEffect, useState } from 'react';
@@ -54,7 +55,10 @@ export default function PcImage({brand, pcType, modelName}: {brand: string, pcTy
         }
       }else if (brand === "LG") {
         setImage(LG);
-      }else  {
+      }else if (brand === "삼성") {
+        setImage(SAMSUNG);
+      }
+      else  {
         setImage(null);
       }
     }

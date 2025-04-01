@@ -56,9 +56,9 @@ export const PC_LG_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
   ];
   
   export const PC_SAMSUNG_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
-    { value: 'DB-P600', label: 'DB-P600' },
-    { value: 'DB-400T2A', label: 'DB-400T2A' },
-    { value: 'DB-400T3A', label: 'DB-400T3A' },
+    { value: 'DBP600', label: 'DBP600' },
+    { value: 'DB400T2A', label: 'DB400T2A' },
+    { value: 'DB400T3A', label: 'DB400T3A' },
   ];
 
   export const PC_SAMSUNG_NOTEBOOK_MODEL_OPTIONS: IDropDownOption[] = [
