@@ -49,6 +49,36 @@ export interface IPcAsset {
   security_code: string[];
   is_disposed: boolean;
 }
+export interface IRentResultAsset {
+  id: number;
+  pc_assets: IPcAsset;
+  is_rented : boolean;
+  rent_type : string;
+  rent_name : string;
+  host : string;
+  rent_start_date : string;
+  rent_end_date : string;
+  // 반납예정일
+  return_date : string;
+  // 대여사유
+  rent_reason : string;
+  employee_name : string;
+  employee_department : string;
+  employee_workspace : string;
+}
+export interface IRentManagementLog {
+  id: number;
+  rent_id : number;
+  rent_start_date : string;
+  rent_end_date : string;
+  // 반납예정일
+  return_date : string;
+  // 대여사유
+  rent_reason : string;
+  employee_name : string;
+  employee_department : string;
+  employee_workspace : string;
+}
 
 export interface IPcManagementLog {
   asset_id: number;
