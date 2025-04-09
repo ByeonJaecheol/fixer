@@ -206,6 +206,7 @@ export default function PcLogInput({workType}:{workType:string}) {
            asset_id: asset_id,
            security_code: securityCode,
            work_type: workType,
+           
            work_date: workDate,
            created_by: createdBy,
            is_available : isAvailable,//기본값 사용가능

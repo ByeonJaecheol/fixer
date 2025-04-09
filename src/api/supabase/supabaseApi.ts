@@ -49,6 +49,23 @@ export interface IPcAsset {
   security_code: string[];
   is_disposed: boolean;
 }
+
+export interface IRentAsset {
+  id: number;
+  is_rented: boolean;
+  rent_type: string;
+  asset_id : number;
+  rent_name : string;
+  host: string;
+  rent_start_date: string;
+  rent_end_date: string;
+  return_date: string;
+  rent_reason: string;
+  employee_name: string;
+  employee_department: string;
+  employee_workspace: string;
+  requester: string;
+}
 export interface IRentResultAsset {
   id: number;
   pc_assets: IPcAsset;
@@ -65,6 +82,7 @@ export interface IRentResultAsset {
   employee_name : string;
   employee_department : string;
   employee_workspace : string;
+  requester : string;
 }
 export interface IRentManagementLog {
   id: number;
@@ -78,6 +96,8 @@ export interface IRentManagementLog {
   employee_name : string;
   employee_department : string;
   employee_workspace : string;
+  rent_type : string;
+  requester : string;
 }
 
 export interface IPcManagementLog {

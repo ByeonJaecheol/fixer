@@ -58,6 +58,8 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
           brand: brand,
           model_name: modelName,
           serial_number: serial,
+          // 보안코드 변경시 기존 보안코드 맨 앞에 추가
+          security_code: [newSecurityCode,...pcManagementLog[0].pc_assets.security_code],
           first_stock_date: firstStockDate,
           manufacture_date: manufactureDate,
           

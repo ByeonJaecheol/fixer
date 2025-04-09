@@ -13,17 +13,21 @@ interface RentFormData {
   rentStartDate: string;
   returnDate: string;
   reason: string;
+  requester: string;
 }
 
-export default function RentModal({rentResultAsset, isOpen = false, onClose = () => {} }: { rentResultAsset: IRentResultAsset[], isOpen: boolean, onClose: () => void }) {
+export default function RentModal({id, rentType, rentName, isOpen = false, onClose = () => {} }: { id: number, rentType: string, rentName: string, isOpen: boolean, onClose: () => void }) {
   const router = useRouter();
   const [formData, setFormData] = useState<RentFormData>({
     workplace: '',
     department: '',
     employeeName: '',
-    rentStartDate: '',
-    returnDate: '',
-    reason: ''
+    // 기본값으로 오늘 날짜  
+    rentStartDate: new Date().toISOString().split('T')[0],
+    // 기본값으로 오늘 날짜 + 1일
+    returnDate: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0],
+    reason: '',
+    requester: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -40,14 +44,15 @@ export default function RentModal({rentResultAsset, isOpen = false, onClose = ()
     const logResult = await supabaseService.insert({
       table: 'rent_management_log',
       data: {
-        rent_id: rentResultAsset[0].id,
+        rent_id: id,
         rent_type: '대여',
         rent_start_date: formData.rentStartDate,
         return_date: formData.returnDate,
         rent_reason: formData.reason,
         employee_name: formData.employeeName,
         employee_department: formData.department,
-        employee_workspace: formData.workplace
+        employee_workspace: formData.workplace,
+        requester: formData.requester
       }
     });
     console.log('createRentManagementLog 완료',logResult);
@@ -61,20 +66,22 @@ export default function RentModal({rentResultAsset, isOpen = false, onClose = ()
           employee_name: formData.employeeName,
           employee_department: formData.department,
           employee_workspace: formData.workplace,
-          is_rented: true
+          is_rented: true,
+          requester: formData.requester
         },
-        match: { id: rentResultAsset[0].id }
+        match: { id: id }
       });
       console.log('rent_assets 업데이트 완료',updateResult);
       alert('대여 신청 성공');
-      router.replace('/private/rent');
+      router.refresh();
       setFormData({
         workplace: '',
         department: '',
         employeeName: '',
         rentStartDate: '',
         returnDate: '',
-        reason: ''
+        reason: '',
+        requester: ''
       }); 
     }else{
       alert('대여 신청 실패');
@@ -93,15 +100,15 @@ export default function RentModal({rentResultAsset, isOpen = false, onClose = ()
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       {/* 배경 오버레이 */}
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-
+      <div className="fixed inset-0 bg-black/10" aria-hidden="true" />
+      
       {/* 모달 컨테이너 */}
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <Dialog.Panel className="w-full max-w-2xl bg-white rounded-xl shadow-xl">
           {/* 모달 헤더 */}
           <div className="flex items-center justify-between p-6 border-b">
             <Dialog.Title className="text-xl font-semibold text-gray-900">
-              PC 대여 신청
+              [{rentType} {rentName}] 대여 신청
             </Dialog.Title>
             <button
               onClick={onClose}
@@ -110,7 +117,6 @@ export default function RentModal({rentResultAsset, isOpen = false, onClose = ()
               <XMarkIcon className="w-6 h-6" />
             </button>
           </div>
-
           {/* 모달 본문 */}
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-3 gap-6">
@@ -128,7 +134,6 @@ export default function RentModal({rentResultAsset, isOpen = false, onClose = ()
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-
               {/* 부서 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -158,7 +163,19 @@ export default function RentModal({rentResultAsset, isOpen = false, onClose = ()
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div></div>
+              {/* 의뢰인 */}  
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  의뢰인
+                </label>
+                <input
+                  type="text"
+                  name="requester"
+                  value={formData.requester}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
 
               {/* 대여일 */}
               <div>
@@ -225,9 +242,10 @@ export default function RentModal({rentResultAsset, isOpen = false, onClose = ()
           </form>
           <div>
             {/* 디버깅 영역 */}
-            <div>
+            {/* <div>
+              {rentResultAsset.id}
               <p>formData: {JSON.stringify(formData)}</p>
-            </div>
+            </div> */}
           </div>
         </Dialog.Panel>
       </div>

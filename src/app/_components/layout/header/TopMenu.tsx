@@ -28,7 +28,7 @@ const navigationItems = [
   {
     icon: DeviceTabletIcon,
     text: '장비대여',
-    href: 'rent'
+    href: 'rent?type=사무용'
   },
   {
     icon: CalendarIcon,

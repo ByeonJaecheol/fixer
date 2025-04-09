@@ -6,48 +6,68 @@ import LG from "../../../../../public/pcImage/LG.jpg"
 import { useState } from "react";
 import RentModal from "./RentModal";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 export default function RentPcInfo({ rentResultAsset }: { rentResultAsset: IRentResultAsset[] }) {
     const router = useRouter();
+    const [rentId, setRentId] = useState<number>(0);
+    const [rentType, setRentType] = useState<string>('');
+    const [rentName, setRentName] = useState<string>('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     
-    const UpdateIsRented = async (asset_id: number) => {
+    const UpdateIsRented = async (rent_id: number) => {
+      console.log('RentPcInfo - 반납 - rent_id ',rent_id);
         const supabaseService = SupabaseService.getInstance();
-        const result = await supabaseService.update({
+        // asset_id 에 해당하는 데이터를 조회
+        const rentAssetResultData = await supabaseService.select({
             table: 'rent_assets',
-            data: { 
-                is_rented: false,
-                rent_end_date: new Date().toISOString().split('T')[0],
-                return_date: new Date().toISOString().split('T')[0],
-                rent_reason: rentResultAsset[0].rent_reason,
-                employee_name: rentResultAsset[0].employee_name,
-                employee_department: rentResultAsset[0].employee_department,
-                employee_workspace: rentResultAsset[0].employee_workspace
-             },
-            match: { asset_id: asset_id }
+            columns: '*',
+            match: { id: rent_id }
         });
-        if(result.success){  
-            const rentLogResult = await supabaseService.insert({
-                table: 'rent_management_log',
-                data: {
-                    rent_id: rentResultAsset[0].id,
-                    rent_type: '반납',
-                    rent_start_date: rentResultAsset[0].rent_start_date,
-                    rent_end_date: new Date().toISOString().split('T')[0],
-                    rent_reason: rentResultAsset[0].rent_reason,
-                    employee_name: rentResultAsset[0].employee_name,
-                    employee_department: rentResultAsset[0].employee_department,
-                    employee_workspace: rentResultAsset[0].employee_workspace
-                }
-            });
-            if(rentLogResult.success){
-                alert('반납 신청 성공');
-                router.replace('/private/rent');
-            }else{
-                alert('반납 신청 실패');
-            }
-        }else{
-            alert('반납 신청 실패');
+        console.log('RentPcInfo - 반납 - rentAssetResult ',rentAssetResultData);
+        if(rentAssetResultData.success){
+            const selectedAsset = rentAssetResultData.data[0];
+            const result = await supabaseService.update({
+              table: 'rent_assets',
+              data: { 
+                  is_rented: false,
+                  rent_end_date: new Date().toISOString().split('T')[0],
+                  return_date: new Date().toISOString().split('T')[0],
+                  rent_reason: selectedAsset.asset_id,
+                  employee_name: selectedAsset.employee_name,
+                  employee_department: selectedAsset.employee_department,
+                  employee_workspace: selectedAsset.employee_workspace
+               },
+              match: { id: rent_id }
+          });
+          if(result.success){  
+            console.log('RentPcInfo - 반납 - rentResultAsset ',rentAssetResultData.data[0]);
+              const rentLogResult = await supabaseService.insert({
+                  table: 'rent_management_log',
+                  data: {
+                      rent_id: rentAssetResultData.data[0].id,
+                      rent_type: '반납',
+                      rent_start_date: rentAssetResultData.data[0].rent_start_date,
+                      rent_end_date: new Date().toISOString().split('T')[0],
+                      rent_reason: rentAssetResultData.data[0].rent_reason,
+                      employee_name: rentAssetResultData.data[0].employee_name,
+                      employee_department: rentAssetResultData.data[0].employee_department,
+                      employee_workspace: rentAssetResultData.data[0].employee_workspace
+                  }
+              });
+              if(rentLogResult.success){
+                  alert('반납 신청 성공');
+                  router.refresh();
+              }else{
+                  alert('반납 신청 실패');
+              }
+          }else{
+              alert('반납 신청 실패');
+          }
+
         }
+        
+
+       
     }
 
     const getRentPcInfo = async (rent_id: number) => {
@@ -59,24 +79,42 @@ export default function RentPcInfo({ rentResultAsset }: { rentResultAsset: IRent
         });
         return result.data;
     }
+
+  if(rentResultAsset.length === 0) {
+    return (
+      <div className="w-full flex flex-col items-center justify-center h-96">
+        <h1 className="text-2xl font-bold">등록된 PC가 없습니다.</h1>
+        {/* 뒤로가기 */}
+        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors duration-200" onClick={() => router.back()}>
+          뒤로가기
+        </button>
+      </div>
+    )
+  }
   return (
     <div className="w-full flex flex-row gap-x-4">
-     <RentModal rentResultAsset={rentResultAsset} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <RentModal id={rentId} rentType={rentType} rentName={rentName} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6 p-6">
       {rentResultAsset?.map((item: IRentResultAsset) => (
         <div 
-          key={item.id} 
-          className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden"
+        key={item.id} 
+        className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden"
         >
           {/* 이미지 섹션 */}
           <div className="relative group flex items-center justify-center">
-            <Image 
-              src={item.pc_assets.brand === 'HP' ? HP : LG} 
-              alt="PC 이미지" 
-              width={160} 
-              height={160} 
-              className="w-40 h-40" 
-            />
+            <Link href={`/private/rent/detail/${item.id}`} className="cursor-pointer">
+              {/* 마우스 호버 상태일때만 이미지 위에 '이력보기' 표시 */}
+              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"> 
+                <span className="text-white bg-black/50 px-2 py-1 rounded-md text-sm font-medium">이력보기</span>
+              </div>  
+              <Image 
+                src={item.pc_assets.brand === 'HP' ? HP : LG} 
+                alt="PC 이미지" 
+                width={160} 
+                height={160} 
+                className="w-40 h-40" 
+              />
+            </Link>
             <div className="absolute top-2 right-3">
             {item.is_rented ? (
               <span className="px-3 py-1 bg-blue-500 text-white text-sm font-medium rounded-full">
@@ -146,12 +184,12 @@ export default function RentPcInfo({ rentResultAsset }: { rentResultAsset: IRent
             <div className="mt-5 flex gap-2">
               {item.is_rented ? (
                 <>
-                <button className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors duration-200" onClick={() => UpdateIsRented(item.pc_assets.asset_id)}  >
+                <button className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors duration-200" onClick={() =>{console.log(item.id); UpdateIsRented(item.id)}}  >
                 반납
               </button>
               </>
               ) : (
-                <button className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors duration-200" onClick={() => setIsModalOpen(true)}>
+                <button className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors duration-200" onClick={() => {setRentId(item.id); setRentType(item.rent_type); setRentName(item.rent_name); setIsModalOpen(true)}}>
                 신청
               </button>
               )}

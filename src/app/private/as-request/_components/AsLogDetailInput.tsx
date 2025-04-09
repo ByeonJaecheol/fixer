@@ -350,14 +350,14 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
             />  
        
             {/* 증상 */}
-            <InputLog
+         </div>
+         <div className="px-4 sm:px-8 mb-4">
+            <InputTextArea
               label={"문의내용"}
               value={question}
               setValue={setQuestion}
             />
-
-          
-         </div>
+          </div>
           {/* 작업유형 별 개별 값 시작*/}
           <div className="flex flex-col gap-4 mb-4 rounded-lg  m-8">
 
