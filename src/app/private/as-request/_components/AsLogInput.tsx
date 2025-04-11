@@ -30,6 +30,7 @@ export default function AsLogInput({workType}:{workType:string}) {
   const [category, setSecurityProgram] = useState<string|undefined>(undefined);
   const [format, setFormat] = useState<string|undefined>(undefined);
   const [detailedDescription, setDetailedDescription] = useState<string|undefined>(undefined);
+  const [solutionDetail, setSolutionDetail] = useState<string|undefined>(undefined);
   // 기타 값
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
@@ -145,6 +146,7 @@ export default function AsLogInput({workType}:{workType:string}) {
             employee_name : employeeName,
             question : question,
             detail_category : detailCategory,
+            solution_detail : solutionDetail,
           }
         });
         console.log('H/W 결과',logResult)
@@ -174,6 +176,7 @@ export default function AsLogInput({workType}:{workType:string}) {
             employee_name : employeeName,
             category : category,
             question : question,
+            solution_detail : solutionDetail,
             detailed_description: detailedDescription,
             format : formData,
         }
@@ -202,6 +205,7 @@ export default function AsLogInput({workType}:{workType:string}) {
           employee_department : employeeDepartment,
           employee_name : employeeName,
           question : question,
+          solution_detail : solutionDetail,
           detailed_description: detailedDescription,
         }     
       })
@@ -233,6 +237,7 @@ export default function AsLogInput({workType}:{workType:string}) {
           detail_category : detailCategory,
           question : question,
           detailed_description: detailedDescription,
+          solution_detail : solutionDetail,
         } 
       })
       console.log('장비관리 결과',logResult)
@@ -261,6 +266,7 @@ export default function AsLogInput({workType}:{workType:string}) {
           employee_name : employeeName,
           question : question,
           detailed_description: detailedDescription,
+          solution_detail : solutionDetail,
         }
       })
       console.log('기타 결과',logResult)
@@ -490,122 +496,110 @@ export default function AsLogInput({workType}:{workType:string}) {
             {/* 증상 */}
 
          </div>
-          <div className="px-4 sm:px-8 mb-4">
-            <InputTextArea
+            {/* 작업유형 별 개별 값 시작*/}
+            <div className="flex flex-col gap-4 mb-4 rounded-lg  m-8">
+
+            {workType==="H/W"&&
+            <div className="flex flex-col gap-y-4">
+                {/* 하드웨어 페이지 */}
+                {/* 제조번호 */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <InputLog
+                  label={"제조번호"}
+                  value={serial}
+                  setValue={setSerial}
+                  onKeyDown={()=>setPcAssetInfo(serial??"")}
+                />
+                <InputLog
+                  label={"기존 보안코드"}
+                  value={securityCode}
+                  setValue={setSecurityCode}
+                  onKeyDown={()=>fetchDataBySecurityCode(securityCode??"",setEmployeeWorkspace,setEmployeeDepartment,setEmployeeName,setModelName,setSerial)}
+                  placeholder="보안코드 입력 후 엔터시 자동입력"
+                />
+                <InputLog
+                  label={"신규 보안코드"}
+                  value={newSecurityCode}
+                  setValue={setNewSecurityCode}
+                />
+                </div>
+            </div>
+            } 
+            {workType==="S/W"&&
+            <div className="flex flex-col gap-y-4">
+              {/* 소프트웨어 페이지 */}
+              {/* 보안 프로그램 */}
+              <CommonInputSingleCheckbox 
+                title={"분류"}
+                value={category??""}
+                setValue={setSecurityProgram}
+                options={["보안","프로그램","OS","바이러스"]}
+              />
+            </div>
+            }
+            {category==="OS"&&
+            <div className="flex flex-col gap-y-4">
+              {/* 소프트웨어 페이지 */}
+              {/* 보안 프로그램 */}
+              <CommonInputSingleCheckbox 
+                title={""}
+                value={format??""}
+                setValue={setFormat}
+                options={["OS설치","그 외"]}
+              />
+            </div>
+            }
+            {format==="OS설치"&&
+            <FormatFormData formData={formData} setFormData={setFormData}/>
+            }
+
+            {workType==="장비관리"&&
+            <div className="flex flex-col gap-y-4">
+              {/* 소프트웨어 페이지 */}
+              {/* 보안 프로그램 */}
+              <CommonInputSingleCheckbox 
+                title={"분류"}
+                value={category??""}
+                setValue={setSecurityProgram}
+                options={["PC","모니터","프린터","소모품"]}
+              />
+            </div>
+            }
+            {(category==="PC"||category==="모니터")&&
+            <div className="flex flex-col gap-y-4">
+              {/* 소프트웨어 페이지 */}
+              {/* 보안 프로그램 */}
+              <CommonInputSingleCheckbox 
+                title={"세부항목"}
+                value={detailCategory??""}
+                setValue={setDetailCategory}
+                options={["설치","반납","폐기"]}
+              />
+            </div>
+            }
+
+            </div>
+
+
+            {/* 문의내용 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 sm:px-8 mb-4">
+            <InputLog
               label={"문의내용"}
               value={question}
               setValue={setQuestion}
             />
+          {/* 해결방법 */}
+          <div className="px-4 sm:px-8 mb-4">
+            <InputLog
+              label={"조치내용"}
+              value={solutionDetail}
+              setValue={setSolutionDetail}
+            />
           </div>
-          {/* 작업유형 별 개별 값 시작*/}
-          <div className="flex flex-col gap-4 mb-4 rounded-lg  m-8">
-
-              {workType==="H/W"&&
-              <div className="flex flex-col gap-y-4">
-                  <h3 className="font-bold text-sm">H/W 선택항목</h3>
-                  {/* 하드웨어 페이지 */}
-                  {/* 제조번호 */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                  <InputLog
-                    label={"제조번호"}
-                    value={serial}
-                    setValue={setSerial}
-                    onKeyDown={()=>setPcAssetInfo(serial??"")}
-                  />
-                  <InputLog
-                    label={"기존 보안코드"}
-                    value={securityCode}
-                    setValue={setSecurityCode}
-                    onKeyDown={()=>fetchDataBySecurityCode(securityCode??"",setEmployeeWorkspace,setEmployeeDepartment,setEmployeeName,setModelName,setSerial)}
-                    placeholder="보안코드 입력 후 엔터시 자동입력"
-                  />
-                  <InputLog
-                    label={"신규 보안코드"}
-                    value={newSecurityCode}
-                    setValue={setNewSecurityCode}
-                  />
-                  </div>
-              </div>
-            } 
-            {workType==="S/W"&&
-              <div className="flex flex-col gap-y-4">
-                <h3 className="font-bold text-sm">S/W 선택항목</h3>
-                {/* 소프트웨어 페이지 */}
-                {/* 보안 프로그램 */}
-                <CommonInputSingleCheckbox 
-                  title={"분류"}
-                  value={category??""}
-                  setValue={setSecurityProgram}
-                  options={["보안","프로그램","OS","바이러스"]}
-                />
-              </div>
-            }
-            {category==="OS"&&
-             <div className="flex flex-col gap-y-4">
-                {/* 소프트웨어 페이지 */}
-                {/* 보안 프로그램 */}
-                <CommonInputSingleCheckbox 
-                  title={""}
-                  value={format??""}
-                  setValue={setFormat}
-                  options={["OS설치","그 외"]}
-                />
-              </div>
-            }
-            {format==="OS설치"&&
-              <FormatFormData formData={formData} setFormData={setFormData}/>
-            }
-
-            {workType==="장비관리"&&
-              <div className="flex flex-col gap-y-4">
-                <h3 className="font-bold text-sm">장비관리 선택항목</h3>
-                {/* 소프트웨어 페이지 */}
-                {/* 보안 프로그램 */}
-                <CommonInputSingleCheckbox 
-                  title={"분류"}
-                  value={category??""}
-                  setValue={setSecurityProgram}
-                  options={["PC","모니터","프린터","소모품"]}
-                />
-              </div>
-            }
-            {(category==="PC"||category==="모니터")&&
-              <div className="flex flex-col gap-y-4">
-                {/* 소프트웨어 페이지 */}
-                {/* 보안 프로그램 */}
-                <CommonInputSingleCheckbox 
-                  title={"세부항목"}
-                  value={detailCategory??""}
-                  setValue={setDetailCategory}
-                  options={["설치","반납","폐기"]}
-                />
-              </div>
-            }
-
           </div>
-          {/* 작업유형 별 개별 값 끝 */}
-          {/* 디버깅 정보 */}
-          {/* <div>
-            <h3>디버깅 정보</h3>
-            <p>신규pc입고 : {isNew+""}</p>
-            <p>workType: {workType}</p>
-            <p>brand: {brand}</p>
-            <p>modelName: {modelName}</p>
-            <p>serial: {serial}</p>
-            <p>securityCode: {securityCode}</p>
-            <p>pcType: {pcType}</p>
-            <p>workDate: {workDate}</p>
-            <p>manufactureDate: {manufactureDate}</p>
-            <p>isLoading: {isLoading}</p>
-            <p>detailedDescription: {detailedDescription}</p>
-             <h1>{location}</h1>
-                <h1>{install_type+""}</h1>
-                <h1>{install_status+""}</h1>
-          </div> */}
-    
           <div className="w-full mb-4 px-4 sm:px-8">
            <InputTextArea
-             label={"조치내용"}
+             label={"상세설명"}
              value={detailedDescription}
              setValue={setDetailedDescription}
              placeholder={""}

@@ -35,6 +35,7 @@ interface IHardwareLogEntry {
     question: string;
     security_code: string;
     serial_number: string;
+    solution_detail: string;
     work_date: string; // YYYY-MM-DD 형식의 날짜 문자열
     work_type: "H/W" | "S/W" | string; // 특정 타입을 제한하려면 여기에 추가
     format: string;
@@ -52,6 +53,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
     const [serial, setSerial] = useState<string|undefined>(undefined);
     const [detailCategory, setDetailCategory] = useState<string|undefined>(undefined);
     const [category, setCategory] = useState<string|undefined>(undefined);
+    const [solutionDetail, setSolutionDetail] = useState<string|undefined>(undefined);
 
   
     const [detailedDescription, setDetailedDescription] = useState<string|undefined>(undefined);
@@ -86,7 +88,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
         setDetailCategory(log.detail_category ?? "");
         setCategory(log.category ?? "");
         setDetailedDescription(log.detailed_description);
-
+        setSolutionDetail(log.solution_detail);
          // log.format 데이터 처리
     try {
       // 전체 format 데이터를 먼저 파싱
@@ -136,6 +138,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
                 security_code : securityCode,
                 new_security_code : newSecurityCode,
                 question : question,
+                solution_detail : solutionDetail,
                 detailed_description: detailedDescription,
             },
             match: {
@@ -165,6 +168,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
                 model_name : modelName,
                 category : category,
                 question : question,
+                solution_detail : solutionDetail,
                 detailed_description: detailedDescription,
                 format : JSON.stringify(formData),
             },
@@ -194,6 +198,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
                 employee_name : employeeName,
                 model_name : modelName,
                 question : question,
+                solution_detail : solutionDetail,
                 detailed_description: detailedDescription,
             },
             match: {
@@ -225,6 +230,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
                 category : category,
                 detail_category : detailCategory,
                 question : question,
+                solution_detail : solutionDetail,
                 detailed_description: detailedDescription,
             },
             match: {
@@ -253,6 +259,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
                 employee_name : employeeName,
                 model_name : modelName,
                 question : question,
+                solution_detail : solutionDetail,
                 detailed_description: detailedDescription,
             },
             match: {
@@ -351,13 +358,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
        
             {/* 증상 */}
          </div>
-         <div className="px-4 sm:px-8 mb-4">
-            <InputTextArea
-              label={"문의내용"}
-              value={question}
-              setValue={setQuestion}
-            />
-          </div>
+        
           {/* 작업유형 별 개별 값 시작*/}
           <div className="flex flex-col gap-4 mb-4 rounded-lg  m-8">
 
@@ -454,10 +455,21 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
                 <h1>{install_status+""}</h1>
           </div> */}
     
-    
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 sm:px-8 mb-4">
+            <InputLog
+              label={"문의내용"}
+              value={question}
+              setValue={setQuestion}
+            />
+            <InputLog
+              label={"조치내용"}
+              value={solutionDetail}
+              setValue={setSolutionDetail}
+            />
+          </div>
           <div className="w-full mb-4 px-4 sm:px-8">
            <InputTextArea
-             label={"조치내용"}
+             label={"상세설명"}
              value={detailedDescription}
              setValue={setDetailedDescription}
              placeholder={""}

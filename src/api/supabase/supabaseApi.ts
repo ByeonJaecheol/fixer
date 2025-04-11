@@ -126,7 +126,8 @@ export interface IAsManagementLog {
   log_id : number
   work_type: string;
   work_date: string;
-  detailed_description: string;
+  detail_description: string;
+  solution_detail : string
   created_by: string;
   created_at: string;
   employee_workspace : string;
@@ -136,7 +137,7 @@ export interface IAsManagementLog {
   security_code: string;
   new_security_code : string
   category : string
-  detail_category : string
+  detailed_category : string
   model_name : string
   question : string
 }

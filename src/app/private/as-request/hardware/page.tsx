@@ -86,8 +86,8 @@ export default async function HardwarePage() {
                     {truncateDescription(log.question,30)}
                       </div>
                   {/* 작업내용 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 border-l border-gray-200"  title={log.detailed_description}>
-                    {truncateDescription(log.detailed_description,30)}
+                    <div className="px-2 py-4 text-sm text-gray-500 border-l border-gray-200"  title={log.solution_detail}>
+                    {truncateDescription(log.solution_detail,30)}
                     </div>
                   </Link>
                 ))}

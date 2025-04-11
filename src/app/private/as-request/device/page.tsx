@@ -76,14 +76,14 @@ export default async function SoftwarePage() {
                   {/* 카테고리 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.category ?? '-'}</div>
                   {/* 상세 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.detail_category ?? '-'}</div>
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.detailed_category ?? '-'}</div>
                   {/* 문의내용 */}
                   <div className="px-2 py-4 text-sm text-gray-500 border-l border-gray-200"  title={log.question}>
                   {truncateDescription(log.question,30)}
                       </div>
                   {/* 작업내용 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 border-l border-gray-200"  title={log.detailed_description}>
-                      {truncateDescription(log.detailed_description,30)}
+                    <div className="px-2 py-4 text-sm text-gray-500 border-l border-gray-200"  title={log.solution_detail}>
+                      {truncateDescription(log.solution_detail,30)}
                     </div>
                   </Link>
                 ))}

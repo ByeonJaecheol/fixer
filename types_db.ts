@@ -209,6 +209,7 @@ export type Database = {
       model_name : string
       question : string
       format : string[]
+      solution_detail : string
 
     }
     Insert: {
@@ -228,6 +229,7 @@ export type Database = {
       model_name : string
       question : string
       format : string[]
+      solution_detail : string
     }
     Update: {
       work_type: string;
@@ -246,6 +248,7 @@ export type Database = {
       model_name : string
       question : string
       format : string[]
+      solution_detail : string
     }
   };
   "employees": {
