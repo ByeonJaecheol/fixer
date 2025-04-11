@@ -8,6 +8,7 @@ import {
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
 import { supabase } from "@/utils/supabase";
+import Link from 'next/link';
 
 // 기존 인터페이스는 유지하고, 필터 타입 추가
 type DateFilterType = 'today' | 'week' | 'year' | 'custom';
@@ -412,12 +413,16 @@ export default function PrivateDashboard() {
           dateFilter={activeFilter}
         />
         <StatCard
-          title="대여 가능 PC"
-          value={assets.filter(asset => asset.status === 'available').length}
-          trend="3대"
-          trendType="down"
+          title="장비이력"
+          value={pcActivities.filter(activity => {
+            const dateRange = getDateRangeByFilter(activeFilter);
+            return isWithinInterval(new Date(activity.created_at), dateRange);
+          }).length}
+          trend={`${activeFilter === 'today' ? '3건' : activeFilter === 'week' ? '8건' : '15건'}`}
+          trendType="up"
           color="bg-white border-b-4 border-green-700"
           dateFilter={activeFilter}
+          link="/pc-history"
         />
         <StatCard
           title="AS 요청"
@@ -429,6 +434,7 @@ export default function PrivateDashboard() {
           trendType="up"
           color="bg-white border-b-4 border-amber-700"
           dateFilter={activeFilter}
+          link="/as-request"
         />
         <StatCard
           title="현재 대여 중"
@@ -437,26 +443,52 @@ export default function PrivateDashboard() {
           trendType="up"
           color="bg-white border-b-4 border-purple-700"
           dateFilter={activeFilter}
+          link="/rent"
         />
       </div>
 
       {/* 차트 섹션 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* 자산 상태 분포 차트 */}
-        <ChartCard title="자산 상태 분포">
-          {assetStatusData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={assetStatusData}>
+
+        {/* 활동 차트 */}
+        <ChartCard title={`${activeFilter === 'today' ? '오늘' : activeFilter === 'week' ? '이번 주' : activeFilter === 'year' ? '올해' : '선택 기간'} 활동`}>
+          {loading ? (
+            <ChartSkeleton />
+          ) : activityData.length > 0 ? (
+            <ResponsiveContainer width="99%" height={300}>
+              <BarChart data={activityData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis dataKey="status" tick={{ fill: '#616161' }} />
+                <XAxis dataKey="date" tick={{ fill: '#616161' }} />
                 <YAxis tick={{ fill: '#616161' }} />
-                <Tooltip
+                <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} />
+                <Legend />
+                <Bar dataKey="as_requests" name="AS 요청" fill="#3949AB" />
+                <Bar dataKey="pc_activities" name="PC 관리 활동" fill="#00796B" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <NoDataDisplay />
+          )}
+        </ChartCard>
+
+        {/* PC 유형 분포 차트 */}
+        <ChartCard title="PC 유형 분포">
+          {loading ? (
+            <ChartSkeleton />
+          ) : assetTypeData.length > 0 ? (
+            <ResponsiveContainer width="99%" height={300}>
+              <BarChart data={assetTypeData} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis type="number" tick={{ fill: '#616161' }} />
+                <YAxis type="category" dataKey="name" tick={{ fill: '#616161' }} width={120} />
+                <Tooltip 
                   contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+                  formatter={(value: number) => [value, '대수']}
                 />
                 <Legend />
-                <Bar dataKey="count" name="자산 수량">
-                  {assetStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                <Bar dataKey="value" name="PC 수량">
+                  {assetTypeData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Bar>
               </BarChart>
@@ -466,101 +498,27 @@ export default function PrivateDashboard() {
           )}
         </ChartCard>
 
-        {/* 활동 차트 */}
-        <ChartCard title={`${activeFilter === 'today' ? '오늘' : activeFilter === 'week' ? '이번 주' : activeFilter === 'year' ? '올해' : '선택 기간'} 활동`}>
-          {activityData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={activityData}>
+        {/* 부서별 대여 현황 차트 */}
+        <ChartCard title="부서별 대여 현황">
+          {loading ? (
+            <ChartSkeleton />
+          ) : rentedAssetsData.length > 0 ? (
+            <ResponsiveContainer width="99%" height={300}>
+              <BarChart data={rentedAssetsData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis 
-                  dataKey="date" 
-                  tick={{ fill: '#616161' }}
-                  interval={activeFilter === 'year' ? 1 : activeFilter === 'week' ? 0 : 'preserveEnd'} 
-                />
-                <YAxis tick={{ fill: '#616161' }} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-                />
-                <Legend />
-                <Area 
-                  type="monotone" 
-                  dataKey="as_requests" 
-                  name="AS 요청" 
-                  fill="#9FA8DA" 
-                  stroke="#3949AB" 
-                  fillOpacity={0.6} 
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="pc_activities" 
-                  name="PC 관리 활동" 
-                  fill="#80CBC4" 
-                  stroke="#00796B" 
-                  fillOpacity={0.6} 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <NoDataDisplay />
-          )}
-        </ChartCard>
-
-        {/* PC 유형 분포 차트 */}
-        <ChartCard title="PC 유형 분포">
-          {assetTypeData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={assetTypeData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={100}
-                  dataKey="value"
-                  nameKey="name"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
-                  {assetTypeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
+                <XAxis type="number" tick={{ fill: '#616161' }} />
+                <YAxis type="category" dataKey="name" tick={{ fill: '#616161' }} width={120} />
+                <Tooltip 
                   contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
                   formatter={(value: number) => [value, '대수']}
                 />
                 <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <NoDataDisplay />
-          )}
-        </ChartCard>
-
-        {/* 부서별 대여 현황 차트 */}
-        <ChartCard title="부서별 대여 현황">
-          {rentedAssetsData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={rentedAssetsData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={100}
-                  dataKey="value"
-                  nameKey="name"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
+                <Bar dataKey="value" name="대여 PC 수량">
                   {rentedAssetsData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-                  formatter={(value: number) => [value, '대수']}
-                />
-                <Legend />
-              </PieChart>
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           ) : (
             <NoDataDisplay />
@@ -603,9 +561,10 @@ interface StatCardProps {
   trendType: 'up' | 'down' | 'neutral';
   color: string;
   dateFilter: DateFilterType;
+  link?: string;
 }
 
-function StatCard({ title, value, trend, trendType, color, dateFilter }: StatCardProps) {
+function StatCard({ title, value, trend, trendType, color, dateFilter, link }: StatCardProps) {
   // 필터에 따른 레이블 생성
   const getPeriodLabel = (filter: DateFilterType): string => {
     switch (filter) {
@@ -623,9 +582,10 @@ function StatCard({ title, value, trend, trendType, color, dateFilter }: StatCar
   };
 
   return (
-    <div className={`p-6 rounded-lg shadow-sm ${color}`}>
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-gray-500">{title}</p>
+    <Link href={link || '#'} className="block">
+      <div className={`p-6 rounded-lg shadow-sm ${color}`}>
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-gray-500">{title}</p>
         <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
           {getPeriodLabel(dateFilter)}
         </span>
@@ -647,5 +607,6 @@ function StatCard({ title, value, trend, trendType, color, dateFilter }: StatCar
         </span>
       </div>
     </div>
+    </Link>
   );
 }
