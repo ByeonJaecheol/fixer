@@ -1,5 +1,6 @@
 // supabaseService.ts
 import { createClient } from '@supabase/supabase-js';
+import { format, parseISO } from 'date-fns';
 
 interface InsertOptions {
   table: string;
@@ -162,6 +163,17 @@ interface SelectWithRelationsOptions {
     ascending?: boolean;
   };
   limit?: number;
+}
+
+interface QueryParams {
+  query: string;
+  values?: any[];
+}
+
+interface QueryResponse {
+  success: boolean;
+  data: any[];
+  error?: any;
 }
   
 class SupabaseService {
@@ -446,6 +458,25 @@ async selectWithRelations({
     }
     
     return { success: true, results, error: null };
+  }
+
+  async query({ query, values = [] }: QueryParams): Promise<QueryResponse> {
+    try {
+      const { data, error } = await this.supabase.rpc('run_query', {
+        query_text: query,
+        query_params: values
+      });
+
+      if (error) {
+        console.error('Query execution error:', error);
+        return { success: false, data: [], error };
+      }
+
+      return { success: true, data: data || [] };
+    } catch (error) {
+      console.error('Query execution error:', error);
+      return { success: false, data: [], error };
+    }
   }
 }
 
