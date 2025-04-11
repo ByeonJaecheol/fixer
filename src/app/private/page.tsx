@@ -610,3 +610,11 @@ function StatCard({ title, value, trend, trendType, color, dateFilter, link }: S
     </Link>
   );
 }
+
+function ChartSkeleton() {
+  return (
+    <div className="flex items-center justify-center h-[300px] bg-gray-50 rounded-lg">
+      <div className="animate-pulse"></div>
+    </div>
+  );
+}
