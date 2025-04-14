@@ -502,7 +502,7 @@ export default function PrivateDashboard() {
           trendType="up"
           color="bg-white border-b-4 border-green-700"
           dateFilter={activeFilter}
-          link="/pc-history"
+          link="/private/pc-history"
         />
         <StatCard
           title="AS 요청"
@@ -514,7 +514,7 @@ export default function PrivateDashboard() {
           trendType="up"
           color="bg-white border-b-4 border-amber-700"
           dateFilter={activeFilter}
-          link="/as-request"
+          link="/private/as-request"
         />
         <StatCard
           title="현재 대여 중"
@@ -523,7 +523,7 @@ export default function PrivateDashboard() {
           trendType="up"
           color="bg-white border-b-4 border-purple-700"
           dateFilter={activeFilter}
-          link="/rent?type=사무용"
+          link="/private/rent?type=사무용"
         />
       </div>
 
