@@ -682,33 +682,6 @@ export default function PrivateDashboard() {
             <NoDataDisplay />
           )}
         </ChartCard>
-
-        {/* 자산 상태 분포 차트 */}
-        <ChartCard title="자산 상태 분포" theme="cyan">
-          {loading ? (
-            <ChartSkeleton />
-          ) : assetStatusData.length > 0 ? (
-            <ResponsiveContainer width="99%" height="100%">
-              <BarChart data={assetStatusData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis dataKey="status" tick={{ fill: '#616161', fontSize: 11 }} />
-                <YAxis tick={{ fill: '#616161', fontSize: 11 }} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-                  formatter={(value: number) => [value, '대수']}
-                />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="count" name="자산 수량">
-                  {assetStatusData.map((entry) => (
-                    <Cell key={`cell-${entry.status}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <NoDataDisplay />
-          )}
-        </ChartCard>
       </div>
     </div>
   );
