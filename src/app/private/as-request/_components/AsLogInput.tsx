@@ -34,17 +34,7 @@ export default function AsLogInput({workType}:{workType:string}) {
   // 기타 값
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
-       // OS 설치 정보
-       const [formData, setFormData] = useState({
-        pcDescription: '',
-        pcName: '',
-        alYac: '',
-        jaSan: '',
-        printer: '',
-        outlook: '',
-        program: ''
-      });
-
+     
   // H/W 로그 생성
   const handleHardWareLogCreation = async () => {
     const supabaseService = SupabaseService.getInstance();
@@ -178,7 +168,6 @@ export default function AsLogInput({workType}:{workType:string}) {
             question : question,
             solution_detail : solutionDetail,
             detailed_description: detailedDescription,
-            format : formData,
         }
       })
       console.log('S/W 결과',logResult)
@@ -537,21 +526,7 @@ export default function AsLogInput({workType}:{workType:string}) {
               />
             </div>
             }
-            {category==="OS"&&
-            <div className="flex flex-col gap-y-4">
-              {/* 소프트웨어 페이지 */}
-              {/* 보안 프로그램 */}
-              <CommonInputSingleCheckbox 
-                title={""}
-                value={format??""}
-                setValue={setFormat}
-                options={["OS설치","그 외"]}
-              />
-            </div>
-            }
-            {format==="OS설치"&&
-            <FormatFormData formData={formData} setFormData={setFormData}/>
-            }
+          
 
             {workType==="장비관리"&&
             <div className="flex flex-col gap-y-4">

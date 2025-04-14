@@ -152,7 +152,7 @@ export default function RentModal({id, rentType, rentName, isOpen = false, onClo
               {/* 사원명 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  사원명 <span className="text-red-500">*</span>
+                  사용자 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"

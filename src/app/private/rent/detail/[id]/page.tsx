@@ -165,7 +165,7 @@ export default async function RentAssetPage({
               <div className="inline-block min-w-full">
                   <div className="bg-white shadow-md rounded-lg overflow-hidden">
                     <div className="px-6 py-4 border-b border-gray-200">
-                      <h2 className="text-lg font-semibold text-gray-900">PC 관리 이력</h2>
+                      <h2 className="text-lg font-semibold text-gray-900">PC 대여 이력</h2>
                     </div>
         {/* 헤더 부분 */}
             <div className="grid bg-gray-50 border-b border-gray-200" style={gridStyle}>
@@ -227,7 +227,7 @@ export default async function RentAssetPage({
               </>
               ) : (
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  정비 이력이 없습니다.
+                  대여 이력이 없습니다.
                 </div>
               )}
 

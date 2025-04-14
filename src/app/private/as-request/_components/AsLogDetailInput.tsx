@@ -38,7 +38,6 @@ interface IHardwareLogEntry {
     solution_detail: string;
     work_date: string; // YYYY-MM-DD 형식의 날짜 문자열
     work_type: "H/W" | "S/W" | string; // 특정 타입을 제한하려면 여기에 추가
-    format: string;
   }
 export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
     const workType = log.work_type;
@@ -61,19 +60,8 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const router = useRouter();
     const [createdBy, setCreatedBy] = useState("")
-    const [formData, setFormData] = useState<LogType>({
-        pcDescription: '',
-        pcName: '',
-        alYac: '',
-        jaSan: '',
-        printer: '',
-        outlook: '',
-        program: ''
-    });
-
    
 
-    console.log("★log",log.format);
     useEffect(() => {
         console.log("detail useEffect 시작",);
         setWorkDate(log.work_date);
@@ -90,37 +78,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
         setDetailedDescription(log.detailed_description);
         setSolutionDetail(log.solution_detail);
          // log.format 데이터 처리
-    try {
-      // 전체 format 데이터를 먼저 파싱
-      if(!log.format){
-        return;
-      }
-
-      const parseLogValue : LogType = JSON.parse(log.format);
-      
-      // 파싱된 데이터로 formData 설정
-      setFormData({
-          pcDescription: parseLogValue.pcDescription || "",
-          pcName: parseLogValue.pcName || "",
-          alYac: parseLogValue.alYac || "",
-          jaSan: parseLogValue.jaSan || "",
-          printer: parseLogValue.printer || "",
-          outlook: parseLogValue.outlook || "",
-          program: parseLogValue.program || ""
-      });
-  } catch (error) {
-      console.error('데이터 파싱 에러:', error);
-      // 에러 발생 시 기본값 설정
-      setFormData({
-          pcDescription: "",
-          pcName: "",
-          alYac: "",
-          jaSan: "",
-          printer: "",
-          outlook: "",
-          program: ""
-      });
-  }
+   
     }, []);
 
     // 하드웨어 로그 수정
@@ -170,7 +128,6 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
                 question : question,
                 solution_detail : solutionDetail,
                 detailed_description: detailedDescription,
-                format : JSON.stringify(formData),
             },
             match: {
                 log_id: log.log_id
@@ -400,12 +357,6 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
                   setValue={setCategory}
                   options={["보안","프로그램","OS","바이러스"]}
                 />
-              </div>
-            }
-            {category==="OS"&&log.format&&
-              <div className="flex flex-col gap-y-4">
-                <h3 className="font-bold text-sm">OS 선택항목</h3>
-                <FormatFormData formData={formData} setFormData={setFormData}/>
               </div>
             }
             {workType==="장비관리"&&
