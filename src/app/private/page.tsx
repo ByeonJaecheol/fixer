@@ -11,7 +11,7 @@ import { supabase } from "@/utils/supabase";
 import Link from 'next/link';
 
 // 기존 인터페이스는 유지하고, 필터 타입 추가
-type DateFilterType = 'today' | 'week' | 'year' | 'custom';
+type DateFilterType = 'today' | 'week' | 'month' | 'year' | 'custom';
 
 interface DateFilterOption {
   id: DateFilterType;
@@ -58,6 +58,19 @@ interface ChartData {
   value: number;
 }
 
+// 인터페이스 추가
+interface WorkTypeStats {
+  type: string;
+  count: number;
+  color: string;
+}
+
+interface SwCategoryStats {
+  category: string;
+  count: number;
+  color: string;
+}
+
 export default function PrivateDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +87,10 @@ export default function PrivateDashboard() {
   const [assetTypeData, setAssetTypeData] = useState<ChartData[]>([]);
   const [rentedAssetsData, setRentedAssetsData] = useState<ChartData[]>([]);
   
+  // 새로운 상태 추가
+  const [workTypeStats, setWorkTypeStats] = useState<WorkTypeStats[]>([]);
+  const [swCategoryStats, setSwCategoryStats] = useState<SwCategoryStats[]>([]);
+  
   // 필터 상태 추가
   const [activeFilter, setActiveFilter] = useState<DateFilterType>('week');
   const [customDateRange, setCustomDateRange] = useState({
@@ -85,6 +102,7 @@ export default function PrivateDashboard() {
   const filterOptions: DateFilterOption[] = [
     { id: 'today', label: '오늘' },
     { id: 'week', label: '이번 주' },
+    { id: 'month', label: '이번달' },
     { id: 'year', label: '올해' },
     { id: 'custom', label: '기간 선택' }
   ];
@@ -103,6 +121,11 @@ export default function PrivateDashboard() {
         return {
           start: startOfWeek(today, { weekStartsOn: 1 }), // 월요일 시작
           end: endOfWeek(today, { weekStartsOn: 1 })
+        };
+      case 'month':
+        return {
+          start: new Date(today.getFullYear(), today.getMonth(), 1),
+          end: new Date(today.getFullYear(), today.getMonth() + 1, 0)
         };
       case 'year':
         return {
@@ -287,7 +310,7 @@ export default function PrivateDashboard() {
       rentAssets
         .filter(asset => asset.is_rented)
         .forEach(asset => {
-          const dept = asset.employee_department || '미할당';
+          const dept = asset.rent_type || '미할당';
           deptCounts[dept] = (deptCounts[dept] || 0) + 1;
         });
       
@@ -297,6 +320,63 @@ export default function PrivateDashboard() {
       }));
       
       setRentedAssetsData(formattedDeptData);
+      
+      // 작업 유형별 통계
+      const workTypeCounts: Record<string, number> = {
+        'H/W': 0,
+        'S/W': 0,
+        '네트워크': 0,
+        '장비관리': 0,
+        '기타': 0
+      };
+      
+      // S/W 카테고리별 통계
+      const swCategoryCounts: Record<string, number> = {
+        '보안': 0,
+        '프로그램': 0,
+        'OS': 0,
+        '바이러스': 0
+      };
+      
+      filteredAsActivities.forEach(activity => {
+        // 작업 유형 카운트
+        if (activity.work_type) {
+          workTypeCounts[activity.work_type] = (workTypeCounts[activity.work_type] || 0) + 1;
+        } else {
+          workTypeCounts['기타'] = (workTypeCounts['기타'] || 0) + 1;
+        }
+        
+        // S/W 카테고리 카운트
+        if (activity.work_type === 'S/W' && activity.category) {
+          swCategoryCounts[activity.category] = (swCategoryCounts[activity.category] || 0) + 1;
+        }
+      });
+      
+      // 작업 유형 통계 데이터 포맷
+      const formattedWorkTypeStats = Object.entries(workTypeCounts).map(([type, count]) => ({
+        type,
+        count,
+        color: 
+          type === 'H/W' ? '#1976D2' :
+          type === 'S/W' ? '#388E3C' :
+          type === '네트워크' ? '#F57C00' :
+          type === '장비관리' ? '#7B1FA2' :
+          '#607D8B'
+      }));
+      
+      // S/W 카테고리 통계 데이터 포맷
+      const formattedSwCategoryStats = Object.entries(swCategoryCounts).map(([category, count]) => ({
+        category,
+        count,
+        color: 
+          category === '보안' ? '#D32F2F' :
+          category === '프로그램' ? '#388E3C' :
+          category === 'OS' ? '#1976D2' :
+          '#F57C00'
+      }));
+      
+      setWorkTypeStats(formattedWorkTypeStats);
+      setSwCategoryStats(formattedSwCategoryStats);
       
     } catch (error) {
       console.error('데이터 계산 오류:', error);
@@ -443,7 +523,7 @@ export default function PrivateDashboard() {
           trendType="up"
           color="bg-white border-b-4 border-purple-700"
           dateFilter={activeFilter}
-          link="/rent"
+          link="/rent?type=사무용"
         />
       </div>
 
@@ -462,8 +542,8 @@ export default function PrivateDashboard() {
                 <YAxis tick={{ fill: '#616161' }} />
                 <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} />
                 <Legend />
-                <Bar dataKey="as_requests" name="AS 요청" fill="#3949AB" />
-                <Bar dataKey="pc_activities" name="PC 관리 활동" fill="#00796B" />
+                <Bar dataKey="as_requests" name="작업이력" fill="#3949AB" />
+                <Bar dataKey="pc_activities" name="장비이력" fill="#00796B" />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -499,7 +579,7 @@ export default function PrivateDashboard() {
         </ChartCard>
 
         {/* 부서별 대여 현황 차트 */}
-        <ChartCard title="부서별 대여 현황">
+        <ChartCard title="임대PC 대여 현황">
           {loading ? (
             <ChartSkeleton />
           ) : rentedAssetsData.length > 0 ? (
@@ -516,6 +596,66 @@ export default function PrivateDashboard() {
                 <Bar dataKey="value" name="대여 PC 수량">
                   {rentedAssetsData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <NoDataDisplay />
+          )}
+        </ChartCard>
+
+        {/* 작업 유형별 통계 차트 */}
+        <ChartCard title="작업 유형별 통계">
+          {loading ? (
+            <ChartSkeleton />
+          ) : workTypeStats.length > 0 ? (
+            <ResponsiveContainer width="99%" height={300}>
+              <BarChart data={workTypeStats}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis dataKey="type" tick={{ fill: '#616161' }} />
+                <YAxis tick={{ fill: '#616161' }} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+                  formatter={(value: number) => [`${value}건`, '처리 건수']}
+                />
+                <Legend />
+                <Bar 
+                  dataKey="count" 
+                  name="처리 건수"
+                >
+                  {workTypeStats.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <NoDataDisplay />
+          )}
+        </ChartCard>
+        
+        {/* S/W 카테고리별 통계 차트 */}
+        <ChartCard title="S/W 카테고리별 통계">
+          {loading ? (
+            <ChartSkeleton />
+          ) : swCategoryStats.length > 0 ? (
+            <ResponsiveContainer width="99%" height={300}>
+              <BarChart data={swCategoryStats} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis type="number" tick={{ fill: '#616161' }} />
+                <YAxis type="category" dataKey="category" tick={{ fill: '#616161' }} width={100} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+                  formatter={(value: number) => [`${value}건`, '처리 건수']}
+                />
+                <Legend />
+                <Bar 
+                  dataKey="count" 
+                  name="처리 건수" 
+                >
+                  {swCategoryStats.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Bar>
               </BarChart>
@@ -572,6 +712,8 @@ function StatCard({ title, value, trend, trendType, color, dateFilter, link }: S
         return '오늘';
       case 'week':
         return '이번 주';
+      case 'month':
+        return '이번달';
       case 'year':
         return '올해';
       case 'custom':

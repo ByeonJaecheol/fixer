@@ -48,7 +48,7 @@ const navigationItems = [
   {
     icon: DocumentTextIcon,
     text: '자료실',
-    href: 'http://192.168.108.66/redmine'
+    href: '#'
   },
   {
     icon: Cog6ToothIcon,
