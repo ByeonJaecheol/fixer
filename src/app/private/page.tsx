@@ -528,20 +528,19 @@ export default function PrivateDashboard() {
       </div>
 
       {/* 차트 섹션 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         {/* 활동 차트 */}
-        <ChartCard title={`${activeFilter === 'today' ? '오늘' : activeFilter === 'week' ? '이번 주' : activeFilter === 'year' ? '올해' : '선택 기간'} 활동`}>
+        <ChartCard title={`${activeFilter === 'today' ? '오늘' : activeFilter === 'week' ? '이번 주' : activeFilter === 'month' ? '이번달' : activeFilter === 'year' ? '올해' : '선택 기간'} 활동`} theme="blue">
           {loading ? (
             <ChartSkeleton />
           ) : activityData.length > 0 ? (
-            <ResponsiveContainer width="99%" height={300}>
+            <ResponsiveContainer width="99%" height="100%">
               <BarChart data={activityData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis dataKey="date" tick={{ fill: '#616161' }} />
-                <YAxis tick={{ fill: '#616161' }} />
+                <XAxis dataKey="date" tick={{ fill: '#616161', fontSize: 11 }} />
+                <YAxis tick={{ fill: '#616161', fontSize: 11 }} />
                 <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="as_requests" name="작업이력" fill="#3949AB" />
                 <Bar dataKey="pc_activities" name="장비이력" fill="#00796B" />
               </BarChart>
@@ -552,53 +551,67 @@ export default function PrivateDashboard() {
         </ChartCard>
 
         {/* PC 유형 분포 차트 */}
-        <ChartCard title="PC 유형 분포">
+        <ChartCard title="PC 유형 분포" theme="green">
           {loading ? (
             <ChartSkeleton />
           ) : assetTypeData.length > 0 ? (
-            <ResponsiveContainer width="99%" height={300}>
-              <BarChart data={assetTypeData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis type="number" tick={{ fill: '#616161' }} />
-                <YAxis type="category" dataKey="name" tick={{ fill: '#616161' }} width={120} />
+            <ResponsiveContainer width="99%" height="100%">
+              <PieChart>
+                <Pie
+                  data={assetTypeData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  innerRadius={50}
+                  dataKey="value"
+                  nameKey="name"
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {assetTypeData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={`#0B815A${90 - index * 10}`} />
+                  ))}
+                </Pie>
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
                   formatter={(value: number) => [value, '대수']}
                 />
-                <Legend />
-                <Bar dataKey="value" name="PC 수량">
-                  {assetTypeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
+                <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 11 }} />
+              </PieChart>
             </ResponsiveContainer>
           ) : (
             <NoDataDisplay />
           )}
         </ChartCard>
 
-        {/* 부서별 대여 현황 차트 */}
-        <ChartCard title="임대PC 대여 현황">
+        {/* 임대PC 대여 현황 차트 */}
+        <ChartCard title="임대PC 대여 현황" theme="purple">
           {loading ? (
             <ChartSkeleton />
           ) : rentedAssetsData.length > 0 ? (
-            <ResponsiveContainer width="99%" height={300}>
-              <BarChart data={rentedAssetsData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis type="number" tick={{ fill: '#616161' }} />
-                <YAxis type="category" dataKey="name" tick={{ fill: '#616161' }} width={120} />
+            <ResponsiveContainer width="99%" height="100%">
+              <PieChart>
+                <Pie
+                  data={rentedAssetsData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  innerRadius={50}
+                  dataKey="value"
+                  nameKey="name"
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {rentedAssetsData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={`#7B1FA2${90 - index * 10}`} />
+                  ))}
+                </Pie>
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
                   formatter={(value: number) => [value, '대수']}
                 />
-                <Legend />
-                <Bar dataKey="value" name="대여 PC 수량">
-                  {rentedAssetsData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
+                <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 11 }} />
+              </PieChart>
             </ResponsiveContainer>
           ) : (
             <NoDataDisplay />
@@ -606,26 +619,61 @@ export default function PrivateDashboard() {
         </ChartCard>
 
         {/* 작업 유형별 통계 차트 */}
-        <ChartCard title="작업 유형별 통계">
+        <ChartCard title="작업 유형별 통계" theme="amber">
           {loading ? (
             <ChartSkeleton />
           ) : workTypeStats.length > 0 ? (
-            <ResponsiveContainer width="99%" height={300}>
-              <BarChart data={workTypeStats}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis dataKey="type" tick={{ fill: '#616161' }} />
-                <YAxis tick={{ fill: '#616161' }} />
+            <ResponsiveContainer width="99%" height="100%">
+              <PieChart>
+                <Pie
+                  data={workTypeStats}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={55}
+                  dataKey="count"
+                  nameKey="type"
+                  label={({ name, percent }) => 
+                    percent > 0.01 ? `${name}: ${(percent * 100).toFixed(0)}%` : null
+                  }
+                >
+                  {workTypeStats.map((entry) => (
+                    <Cell key={`cell-${entry.type}`} fill={entry.color} />
+                  ))}
+                </Pie>
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
                   formatter={(value: number) => [`${value}건`, '처리 건수']}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <NoDataDisplay />
+          )}
+        </ChartCard>
+        
+        {/* S/W 카테고리별 통계 차트 */}
+        <ChartCard title="S/W 카테고리별 통계" theme="rose">
+          {loading ? (
+            <ChartSkeleton />
+          ) : swCategoryStats.length > 0 ? (
+            <ResponsiveContainer width="99%" height="100%">
+              <BarChart data={swCategoryStats} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis type="number" tick={{ fill: '#616161', fontSize: 11 }} />
+                <YAxis type="category" dataKey="category" tick={{ fill: '#616161', fontSize: 11 }} width={70} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+                  formatter={(value: number) => [`${value}건`, '처리 건수']}
+                />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar 
                   dataKey="count" 
-                  name="처리 건수"
+                  name="처리 건수" 
                 >
-                  {workTypeStats.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  {swCategoryStats.map((entry) => (
+                    <Cell key={`cell-${entry.category}`} fill={entry.color} />
                   ))}
                 </Bar>
               </BarChart>
@@ -634,28 +682,25 @@ export default function PrivateDashboard() {
             <NoDataDisplay />
           )}
         </ChartCard>
-        
-        {/* S/W 카테고리별 통계 차트 */}
-        <ChartCard title="S/W 카테고리별 통계">
+
+        {/* 자산 상태 분포 차트 */}
+        <ChartCard title="자산 상태 분포" theme="cyan">
           {loading ? (
             <ChartSkeleton />
-          ) : swCategoryStats.length > 0 ? (
-            <ResponsiveContainer width="99%" height={300}>
-              <BarChart data={swCategoryStats} layout="vertical">
+          ) : assetStatusData.length > 0 ? (
+            <ResponsiveContainer width="99%" height="100%">
+              <BarChart data={assetStatusData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis type="number" tick={{ fill: '#616161' }} />
-                <YAxis type="category" dataKey="category" tick={{ fill: '#616161' }} width={100} />
+                <XAxis dataKey="status" tick={{ fill: '#616161', fontSize: 11 }} />
+                <YAxis tick={{ fill: '#616161', fontSize: 11 }} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-                  formatter={(value: number) => [`${value}건`, '처리 건수']}
+                  formatter={(value: number) => [value, '대수']}
                 />
-                <Legend />
-                <Bar 
-                  dataKey="count" 
-                  name="처리 건수" 
-                >
-                  {swCategoryStats.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="count" name="자산 수량">
+                  {assetStatusData.map((entry) => (
+                    <Cell key={`cell-${entry.status}`} fill={entry.color} />
                   ))}
                 </Bar>
               </BarChart>
@@ -670,11 +715,33 @@ export default function PrivateDashboard() {
 }
 
 // 차트 카드 컴포넌트
-function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+function ChartCard({ title, children, theme = 'blue' }: { title: string; children: React.ReactNode; theme?: 'blue' | 'green' | 'amber' | 'purple' | 'rose' | 'cyan' }) {
+  // 테마별 스타일 매핑
+  const themeStyles = {
+    blue: 'border-blue-200 bg-blue-50',
+    green: 'border-green-200 bg-green-50',
+    amber: 'border-amber-200 bg-amber-50', 
+    purple: 'border-purple-200 bg-purple-50',
+    rose: 'border-rose-200 bg-rose-50',
+    cyan: 'border-cyan-200 bg-cyan-50'
+  };
+
+  // 테마별 헤더 스타일
+  const headerStyles = {
+    blue: 'text-blue-800',
+    green: 'text-green-800',
+    amber: 'text-amber-800',
+    purple: 'text-purple-800',
+    rose: 'text-rose-800',
+    cyan: 'text-cyan-800'
+  };
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">{title}</h2>
-      {children}
+    <div className={`bg-white p-3 sm:p-4 rounded-lg shadow-sm border ${themeStyles[theme]}`}>
+      <h2 className={`text-sm sm:text-base font-semibold ${headerStyles[theme]} mb-2 truncate`}>{title}</h2>
+      <div className="h-[220px] sm:h-[250px] md:h-[280px]">
+        {children}
+      </div>
     </div>
   );
 }
@@ -682,12 +749,12 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 // 데이터 없음 디스플레이
 function NoDataDisplay() {
   return (
-    <div className="flex items-center justify-center h-[300px] bg-gray-50 rounded-lg">
+    <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg">
       <div className="text-center">
-        <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-10 h-10 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
-        <p className="mt-2 text-gray-500">데이터가 없습니다</p>
+        <p className="mt-2 text-xs text-gray-500">데이터가 없습니다</p>
       </div>
     </div>
   );
@@ -755,8 +822,8 @@ function StatCard({ title, value, trend, trendType, color, dateFilter, link }: S
 
 function ChartSkeleton() {
   return (
-    <div className="flex items-center justify-center h-[300px] bg-gray-50 rounded-lg">
-      <div className="animate-pulse"></div>
+    <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg">
+      <div className="w-10 h-10 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
     </div>
   );
 }

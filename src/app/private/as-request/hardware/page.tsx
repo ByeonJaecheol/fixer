@@ -90,6 +90,7 @@ export default async function HardwarePage() {
                     {truncateDescription(log.solution_detail,30)}
                     </div>
                   </Link>
+                  
                 ))}
               </div>
             </div>
