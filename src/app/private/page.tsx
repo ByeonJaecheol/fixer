@@ -551,6 +551,72 @@ export default function PrivateDashboard() {
           )}
         </ChartCard>
 
+          {/* 작업 유형별 통계 차트 */}
+          <ChartCard title="작업 유형별 통계" theme="amber">
+          {loading ? (
+            <ChartSkeleton />
+          ) : workTypeStats.length > 0 ? (
+            <ResponsiveContainer width="99%" height="100%">
+              <PieChart>
+                <Pie
+                  data={workTypeStats}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={55}
+                  dataKey="count"
+                  nameKey="type"
+                  label={({ name, percent }) => 
+                    percent > 0.01 ? `${name}: ${(percent * 100).toFixed(0)}%` : null
+                  }
+                >
+                  {workTypeStats.map((entry) => (
+                    <Cell key={`cell-${entry.type}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+                  formatter={(value: number) => [`${value}건`, '처리 건수']}
+                />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <NoDataDisplay />
+          )}
+        </ChartCard>
+        
+        {/* S/W 카테고리별 통계 차트 */}
+        <ChartCard title="S/W 카테고리별 통계" theme="rose">
+          {loading ? (
+            <ChartSkeleton />
+          ) : swCategoryStats.length > 0 ? (
+            <ResponsiveContainer width="99%" height="100%">
+              <BarChart data={swCategoryStats} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis type="number" tick={{ fill: '#616161', fontSize: 11 }} />
+                <YAxis type="category" dataKey="category" tick={{ fill: '#616161', fontSize: 11 }} width={70} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+                  formatter={(value: number) => [`${value}건`, '처리 건수']}
+                />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar 
+                  dataKey="count" 
+                  name="처리 건수" 
+                >
+                  {swCategoryStats.map((entry) => (
+                    <Cell key={`cell-${entry.category}`} fill={entry.color} />
+                  ))}
+                </Bar>
+        </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <NoDataDisplay />
+          )}
+        </ChartCard>
+        
+          
         {/* PC 유형 분포 차트 */}
         <ChartCard title="PC 유형 분포" theme="green">
           {loading ? (
@@ -619,70 +685,7 @@ export default function PrivateDashboard() {
           )}
         </ChartCard>
 
-        {/* 작업 유형별 통계 차트 */}
-        <ChartCard title="작업 유형별 통계" theme="amber">
-          {loading ? (
-            <ChartSkeleton />
-          ) : workTypeStats.length > 0 ? (
-            <ResponsiveContainer width="99%" height="100%">
-              <PieChart>
-                <Pie
-                  data={workTypeStats}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={55}
-                  dataKey="count"
-                  nameKey="type"
-                  label={({ name, percent }) => 
-                    percent > 0.01 ? `${name}: ${(percent * 100).toFixed(0)}%` : null
-                  }
-                >
-                  {workTypeStats.map((entry) => (
-                    <Cell key={`cell-${entry.type}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-                  formatter={(value: number) => [`${value}건`, '처리 건수']}
-                />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <NoDataDisplay />
-          )}
-        </ChartCard>
-        
-        {/* S/W 카테고리별 통계 차트 */}
-        <ChartCard title="S/W 카테고리별 통계" theme="rose">
-          {loading ? (
-            <ChartSkeleton />
-          ) : swCategoryStats.length > 0 ? (
-            <ResponsiveContainer width="99%" height="100%">
-              <BarChart data={swCategoryStats} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis type="number" tick={{ fill: '#616161', fontSize: 11 }} />
-                <YAxis type="category" dataKey="category" tick={{ fill: '#616161', fontSize: 11 }} width={70} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-                  formatter={(value: number) => [`${value}건`, '처리 건수']}
-                />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar 
-                  dataKey="count" 
-                  name="처리 건수" 
-                >
-                  {swCategoryStats.map((entry) => (
-                    <Cell key={`cell-${entry.category}`} fill={entry.color} />
-                  ))}
-                </Bar>
-        </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <NoDataDisplay />
-          )}
-        </ChartCard>
+      
       </div>
     </div>
   );
