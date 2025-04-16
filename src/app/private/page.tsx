@@ -9,6 +9,7 @@ import {
 } from 'recharts';
 import { supabase } from "@/utils/supabase";
 import Link from 'next/link';
+import { RingLoader } from 'react-spinners';
 
 // 기존 인터페이스는 유지하고, 필터 타입 추가
 type DateFilterType = 'today' | 'week' | 'month' | 'year' | 'custom';
@@ -390,7 +391,7 @@ export default function PrivateDashboard() {
   if (loading) {
     return (
       <div className="w-full flex justify-center items-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-700"></div>
+        <RingLoader  speedMultiplier={1.5} color="#982cd6" />
       </div>
     );
   }
@@ -676,7 +677,7 @@ export default function PrivateDashboard() {
                     <Cell key={`cell-${entry.category}`} fill={entry.color} />
                   ))}
                 </Bar>
-              </BarChart>
+        </BarChart>
             </ResponsiveContainer>
           ) : (
             <NoDataDisplay />

@@ -327,43 +327,20 @@ export default function TodoCalendarPage() {
 
   // 일정 클릭 핸들러
   const handleTodoClick = (todo: Todo, e: React.MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation(); // 날짜 클릭 이벤트 전파 방지
     setSelectedTodo(todo);
-    setModalMode('view');
     setNewTodo({
       title: todo.title,
-      description: todo.description,
+      description: todo.description || '',
       priority: todo.priority
     });
-    
-    // 날짜 정보도 설정
-    if (todo.start_date && todo.end_date) {
-      setSelectedDateRange({
-        start: parseISO(todo.start_date),
-        end: parseISO(todo.end_date)
-      });
-    }
-    
+    setModalMode('view');
     setShowForm(true);
   };
 
   // 수정 버튼 핸들러
   const handleEditClick = () => {
-    if (!selectedTodo) return;
     setModalMode('edit');
-    setNewTodo({
-      title: selectedTodo.title,
-      description: selectedTodo.description,
-      priority: selectedTodo.priority
-    });
-    
-    // 날짜 정보도 설정
-    if (selectedTodo.start_date && selectedTodo.end_date) {
-      setSelectedDateRange({
-        start: parseISO(selectedTodo.start_date),
-        end: parseISO(selectedTodo.end_date)
-      });
-    }
   };
 
   // 수정 저장 함수
@@ -373,14 +350,9 @@ export default function TodoCalendarPage() {
       alert('제목을 입력해주세요.');
       return;
     }
-    if (!selectedDateRange.start) {
-      alert('시작 날짜를 선택해주세요.');
-      return;
-    }
 
     setLoading(true);
     try {
-      const endDate = selectedDateRange.end || selectedDateRange.start;
       const selectedPriority = PRIORITIES.find(p => p.id === newTodo.priority) || PRIORITIES[1];
       
       const { error } = await supabase
@@ -389,10 +361,7 @@ export default function TodoCalendarPage() {
           title: newTodo.title,
           description: newTodo.description,
           priority: newTodo.priority,
-          color: selectedPriority.color,
-          // 날짜 정보 업데이트
-          start_date: format(selectedDateRange.start, 'yyyy-MM-dd'),
-          end_date: format(endDate, 'yyyy-MM-dd')
+          color: selectedPriority.color
         })
         .eq('id', selectedTodo.id);
       
@@ -405,16 +374,12 @@ export default function TodoCalendarPage() {
               title: newTodo.title, 
               description: newTodo.description, 
               priority: newTodo.priority,
-              color: selectedPriority.color,
-              // 날짜 정보 업데이트
-              start_date: selectedDateRange.start ? format(selectedDateRange.start, 'yyyy-MM-dd') : '',
-              end_date: selectedDateRange.end ? format(selectedDateRange.end, 'yyyy-MM-dd') : ''
+              color: selectedPriority.color 
             } 
           : todo
       ));
       setShowForm(false);
       setSelectedTodo(null);
-      setSelectedDateRange({ start: null, end: null });
       
       alert('일정이 수정되었습니다.');
     } catch (error) {
@@ -603,44 +568,6 @@ export default function TodoCalendarPage() {
                 <span className="font-medium">
                   우선순위: {PRIORITIES.find(p => p.id === selectedTodo.priority)?.label || '보통'}
                 </span>
-              </div>
-            )}
-            
-            {/* 수정 모달에 날짜 선택 UI 추가 */}
-            {modalMode !== 'view' && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">일정 날짜</label>
-                <div className="text-sm">
-                  {selectedDateRange.start && (
-                    <span>
-                      {format(selectedDateRange.start, 'yyyy년 MM월 dd일')}
-                      {selectedDateRange.end && selectedDateRange.end !== selectedDateRange.start && (
-                        <> ~ {format(selectedDateRange.end, 'yyyy년 MM월 dd일')}</>
-                      )}
-                    </span>
-                  )}
-                  {!selectedDateRange.start && <span className="text-gray-500">날짜를 선택해주세요</span>}
-                </div>
-                <p className="mt-1 text-xs text-gray-500">
-                  {modalMode === 'edit' ? '날짜를 변경하려면 모달을 닫고 달력에서 다시 날짜를 선택하세요.' : 
-                    '달력에서 날짜를 선택한 후 일정을 등록하세요.'}
-                </p>
-              </div>
-            )}
-            
-            {/* 모달에서 날짜 재선택을 위한 버튼 추가 */}
-            {modalMode === 'edit' && (
-              <div className="mb-4">
-                <button
-                  type="button"
-                  className="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded hover:bg-blue-100"
-                  onClick={() => {
-                    setShowForm(false);
-                    setSelectedDateRange({ start: null, end: null });
-                  }}
-                >
-                  달력에서 새 날짜 선택하기
-                </button>
               </div>
             )}
             

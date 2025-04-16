@@ -5,6 +5,7 @@ import Link from 'next/link';
 import SupabaseService, { IAsManagementLog } from '@/api/supabase/supabaseApi';
 import { formatToKoreanTime, truncateDescription } from '@/utils/utils';
 import { ChevronUpIcon, ChevronDownIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { RingLoader } from 'react-spinners';
 
 // 필터 타입 정의
 type SortField = 'log_id' | 'created_by' | 'work_date' | 'work_type' | 'model_name' | 'employee_department';
@@ -335,7 +336,7 @@ export default function AsRequestPage() {
   if (loading) {
     return (
       <div className="p-6 flex justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <RingLoader  speedMultiplier={1.5} color="#982cd6" />
       </div>
     );
   }
