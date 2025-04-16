@@ -1,24 +1,7 @@
-
 import SupabaseService, { IPcManagementLog } from '@/api/supabase/supabaseApi';
-import { supabase } from '@/app/utils/supabase';
-import { formatToKoreanTime, truncateDescription } from '@/utils/utils';
-import SecurityCode from './_components/list/SecurityCode';
-import BasicList from './_components/list/BasicList';
-import PcType from './_components/list/PcType';
-import ModelName from './_components/list/ModelName';
-import UsageType from './_components/list/UsageType';
-import DetailDescription from './_components/list/DetailDescription';
-import SerialNumber from './_components/list/SerialNumber';
-import Link from 'next/link';
-
-
+import DataTable, { Column } from "@/components/shared/DataTable";
 
 export default async function PcHistoryPage() {
-  const gridStyle = {
-    gridTemplateColumns: "8% 8% 8% 8% 5% 8% 8% 8% 8% 25%"
-  }
-
-  
   const getPcManagementLog = async () : Promise<any> => {
     const supabaseService = SupabaseService.getInstance();
     const { success, error, data } = await supabaseService.selectWithRelations({
@@ -27,11 +10,9 @@ export default async function PcHistoryPage() {
       relations: [
         { 
           table: 'pc_assets',
-          columns: '*'  // 필요한 컬럼만 지정할 수도 있습니다 (예: 'asset_id,name,model')
+          columns: '*'
         }
       ],
-      // 필요에 따라 추가 조건 설정
-      // match: { some_column: 'some_value' }
       order: { column: 'created_at', ascending: false }
     });
     if (success) {
@@ -40,48 +21,51 @@ export default async function PcHistoryPage() {
       console.error('Error fetching pc_management_log:', error);
       return [];
     }
-  }
+  };
+  
   const pcManagementLog = await getPcManagementLog();
+  
+  // 작업유형에 따른 상세 페이지 URL 접두사 결정 함수
+  const getDetailUrlPrefix = (workType: string) => {
+    switch(workType) {
+      case '입고': return '/private/pc-history/in/detail';
+      case '설치': return '/private/pc-history/install/detail';
+      case '폐기': return '/private/pc-history/disposal/detail';
+      case '반납': return '/private/pc-history/return/detail';
+      case '변경': return '/private/pc-history/change/detail';
+      default: return '/private/pc-history/other/detail';
+    }
+  };
+
+  // 테이블 열 정의
+  const columns: Column[] = [
+    { key: "log_id", header: "ID" },
+    { key: "created_by", header: "작성자", type: "email" },
+    { key: "work_date", header: "작업일", type: "date" },
+    { key: "work_type", header: "작업유형", type: "work_type" },
+    { key: "pc_type", header: "PC타입", type: "pc_type", accessor: "pc_assets.pc_type" },
+    { key: "model_name", header: "모델명", accessor: "pc_assets.model_name" },
+    { key: "serial_number", header: "제조번호", accessor: "pc_assets.serial_number" },
+    { key: "security_code", header: "코드번호" },
+    { key: "usage_type", header: "용도" },
+    { key: "detailed_description", header: "작업내용", type: "truncate", truncateLength: 30 }
+  ];
+
+  // 작업유형에 따른 동적 URL 처리를 위해 데이터를 확장
+  const enhancedData = pcManagementLog.map((log: IPcManagementLog) => ({
+    ...log,
+    detailUrl: `${getDetailUrlPrefix(log.work_type)}/${log.log_id}`
+  }));
 
   return (
-    <div className="space-y-4">
-        <div className="overflow-x-auto">
-          <div className="inline-block min-w-full">
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-            {/* 헤더 부분 */}
-            <div className="grid bg-gray-50 border-b border-gray-200" style={gridStyle}>
-              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ID</div>
-              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작성자</div>
-              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업일</div>
-              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업유형</div>
-              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">PC타입</div>
-              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">모델명</div>
-              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">제조번호</div>
-              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">코드번호</div>
-              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">용도</div>
-              <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">작업내용</div>
-            </div>
-              {/* 데이터 행 */}
-              {pcManagementLog.map((log: IPcManagementLog) => (
-                <div 
-                  key={log.log_id}
-                  style={gridStyle}
-                  className="grid border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150"
-                >
-                <BasicList log={log} />
-                <PcType pcType={log.pc_assets.pc_type} />
-                <ModelName modelName={log.pc_assets.model_name} />
-                <SerialNumber serialNumber={log.pc_assets.serial_number} />
-                <SecurityCode securityCode={log.security_code} />
-                <UsageType usageType={log.usage_type} />
-                <Link href={`/private/pc-history/${log.work_type==="입고"?"in":log.work_type==="설치"?"install":log.work_type==="폐기"?"disposal":log.work_type==="반납"?"return":log.work_type==="변경"?"change":"other"}/detail/${log.log_id}`}>
-                  <DetailDescription description={log.detailed_description} />
-                </Link>
-               </div> 
-              ))}
-            </div>
-        </div>
-      </div>
+    <div className="p-6">
+      <DataTable
+        columns={columns}
+        data={enhancedData}
+        gridTemplateColumns="8% 8% 8% 8% 5% 8% 8% 8% 8% 25%"
+        detailUrlPrefix="/private/pc-history"
+        idField="detailUrl" // URL 처리를 위해 idField를 customField로 변경
+      />
     </div>
   );
 }
