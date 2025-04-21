@@ -10,6 +10,7 @@ import {
 import { supabase } from "@/utils/supabase";
 import Link from 'next/link';
 import { RingLoader } from 'react-spinners';
+import RecentSchedules from './_components/RecentSchedules';
 
 // 기존 인터페이스는 유지하고, 필터 타입 추가
 type DateFilterType = 'today' | 'week' | 'month' | 'year' | 'custom';
@@ -75,6 +76,8 @@ interface SwCategoryStats {
 export default function PrivateDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // 최근 일정 상태
+  const [recentSchedules, setRecentSchedules] = useState<any[]>([]);
   
   // 원시 데이터 상태
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -219,6 +222,28 @@ export default function PrivateDashboard() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchRecentSchedules = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('todos')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(3);
+        
+        if (error) throw error;
+        setRecentSchedules(data || []);
+      } catch (error) {
+        console.error('최근 일정을 불러오는 중 오류 발생:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecentSchedules();
+  }, []);
+
+
   // 데이터 집계 로직 - 필터에 따라 다시 계산
   useEffect(() => {
     if (loading) return;
@@ -336,7 +361,7 @@ export default function PrivateDashboard() {
         '보안': 0,
         '프로그램': 0,
         'OS': 0,
-        '바이러스': 0
+        '기타': 0
       };
       
       filteredAsActivities.forEach(activity => {
@@ -423,6 +448,7 @@ export default function PrivateDashboard() {
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-50">
       <div className="mb-6 flex items-center justify-between">
+        {/* 최근 등록된 일정 리스트 5개 표시 */}
         <div>
           <h1 className="text-2xl font-bold text-gray-800">자산 관리 대시보드</h1>
           <p className="text-gray-600 mt-1">PC 자산 현황 및 관리 통계</p>
@@ -474,58 +500,38 @@ export default function PrivateDashboard() {
       </div>
       
       {/* 선택된 날짜 범위 표시 */}
-      <div className="mb-6 bg-blue-50 text-blue-700 px-4 py-2 rounded border border-blue-200">
+      <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 px-4 py-3 rounded-lg border border-blue-200 shadow-sm">
         <div className="flex items-center justify-between">
-          <span className="font-medium">선택 기간: {getDateRangeText()}</span>
-          <span className="text-sm">
-            {activeFilter === 'week' && '활동 데이터'}
+          <span className="font-medium flex items-center">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            {getDateRangeText()}
+          </span>
+          <span className="text-sm bg-blue-100 px-2 py-1 rounded-full text-blue-800 font-medium">
+            {activeFilter === 'week' ? '주간 데이터' : activeFilter === 'today' ? '오늘 데이터' : activeFilter === 'month' ? '월간 데이터' : activeFilter === 'year' ? '연간 데이터' : '커스텀 기간'}
           </span>
         </div>
       </div>
 
-      {/* 통계 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard
-          title="전체 PC 자산"
-          value={assets.length}
-          trend={`${Math.round(assets.length * 0.05)}대`}
-          trendType="up"
-          color="bg-white border-b-4 border-blue-700"
-          dateFilter={activeFilter}
-        />
-        <StatCard
-          title="장비이력"
-          value={pcActivities.filter(activity => {
-            const dateRange = getDateRangeByFilter(activeFilter);
-            return isWithinInterval(new Date(activity.created_at), dateRange);
-          }).length}
-          trend={`${activeFilter === 'today' ? '3건' : activeFilter === 'week' ? '8건' : '15건'}`}
-          trendType="up"
-          color="bg-white border-b-4 border-green-700"
-          dateFilter={activeFilter}
-          link="/private/pc-history"
-        />
-        <StatCard
-          title="AS 요청"
-          value={asActivities.filter(activity => {
-            const dateRange = getDateRangeByFilter(activeFilter);
-            return isWithinInterval(new Date(activity.created_at), dateRange);
-          }).length}
-          trend={`${activeFilter === 'today' ? '3건' : activeFilter === 'week' ? '8건' : '15건'}`}
-          trendType="up"
-          color="bg-white border-b-4 border-amber-700"
-          dateFilter={activeFilter}
-          link="/private/as-request"
-        />
-        <StatCard
-          title="현재 대여 중"
-          value={rentAssets.filter(asset => asset.is_rented).length}
-          trend="2대"
-          trendType="up"
-          color="bg-white border-b-4 border-purple-700"
-          dateFilter={activeFilter}
-          link="/private/rent?type=사무용"
-        />
+      {/* 상단 영역: 왼쪽에 통계 카드, 오른쪽에 최근 등록된 일정 */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        {/* 왼쪽: 통계 카드 영역 */}
+        <div className="lg:col-span-9">
+          <StatsCardGrid 
+            assets={assets}
+            pcActivities={pcActivities}
+            asActivities={asActivities}
+            rentAssets={rentAssets}
+            activeFilter={activeFilter}
+            getDateRangeByFilter={getDateRangeByFilter}
+          />
+        </div>
+        
+        {/* 오른쪽: 최근 등록된 일정 영역 */}
+        <div className="lg:col-span-3">
+          <RecentSchedules recentSchedules={recentSchedules} setRecentSchedules={setRecentSchedules} loading={loading} setLoading={setLoading} />
+        </div>
       </div>
 
       {/* 차트 섹션 */}
@@ -767,40 +773,160 @@ function StatCard({ title, value, trend, trendType, color, dateFilter, link }: S
     }
   };
 
-  return (
-    <Link href={link || '#'} className="block">
-      <div className={`p-6 rounded-lg shadow-sm ${color}`}>
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-gray-500">{title}</p>
-        <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+  const cardContent = (
+    <div className="pt-6">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-sm font-semibold text-gray-700">{title}</p>
+        <span className="px-2 py-1 text-xs font-medium rounded-full bg-opacity-80 bg-blue-100 text-blue-800">
           {getPeriodLabel(dateFilter)}
         </span>
       </div>
-      <p className="text-2xl font-bold mt-2 text-gray-800">{value.toLocaleString()}</p>
-      <div className="flex items-center mt-2">
+      <p className="text-3xl font-bold mb-3 text-gray-800">{value.toLocaleString()}</p>
+      <div className="flex items-center mt-2 bg-gray-50 bg-opacity-70 rounded-lg p-2">
         {trendType === 'up' && (
-          <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
           </svg>
         )}
         {trendType === 'down' && (
-          <svg className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
           </svg>
         )}
-        <span className={`ml-1 text-sm ${trendType === 'up' ? 'text-green-600' : trendType === 'down' ? 'text-red-600' : 'text-gray-500'}`}>
+        <span className={`ml-2 text-sm font-medium ${trendType === 'up' ? 'text-green-700' : trendType === 'down' ? 'text-red-700' : 'text-gray-600'}`}>
           {trend} 지난 {dateFilter === 'today' ? '일' : dateFilter === 'week' ? '주' : '달'} 대비
         </span>
       </div>
     </div>
-    </Link>
   );
+
+  if (link) {
+    return (
+      <Link href={link} className="block h-full hover:opacity-95 transition-opacity duration-300">
+        {cardContent}
+      </Link>
+    );
+  }
+  
+  return <div className="h-full">{cardContent}</div>;
 }
 
 function ChartSkeleton() {
   return (
-    <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg">
-      <div className="w-10 h-10 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+    <div className="animate-pulse flex flex-col h-full justify-center items-center">
+      <div className="h-48 w-full bg-gray-200 rounded"></div>
+    </div>
+  );
+}
+
+
+// StatsCardGrid 컴포넌트
+function StatsCardGrid({ 
+  assets, 
+  pcActivities, 
+  asActivities, 
+  rentAssets, 
+  activeFilter,
+  getDateRangeByFilter
+}: { 
+  assets: Asset[]; 
+  pcActivities: Activity[]; 
+  asActivities: Activity[]; 
+  rentAssets: RentAsset[]; 
+  activeFilter: DateFilterType;
+  getDateRangeByFilter: (filter: DateFilterType) => { start: Date, end: Date };
+}) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+      <div className="bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
+        <div className="p-5 h-full border-b-4 border-blue-600 relative">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-blue-600 opacity-10 rounded-full -mr-6 -mt-6 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative">
+            <div className="absolute -left-3 -top-3 w-10 h-10 flex items-center justify-center rounded-lg bg-blue-600 text-white shadow-md">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          </div>
+          <StatCard
+            title="전체 PC 자산"
+            value={assets.length}
+            trend={`${Math.round(assets.length * 0.05)}대`}
+            trendType="up"
+            color="bg-transparent"
+            dateFilter={activeFilter}
+          />
+        </div>
+      </div>
+      <div className="bg-gradient-to-br from-white to-green-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
+        <div className="p-5 h-full border-b-4 border-green-600 relative">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-green-600 opacity-10 rounded-full -mr-6 -mt-6 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative">
+            <div className="absolute -left-3 -top-3 w-10 h-10 flex items-center justify-center rounded-lg bg-green-600 text-white shadow-md">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+            </div>
+          </div>
+          <StatCard
+            title="장비이력"
+            value={pcActivities.filter(activity => {
+              const dateRange = getDateRangeByFilter(activeFilter);
+              return isWithinInterval(new Date(activity.created_at), dateRange);
+            }).length}
+            trend={`${activeFilter === 'today' ? '3건' : activeFilter === 'week' ? '8건' : '15건'}`}
+            trendType="up"
+            color="bg-transparent"
+            dateFilter={activeFilter}
+            link="/private/pc-history"
+          />
+        </div>
+      </div>
+      <div className="bg-gradient-to-br from-white to-amber-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
+        <div className="p-5 h-full border-b-4 border-amber-600 relative">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-amber-600 opacity-10 rounded-full -mr-6 -mt-6 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative">
+            <div className="absolute -left-3 -top-3 w-10 h-10 flex items-center justify-center rounded-lg bg-amber-600 text-white shadow-md">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+            </div>
+          </div>
+          <StatCard
+            title="AS 요청"
+            value={asActivities.filter(activity => {
+              const dateRange = getDateRangeByFilter(activeFilter);
+              return isWithinInterval(new Date(activity.created_at), dateRange);
+            }).length}
+            trend={`${activeFilter === 'today' ? '3건' : activeFilter === 'week' ? '8건' : '15건'}`}
+            trendType="up"
+            color="bg-transparent"
+            dateFilter={activeFilter}
+            link="/private/as-request"
+          />
+        </div>
+      </div>
+      <div className="bg-gradient-to-br from-white to-purple-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
+        <div className="p-5 h-full border-b-4 border-purple-600 relative">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-purple-600 opacity-10 rounded-full -mr-6 -mt-6 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative">
+            <div className="absolute -left-3 -top-3 w-10 h-10 flex items-center justify-center rounded-lg bg-purple-600 text-white shadow-md">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+          </div>
+          <StatCard
+            title="현재 대여 중"
+            value={rentAssets.filter(asset => asset.is_rented).length}
+            trend="2대"
+            trendType="up"
+            color="bg-transparent"
+            dateFilter={activeFilter}
+            link="/private/rent?type=사무용"
+          />
+        </div>
+      </div>
     </div>
   );
 }

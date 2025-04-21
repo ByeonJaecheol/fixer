@@ -522,7 +522,7 @@ export default function AsLogInput({workType}:{workType:string}) {
                 title={"분류"}
                 value={category??""}
                 setValue={setSecurityProgram}
-                options={["보안","프로그램","OS","바이러스"]}
+                options={["보안","프로그램","OS","기타"]}
               />
             </div>
             }
