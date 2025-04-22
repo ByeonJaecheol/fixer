@@ -2,14 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import SupabaseService, { IAsManagementLog } from '@/api/supabase/supabaseApi';
 import { formatToKoreanTime, truncateDescription } from '@/utils/utils';
 import { ChevronUpIcon, ChevronDownIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import { RingLoader } from 'react-spinners';
+import { format, parseISO, isWithinInterval } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 // 필터 타입 정의
 type SortField = 'log_id' | 'created_by' | 'work_date' | 'work_type' | 'model_name' | 'employee_department';
 type SortDirection = 'asc' | 'desc';
+type DateFilterType = 'today' | 'week' | 'month' | 'year' | 'custom' | 'all';
 type FilterState = {
   sortField: SortField;
   sortDirection: SortDirection;
@@ -27,9 +31,16 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 const FILTER_STORAGE_KEY = 'as_request_filter_state';
 
 export default function AsRequestPage() {
+  const searchParams = useSearchParams();
   const [logs, setLogs] = useState<IAsManagementLog[]>([]);
+  const [filteredByDateLogs, setFilteredByDateLogs] = useState<IAsManagementLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // URL에서 기간 파라미터 가져오기
+  const period = searchParams.get('period') as DateFilterType || 'all';
+  const startDateParam = searchParams.get('startDate');
+  const endDateParam = searchParams.get('endDate');
   
   // 필터 상태
   const [filterState, setFilterState] = useState<FilterState>({
@@ -46,6 +57,18 @@ export default function AsRequestPage() {
   
   const gridStyle = {
     gridTemplateColumns: "8% 8% 8% 8% 8% 10% 5% 15% 30%"
+  };
+  
+  // 기간 라벨 표시
+  const getPeriodLabel = () => {
+    switch (period) {
+      case 'today': return '오늘';
+      case 'week': return '이번 주';
+      case 'month': return '이번달';
+      case 'year': return '올해';
+      case 'custom': return '선택 기간';
+      default: return '전체 기간';
+    }
   };
 
   // 필터 상태 로컬 스토리지에서 불러오기
@@ -96,6 +119,37 @@ export default function AsRequestPage() {
     
     fetchData();
   }, []);
+  
+  // 데이터 날짜 필터링
+  useEffect(() => {
+    if (!logs.length) return;
+    
+    // 날짜 필터링이 필요한 경우
+    if (period !== 'all' && startDateParam && endDateParam) {
+      try {
+        const startDate = parseISO(startDateParam);
+        const endDate = parseISO(endDateParam);
+        
+        // 하루 끝까지 포함하기 위해 endDate 조정
+        endDate.setHours(23, 59, 59, 999);
+        
+        // 날짜 범위에 맞는 요청만 필터링
+        const filtered = logs.filter(log => {
+          const logDate = new Date(log.created_at);
+          return isWithinInterval(logDate, { start: startDate, end: endDate });
+        });
+        
+        setFilteredByDateLogs(filtered);
+      } catch (err) {
+        console.error('날짜 필터링 오류:', err);
+        // 필터링 오류 시 모든 데이터 표시
+        setFilteredByDateLogs(logs);
+      }
+    } else {
+      // 필터링이 필요 없는 경우 모든 데이터 표시
+      setFilteredByDateLogs(logs);
+    }
+  }, [logs, period, startDateParam, endDateParam]);
 
   // 정렬 함수
   const sortLogs = (a: IAsManagementLog, b: IAsManagementLog) => {
@@ -164,8 +218,8 @@ export default function AsRequestPage() {
     }));
   };
 
-  // 필터링된 로그 데이터
-  const filteredLogs = logs
+  // 필터링된 로그 데이터 (기간 필터 적용 후 나머지 필터 적용)
+  const filteredLogs = filteredByDateLogs
     .filter(log => {
       // 작업 유형 필터
       if (filterState.workTypeFilter && log.work_type !== filterState.workTypeFilter) {
@@ -357,6 +411,24 @@ export default function AsRequestPage() {
         {/* 필터 컨트롤 */}
         <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* 현재 선택된 기간 표시 */}
+            {period !== 'all' && startDateParam && endDateParam && (
+              <div className="mb-2 md:mb-0 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-200 flex items-center">
+                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="font-medium text-sm whitespace-nowrap">
+                  {getPeriodLabel()} ({format(parseISO(startDateParam), 'yyyy-MM-dd')} ~ {format(parseISO(endDateParam), 'yyyy-MM-dd')})
+                </span>
+                <Link 
+                  href="/private/as-request"
+                  className="ml-2 text-xs bg-blue-100 hover:bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded-full font-medium"
+                >
+                  초기화
+                </Link>
+              </div>
+            )}
+            
             <div className="flex items-center">
               <FunnelIcon className="h-5 w-5 text-gray-500 mr-2" />
               <span className="text-sm font-medium text-gray-700">작업 유형:</span>

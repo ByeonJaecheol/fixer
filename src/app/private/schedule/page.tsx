@@ -2,11 +2,80 @@
 
 import { useState, useEffect } from 'react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, 
-  isSameMonth, isSameDay, parseISO, isWithinInterval, addDays } from 'date-fns';
+  isSameMonth, isSameDay, parseISO, isWithinInterval, addDays, getYear } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { supabase } from '@/utils/supabase';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
+
+// 대한민국 공휴일 정의
+interface Holiday {
+  month: number;
+  day: number;
+  name: string;
+  isLunar?: boolean; // 음력 여부 (현재는 사용하지 않지만 향후 확장 가능성을 위해 추가)
+}
+
+// 양력 기준 공휴일 - 연도별로 다른 것은 아래 getHolidays 함수에서 동적 계산
+const FIXED_HOLIDAYS: Holiday[] = [
+  { month: 1, day: 1, name: '신정' },
+  { month: 3, day: 1, name: '삼일절' },
+  { month: 5, day: 5, name: '어린이날' },
+  { month: 6, day: 6, name: '현충일' },
+  { month: 8, day: 15, name: '광복절' },
+  { month: 10, day: 3, name: '개천절' },
+  { month: 10, day: 9, name: '한글날' },
+  { month: 12, day: 25, name: '크리스마스' }
+];
+
+// 연도별 공휴일 가져오기 함수
+const getHolidays = (year: number): Holiday[] => {
+  // 기본 공휴일 복사
+  const holidays = [...FIXED_HOLIDAYS];
+  
+  // 2024년 특별 공휴일 추가 (필요에 따라 다른 연도 추가 가능)
+  if (year === 2024) {
+    // 설날 연휴 (2024년 2월 9일~12일)
+    holidays.push(
+      { month: 2, day: 9, name: '설날 연휴' },
+      { month: 2, day: 10, name: '설날' },
+      { month: 2, day: 11, name: '설날 연휴' },
+      { month: 2, day: 12, name: '대체 공휴일' }
+    );
+    
+    // 부처님 오신 날 (2024년)
+    holidays.push({ month: 5, day: 15, name: '부처님 오신 날' });
+    
+    // 추석 연휴 (2024년 9월 16일~18일)
+    holidays.push(
+      { month: 9, day: 16, name: '추석 연휴' },
+      { month: 9, day: 17, name: '추석' },
+      { month: 9, day: 18, name: '추석 연휴' }
+    );
+    
+    // 국회의원 선거일
+    holidays.push({ month: 4, day: 10, name: '국회의원 선거일' });
+  }
+  
+  // 다른 연도의 공휴일을 추가하려면 여기에 추가
+  if (year === 2023) {
+    // 2023년 공휴일
+  }
+  
+  return holidays;
+};
+
+// 특정 날짜가 공휴일인지 확인하는 함수
+const isHoliday = (date: Date): Holiday | null => {
+  const year = getYear(date);
+  const month = date.getMonth() + 1; // JavaScript 날짜는 0부터 시작
+  const day = date.getDate();
+  
+  const holidays = getHolidays(year);
+  const holiday = holidays.find(h => h.month === month && h.day === day);
+  
+  return holiday || null;
+};
 
 // 우선순위 타입 정의
 type PriorityLevel = 'low' | 'medium' | 'high' | 'urgent';
@@ -229,12 +298,16 @@ export default function TodoCalendarPage() {
           const todosForDay = getTodosForDate(day);
           const isToday = isSameDay(day, new Date());
           const isCurrentMonth = isSameMonth(day, currentMonth);
+          const holiday = isHoliday(day);
           
           // 선택 범위 관련 스타일링 개선
           const isRangeStart = selectedDateRange.start && isSameDay(selectedDateRange.start, day);
           const isRangeEnd = selectedDateRange.end && isSameDay(selectedDateRange.end, day);
           const isInRange = selectedDateRange.start && selectedDateRange.end && 
             isWithinInterval(day, { start: selectedDateRange.start, end: selectedDateRange.end });
+          
+          // 일요일이나 공휴일인 경우 날짜 텍스트를 빨간색으로 표시
+          const isRedDay = day.getDay() === 0 || !!holiday;
           
           return (
             <div 
@@ -249,7 +322,7 @@ export default function TodoCalendarPage() {
               onClick={() => handleDateClick(day)}
             >
               <div className={`text-right text-sm mb-1 
-                ${day.getDay() === 0 ? 'text-red-500' : day.getDay() === 6 ? 'text-blue-500' : ''}
+                ${isRedDay ? 'text-red-500' : day.getDay() === 6 ? 'text-blue-500' : ''}
                 ${isRangeStart || isRangeEnd ? 'font-bold' : ''}
               `}>
                 {format(day, 'd')}
@@ -259,6 +332,13 @@ export default function TodoCalendarPage() {
                   </span>
                 )}
               </div>
+              
+              {/* 공휴일 표시 */}
+              {holiday && (
+                <div className="text-xs px-1 py-0.5 rounded bg-red-100 text-red-700 mb-1 truncate">
+                  {holiday.name}
+                </div>
+              )}
               
               <div className="overflow-y-auto max-h-16 space-y-1">
                 {todosForDay.map((todo, idx) => {

@@ -11,11 +11,11 @@ export default async function InDetailPage({ params }: { params: { id: string } 
     // const pcAsset = await getPcAsset(id);
     // console.log(pcAsset);
 
-    const pcManagementLog = await getPcManagementLogWithId("pc_management_log","pc_assets","입고","log_id",false,id);
+    const pcManagementLog = await getPcManagementLogWithId("pc_management_log","pc_assets","등록","log_id",false,id);
     console.log(pcManagementLog);
   return (
     <div>
-        <DetailPcInput workType={"입고"} pcManagementLog={pcManagementLog} />
+        <DetailPcInput workType={"등록"} pcManagementLog={pcManagementLog} />
     </div>
         )
     }

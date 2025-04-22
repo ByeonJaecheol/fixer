@@ -48,7 +48,7 @@ const navigationItems = [
   {
     icon: DocumentTextIcon,
     text: '자료실',
-    href: '#'
+    href: '/'
   },
   {
     icon: Cog6ToothIcon,

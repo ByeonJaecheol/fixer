@@ -3,7 +3,7 @@ import { getPcManagementLog } from "@/api/supabase/supabaseTempApi";
 import DataTable, { Column } from "@/components/shared/DataTable";
 
 export default async function InstallPage() {
-  const pcManagementLog = await getPcManagementLog("pc_management_log", "pc_assets", "설치", "log_id", false);
+  const pcManagementLog = await getPcManagementLog("pc_management_log", "pc_assets", "출고", "log_id", false);
 
   // 테이블 열 정의 - 함수 대신 타입과 접근자 속성 사용
   const columns: Column[] = [
@@ -20,7 +20,7 @@ export default async function InstallPage() {
 
   return (
     <div>
-      <PcLogInput workType={"설치"} />
+      <PcLogInput workType={"출고"} />
       <div className="p-6">
         <DataTable
           columns={columns}

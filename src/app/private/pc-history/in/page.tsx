@@ -14,7 +14,7 @@ export default async function AddPcHistory() {
           columns: '*'
         }
       ],
-      match: { work_type: '입고' },
+      match: { work_type: '등록' },
       order: { column: 'created_at', ascending: false },
     });
     if (success) {
@@ -31,25 +31,24 @@ export default async function AddPcHistory() {
   const columns: Column[] = [
     { key: "log_id", header: "ID" },
     { key: "created_by", header: "작성자", type: "email" },
-    { key: "work_date", header: "입고일", type: "date" },
+    { key: "work_date", header: "등록일", type: "date" },
     { key: "work_type", header: "작업유형", type: "work_type" },
     { key: "pc_type", header: "PC타입", type: "pc_type", accessor: "pc_assets.pc_type" },
     { key: "model_name", header: "모델명", accessor: "pc_assets.model_name" },
     { key: "serial_number", header: "제조번호", accessor: "pc_assets.serial_number" },
     { key: "security_code", header: "코드번호" },
-    { key: "usage_type", header: "용도" },
     { key: "detailed_description", header: "작업내용", type: "truncate", truncateLength: 30 }
   ];
 
   return (
     <div>
-      <PcLogInput workType={"입고"} />
+      <PcLogInput workType={"등록"} />
       <div className="p-6">
         {pcManagementLog && pcManagementLog.length > 0 && (
           <DataTable
             columns={columns}
             data={pcManagementLog}
-            gridTemplateColumns="8% 8% 6% 8% 10% 12% 5% 5% 10% 30%"
+            gridTemplateColumns="8% 8% 6% 8% 10% 12% 10% 10%  30%"
             detailUrlPrefix="/private/pc-history/in/detail"
           />
         )}

@@ -83,7 +83,7 @@ const DataTable: React.FC<DataTableProps> = ({
         const pcType = value;
         if (!pcType) return '-';
         
-        const pcTypeDisplay = pcType === '데스크탑' ? 'DESKTOP' : 'NOTEBOOK';
+        const pcTypeDisplay = pcType === '데스크탑' ? 'DT' : 'NT';
         const pcTypeColor = pcType === '데스크탑' 
           ? 'bg-purple-100 text-purple-800' 
           : 'bg-green-100 text-green-800';
