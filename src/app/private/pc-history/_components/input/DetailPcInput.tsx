@@ -47,7 +47,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
   const ref = useRef<HTMLSelectElement>(null);
 
   const handleUpdateButton = async() => {
-    // 입고 로그 수정
+    // 등록 로그 수정
       console.log("수정 시작");
       const supabaseService = SupabaseService.getInstance();
       //pc자산 수정
@@ -117,7 +117,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
 
   
   // securityCode와 newSecurityCode가 다를 경우 pc_assets 테이블에서 security_code []에 newSecurityCode 추가
-  //설치로그와 반납로그에 사용중
+  //출고로그와 반납로그에 사용중
   // 수정에서는 보안코드 변경이 되면 좋지만 복잡해서 읿단 보류
   const updatePcAssetsSecurityCode = async (asset_id: string,newSecurityCode: string|undefined,supabaseService:SupabaseService) => {
     if(!newSecurityCode){
@@ -244,13 +244,13 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
           disabled={true}
         />
            <InputLog
-          label="최초입고일"
+          label="최초등록일"
           value={firstStockDate ?? "-"}
           setValue={setFirstStockDate}
           disabled={true}
         />
       
-        {workType==="입고"?
+        {workType==="등록"?
         <div></div>
         :
         (
@@ -262,14 +262,14 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
        /> 
         )}
       </div>
-      {workType==="입고"?
+      {workType==="등록"?
       null
       :
       (
       <div className="text-sm font-semibold text-gray-700 px-4 sm:px-8 mb-2">입력 정보</div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-4 sm:px-8 mb-4">
-      {workType==="입고"?
+      {workType==="등록"?
         <div></div>
         :
         (
@@ -283,7 +283,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         )}
      
         
-        {workType==="입고"?
+        {workType==="등록"?
         <div></div>
         :
         (
@@ -294,7 +294,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
        />
         )}
 
-          {workType==="입고"?
+          {workType==="등록"?
          <div></div>
          :
          (
@@ -306,7 +306,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
        /> 
          )} 
 
-        {workType==="입고"?
+        {workType==="등록"?
         <div></div>
         :
         (
@@ -320,7 +320,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         )}
 
         
-        {workType==="입고"?
+        {workType==="등록"?
         <div></div>
         :
         (
@@ -330,7 +330,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
          setValue={setEmployeeWorkspace}
        />
         )}
-        {workType==="입고"?
+        {workType==="등록"?
         <div></div>
         :
         (
@@ -340,7 +340,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
          setValue={setEmployeeDepartment}
        />
         )}
-        {workType==="입고"?
+        {workType==="등록"?
         <div></div>
         :
         (
@@ -350,7 +350,7 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
          setValue={setEmployeeName}
        />
         )}
-         {workType==="입고"?
+         {workType==="등록"?
         <div></div>
         :
         (
@@ -377,25 +377,25 @@ export default function DetailPcInput({workType,pcManagementLog}:{workType:strin
         />
         )}
 
-        {/* 설치일때만 보임 */}
-        {workType!=="설치"?
+        {/* 출고일때만 보임 */}
+        {workType!=="출고"?
         null
         :
         (
         <InputDropDown
-          label={"설치유형"}
+          label={"출고유형"}
           value={install_type ?? "-"}
           setValue={setInstallType}
           ref={ref}
           options={PC_INSTALL_TYPE_OPTIONS}
         />
         )}
-        {workType!=="설치"?
+        {workType!=="출고"?
         null
         :
         (
         <InputDropDown
-          label={"설치상태"}
+          label={"출고상태"}
           value={install_status ?? "-"}
           setValue={setInstallStatus}
           ref={ref}
