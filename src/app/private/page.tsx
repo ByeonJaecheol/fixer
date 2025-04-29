@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { RingLoader } from 'react-spinners';
 import RecentSchedules from './_components/RecentSchedules';
 import { Activity, Asset, DateFilterOption, DateFilterType, RentAsset } from '../constants/chart';
+import RentStatusChart from './_components/RentStatusChart';
 
 // 차트 데이터 타입 정의
 interface AssetStatusCount {
@@ -131,6 +132,9 @@ export default function PrivateDashboard() {
     });
   };
 
+  // 타입 정의에 새로운 상태 추가
+  const [rentStatusData, setRentStatusData] = useState<{ type: string; total: number; rented: number }[]>([]);
+
   // 원시 데이터 가져오기
   useEffect(() => {
     const fetchData = async () => {
@@ -182,8 +186,36 @@ export default function PrivateDashboard() {
           asActivities: asActivitiesData?.length || 0,
           pcActivities: pcActivitiesData?.length || 0
         });
+
+        // 렌트 자산 데이터 처리
+        const rentTypeStats = {
+          '사무용': { total: 0, rented: 0 },
+          '설계용': { total: 0, rented: 0 },
+          '전용': { total: 0, rented: 0 }
+        };
+
+        if (rentAssetsData) {
+          rentAssetsData.forEach(asset => {
+            const type = asset.rent_type;
+            if (type && type in rentTypeStats) {
+              rentTypeStats[type as keyof typeof rentTypeStats].total += 1;
+              if (asset.is_rented) {
+                rentTypeStats[type as keyof typeof rentTypeStats].rented += 1;
+              }
+            }
+          });
+        }
+
+        const formattedRentData = Object.entries(rentTypeStats).map(([type, stats]) => ({
+          type,
+          total: stats.total,
+          rented: stats.rented
+        }));
+
+        console.log('차트용 최종 데이터:', formattedRentData);
+        setRentStatusData(formattedRentData);
       } catch (error) {
-        console.error('데이터 불러오기 오류:', error);
+        console.error('데이터 처리 중 오류:', error);
         setError(error instanceof Error ? error.message : '데이터를 불러오는 중 오류가 발생했습니다.');
       } finally {
         setLoading(false);
@@ -196,10 +228,15 @@ export default function PrivateDashboard() {
   useEffect(() => {
     const fetchRecentSchedules = async () => {
       try {
+        // 오늘 날짜의 시작 시간 (00:00:00) 설정
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
         const { data, error } = await supabase
           .from('todos')
           .select('*')
-          .order('created_at', { ascending: false })
+          .gte('start_date', today.toISOString()) // 오늘 이후의 일정만 선택
+          .order('start_date', { ascending: true }) // 날짜가 가까운 순으로 정렬
           .limit(3);
         
         if (error) throw error;
@@ -592,73 +629,17 @@ export default function PrivateDashboard() {
             <NoDataDisplay />
           )}
         </ChartCard>
-        
-          
-        {/* PC 유형 분포 차트 */}
-        <ChartCard title="PC 유형 분포" theme="green">
-          {loading ? (
-            <ChartSkeleton />
-          ) : assetTypeData.length > 0 ? (
-            <ResponsiveContainer width="99%" height="100%">
-              <PieChart>
-                <Pie
-                  data={assetTypeData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  innerRadius={50}
-                  dataKey="value"
-                  nameKey="name"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
-                  {assetTypeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={`#0B815A${90 - index * 10}`} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-                  formatter={(value: number) => [value, '대수']}
-                />
-                <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 11 }} />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <NoDataDisplay />
-          )}
-        </ChartCard>
 
         {/* 임대PC 대여 현황 차트 */}
         <ChartCard title="임대PC 대여 현황" theme="purple">
           {loading ? (
             <ChartSkeleton />
-          ) : rentedAssetsData.length > 0 ? (
-            <ResponsiveContainer width="99%" height="100%">
-              <PieChart>
-                <Pie
-                  data={rentedAssetsData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  innerRadius={50}
-                  dataKey="value"
-                  nameKey="name"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
-                  {rentedAssetsData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={`#7B1FA2${90 - index * 10}`} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-                  formatter={(value: number) => [value, '대수']}
-                />
-                <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 11 }} />
-              </PieChart>
-            </ResponsiveContainer>
+          ) : rentStatusData && rentStatusData.length > 0 ? (
+            <RentStatusChart data={rentStatusData} />
           ) : (
-            <NoDataDisplay />
+            <div className="flex items-center justify-center h-[300px]">
+              <p className="text-gray-500">데이터가 없습니다</p>
+            </div>
           )}
         </ChartCard>
 
@@ -1083,7 +1064,7 @@ function StatsCardGrid({
         <div className="p-5 h-full border-b-4 border-amber-600 relative">
           <div className="absolute top-0 right-0 w-16 h-16 bg-amber-600 opacity-10 rounded-full -mr-6 -mt-6 group-hover:scale-150 transition-transform duration-500"></div>
           <StatCard
-            title="AS 요청"
+            title="작업이력"
             value={currentAsActivitiesCount}
             trend={asActivitiesDiffText}
             trendType={asActivitiesTrendType as 'up' | 'down' | 'neutral'}
@@ -1107,6 +1088,7 @@ function StatsCardGrid({
           />
         </div>
       </div>
+      
     </div>
   );
 }

@@ -1,23 +1,16 @@
 'use client'
-import CommonInputOnChange from "@/app/_components/common/input/CommonInputOnChange";
-import InputDateLegacy from "@/app/_components/log/InputDateLegacy";
-import InputModelName from "@/app/_components/log/InputModelName";
-import InputPcType from "@/app/_components/log/InputPcType";
-import InputSerial from "@/app/_components/log/InputSerial";
-import { useEffect, useRef, useState } from "react";
-import OkButton from "@/app/_components/common/input/button/OkButton";
 import SupabaseService, { IPcManagementLog } from "@/api/supabase/supabaseApi";
+import OkButton from "@/app/_components/common/input/button/OkButton";
 import InputDate from "@/app/_components/log/InputDate";
-import { usePathname, useRouter } from "next/navigation";
-import InputLog from "@/app/_components/log/new/InputLog";
 import InputDropDown from "@/app/_components/log/new/InputDropDown";
-import { PC_AVAILABLE_TYPE_OPTIONS, PC_BRAND_OPTIONS, PC_HP_DESKTOP_MODEL_OPTIONS, PC_HP_NOTEBOOK_MODEL_OPTIONS, PC_INSTALL_STATUS_OPTIONS, PC_INSTALL_TYPE_OPTIONS, PC_LG_DESKTOP_MODEL_OPTIONS, PC_LG_NOTEBOOK_MODEL_OPTIONS, PC_LOCATION_TYPE_OPTIONS, PC_SAMSUNG_DESKTOP_MODEL_OPTIONS, PC_SAMSUNG_NOTEBOOK_MODEL_OPTIONS, PC_STATUS_OPTIONS, PC_TYPE_OPTIONS, PC_USAGE_TYPE_OPTIONS } from "@/app/constants/objects";
+import InputLog from "@/app/_components/log/new/InputLog";
 import InputTextArea from "@/app/_components/log/new/InputTextArea";
-import InputToggle from "@/app/_components/log/new/InputToggle";
-import CommonRadio from "@/app/_components/common/input/CommonRadio";
+import { PC_AVAILABLE_TYPE_OPTIONS, PC_BRAND_OPTIONS, PC_HP_DESKTOP_MODEL_OPTIONS, PC_HP_NOTEBOOK_MODEL_OPTIONS, PC_INSTALL_STATUS_OPTIONS, PC_INSTALL_TYPE_OPTIONS, PC_LG_DESKTOP_MODEL_OPTIONS, PC_LG_NOTEBOOK_MODEL_OPTIONS, PC_LOCATION_TYPE_OPTIONS, PC_SAMSUNG_DESKTOP_MODEL_OPTIONS, PC_SAMSUNG_NOTEBOOK_MODEL_OPTIONS, PC_STATUS_OPTIONS, PC_TYPE_OPTIONS, PC_USAGE_TYPE_OPTIONS } from "@/app/constants/objects";
+import EmployeesSelectModal, { EmployeeData } from "@/app/private/_components/EmployeesSelectModal";
 import { checkSerialNumber, fetchEmployeeDataByName, generateSecurityCode } from "@/app/utils/util";
 import { useUser } from "@/context/UserContext";
-import EmployeesSelectModal, { EmployeeData } from "@/app/private/_components/EmployeesSelectModal";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 
 

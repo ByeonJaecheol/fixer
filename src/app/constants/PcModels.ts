@@ -1,8 +1,8 @@
 interface IPcModelInfo {
     value: string;
     label: string;
-    manufacturer: 'HP' | 'LG' | 'SAMSUNG';
-    type: 'DESKTOP' | 'NOTEBOOK';
+    manufacturer: 'HP' | 'LG' | 'SAMSUNG'|'기타';
+    type: 'DESKTOP' | 'NOTEBOOK'|'기타';
   }
   
   export const ALL_PC_MODELS: IPcModelInfo[] = [
@@ -14,12 +14,20 @@ interface IPcModelInfo {
     { value: 'Z400', label: 'Z400', manufacturer: 'HP', type: 'DESKTOP' },
     { value: 'Z620', label: 'Z620', manufacturer: 'HP', type: 'DESKTOP' },
     { value: 'Z640', label: 'Z640', manufacturer: 'HP', type: 'DESKTOP' },
+    { value: 'Z840', label: 'Z840', manufacturer: 'HP', type: 'DESKTOP' },
   
     // HP Notebook
     { value: 'G10', label: 'G10', manufacturer: 'HP', type: 'NOTEBOOK' },
+    { value: 'G9', label: 'G9', manufacturer: 'HP', type: 'NOTEBOOK' },
     { value: 'G8', label: 'G8', manufacturer: 'HP', type: 'NOTEBOOK' },
+    { value: 'G7', label: 'G7', manufacturer: 'HP', type: 'NOTEBOOK' },
+    { value: 'G6', label: 'G6', manufacturer: 'HP', type: 'NOTEBOOK' },
     { value: 'G5', label: 'G5', manufacturer: 'HP', type: 'NOTEBOOK' },
+    { value: 'G3ST', label: 'G3ST', manufacturer: 'HP', type: 'NOTEBOOK' },
     { value: 'G3', label: 'G3', manufacturer: 'HP', type: 'NOTEBOOK' },
+    { value: 'G2', label: 'G2', manufacturer: 'HP', type: 'NOTEBOOK' },
+    { value: 'G1', label: 'G1', manufacturer: 'HP', type: 'NOTEBOOK' },
+
   
     // LG Notebook
     { value: '15ZB970-GP50ML', label: '15ZB970-GP50ML', manufacturer: 'LG', type: 'NOTEBOOK' },
@@ -29,11 +37,22 @@ interface IPcModelInfo {
     { value: '15ZD970', label: '15ZD970', manufacturer: 'LG', type: 'NOTEBOOK' },
     { value: '15ZB995-GP50ML', label: '15ZB995-GP50ML', manufacturer: 'LG', type: 'NOTEBOOK' },
     { value: '15ZD95Q-GX56K', label: '15ZD95Q-GX56K', manufacturer: 'LG', type: 'NOTEBOOK' },
+    { value: 'R570', label: 'R570', manufacturer: 'LG', type: 'NOTEBOOK' },
+    { value: 'U460', label: 'U460', manufacturer: 'LG', type: 'NOTEBOOK' },
+    { value: 'U560', label: 'U560', manufacturer: 'LG', type: 'NOTEBOOK' },
+    { value: 'N450', label: 'N450', manufacturer: 'LG', type: 'NOTEBOOK' },
+    { value: '15U530', label: '15U530', manufacturer: 'LG', type: 'NOTEBOOK' },
+    { value: '15Z960', label: '15Z960', manufacturer: 'LG', type: 'NOTEBOOK' },
+    { value: '15ZD960', label: '15ZD960', manufacturer: 'LG', type: 'NOTEBOOK' },
+
   
     // Samsung Desktop
     { value: 'DB-P600', label: 'DB-P600', manufacturer: 'SAMSUNG', type: 'DESKTOP' },
     { value: 'DB-400T2A', label: 'DB-400T2A', manufacturer: 'SAMSUNG', type: 'DESKTOP' },
     { value: 'DB-400T3A', label: 'DB-400T3A', manufacturer: 'SAMSUNG', type: 'DESKTOP' },
+
+    // 기타
+    { value: '기타', label: '기타', manufacturer: '기타', type: '기타' },
   ];
   
   // 유틸리티 함수들

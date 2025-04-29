@@ -9,12 +9,14 @@ export interface ICheckBoxOption {
 export const PC_TYPE_OPTIONS: IDropDownOption[] = [
     { value: '데스크탑', label: '데스크탑' },
     { value: '노트북', label: '노트북' },
+    { value: '기타', label: '기타' },
   ];
 
 export const PC_BRAND_OPTIONS: IDropDownOption[] = [
     { value: 'HP', label: 'HP' },
     { value: 'LG', label: 'LG' },
     { value: '삼성', label: '삼성' },
+    { value: '기타', label: '기타' },
   ];
 
 export const PC_STATUS_OPTIONS: IDropDownOption[] = [
@@ -30,15 +32,22 @@ export const PC_HP_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
     { value: 'Z400', label: 'Z400' },
     { value: 'Z620', label: 'Z620' },
     { value: 'Z640', label: 'Z640' },
+    { value: 'Z840', label: 'Z840' },
     { value: 'Z8G4', label: 'Z8G4' },
     { value: 'Z6G4', label: 'Z6G4' },
   ];
   
 export const PC_HP_NOTEBOOK_MODEL_OPTIONS: IDropDownOption[] = [
       { value: 'G10', label: 'G10' },
+      { value: 'G9', label: 'G9' },
       { value: 'G8', label: 'G8' },
+      { value: 'G7', label: 'G7' },
+      { value: 'G6', label: 'G6' },
       { value: 'G5', label: 'G5' },
+      { value: 'G3ST', label: 'G3ST' },
       { value: 'G3', label: 'G3' },
+      { value: 'G2', label: 'G2' },
+      { value: 'G1', label: 'G1' },
     ];
 export const PC_LG_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
     { value: '없음', label: '없음' },
@@ -54,6 +63,14 @@ export const PC_LG_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
     { value: '15Z960G', label: '15Z960G' },
     { value: '15ZD970', label: '15ZD970' },
     { value: '15ZD95Q-GX56K', label: '15ZD95Q-GX56K' },
+    { value: 'R570', label: 'R570' },
+    { value: 'U460', label: 'U460' },
+    { value: 'U560', label: 'U560' },
+    { value: 'N450', label: 'N450' },
+    { value: '15U530', label: '15U530' },
+    { value: '15Z960', label: '15Z960' },
+    { value: '15ZD960', label: '15ZD960' },
+    
   ];
   
   export const PC_SAMSUNG_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
@@ -94,4 +111,3 @@ export const PC_LG_DESKTOP_MODEL_OPTIONS: IDropDownOption[] = [
     
   ];  
   
-

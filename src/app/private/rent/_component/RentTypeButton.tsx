@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 
 interface RentTypeButtonProps {
-  type: '사무용' | '설계용' | '기타';
+  type: '사무용' | '설계용' | '전용';
   children: React.ReactNode;
 }
 
@@ -14,13 +14,13 @@ export default function RentTypeNav() {
     <nav className="p-4 bg-white rounded-xl shadow-sm">
       <div className="flex justify-start items-center space-x-2">
         <RentNavButton type="사무용">
-          사무용 PC
+          사무용
         </RentNavButton>
         <RentNavButton type="설계용">
-          설계용 PC
+          설계용
         </RentNavButton>
-        <RentNavButton type="기타">
-          기타 PC
+        <RentNavButton type="전용">
+          전용
         </RentNavButton>
       </div>
     </nav>
@@ -46,12 +46,12 @@ export  function RentNavButton({ type, children }: RentTypeButtonProps) {
       const activeStyle = {
         사무용: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100',
         설계용: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100',
-        기타: 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+        전용: 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
       };
       const inactiveStyle = {
         사무용: 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-blue-600',
         설계용: 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-green-600',
-        기타: 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-gray-700'
+        전용: 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-gray-700'
       };
   
       return `${baseStyle} ${isActive ? activeStyle[type as keyof typeof activeStyle] : inactiveStyle[type as keyof typeof inactiveStyle]}`;
@@ -74,7 +74,7 @@ export  function RentNavButton({ type, children }: RentTypeButtonProps) {
                 d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
             </svg>
           );
-        case '기타':
+        case '전용':
           return (
             <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
