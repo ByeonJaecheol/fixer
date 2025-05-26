@@ -32,7 +32,6 @@ export default async function HardwarePage() {
     { key: "model_name", header: "모델명", type: "truncate", truncateLength: 9 },
     { key: "employee_department", header: "부서" },
     { key: "employee_name", header: "사용자" },
-    { key: "serial_number", header: "제조번호" },
     { key: "security_code", header: "보안코드" },
     { key: "new_security_code", header: "신규코드" },
     { key: "question", header: "문의내용", type: "truncate", truncateLength: 30 },
@@ -47,7 +46,7 @@ export default async function HardwarePage() {
         <DataTable
           columns={columns}
           data={asManagementLog}
-          gridTemplateColumns="8% 8% 8% 8% 8% 8% 12% 6% 6% 12% 15%"
+          gridTemplateColumns="8% 8% 8% 8% 8% 8% 6% 6% 12% 15%"
           detailUrlPrefix="/private/as-request/hardware/detail"
         />
     </div>

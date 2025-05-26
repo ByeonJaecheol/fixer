@@ -63,10 +63,10 @@ export const pcHistoryCategories: IHistoryCategory[] = [
       href: '/private/as-request'
     },
     {
-      id: 'as-hw',
+      id: 'as-device',
       name: 'H/W',
       value: 'hardware',
-      icon: CpuChipIcon,
+      icon: WrenchScrewdriverIcon,
       color: 'text-blue-600',
       href: '/private/as-request/hardware'
     },
@@ -85,14 +85,6 @@ export const pcHistoryCategories: IHistoryCategory[] = [
       icon: GlobeAltIcon,
       color: 'text-blue-600',
       href: '/private/as-request/network'
-    },
-    {
-      id: 'as-device',
-      name: '장비관리',
-      value: 'device',
-      icon: WrenchScrewdriverIcon,
-      color: 'text-blue-600',
-      href: '/private/as-request/device'
     },
     {
       id: 'as-other',

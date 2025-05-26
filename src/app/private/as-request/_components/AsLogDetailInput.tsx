@@ -37,7 +37,7 @@ interface IHardwareLogEntry {
     serial_number: string;
     solution_detail: string;
     work_date: string; // YYYY-MM-DD 형식의 날짜 문자열
-    work_type: "H/W" | "S/W" | string; // 특정 타입을 제한하려면 여기에 추가
+    work_type: "H/W" | "S/W" | "네트워크" | "기타" | string; // 특정 타입을 제한하려면 여기에 추가
   }
 export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
     const workType = log.work_type;
@@ -83,36 +83,38 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
 
     // 하드웨어 로그 수정
     const updateHardwareLog = async () => {
-        const supabaseService = SupabaseService.getInstance();
-        const logResult = await supabaseService.update({
-            table: 'as_management_log',
-            data: {
-                work_date: workDate,
-                employee_workspace : employeeWorkspace,
-                employee_department : employeeDepartment,
-                employee_name : employeeName,
-                model_name : modelName,
-                serial_number : serial,
-                security_code : securityCode,
-                new_security_code : newSecurityCode,
-                question : question,
-                solution_detail : solutionDetail,
-                detailed_description: detailedDescription,
-            },
-            match: {
-                log_id: log.log_id
-            }
-        })
-        console.log("★★★★★★★★★",logResult)
-        if(logResult.success){
-            alert('수정 완료');
-            return logResult.data;
-        }else{
-            alert('수정 실패');
-            console.error('수정 실패:', logResult);
-            return null;
-        }
-    }
+      const supabaseService = SupabaseService.getInstance();
+      const logResult = await supabaseService.update({
+          table: 'as_management_log',
+          data: {
+              work_date: workDate,
+              employee_workspace : employeeWorkspace,
+              employee_department : employeeDepartment,
+              employee_name : employeeName,
+              model_name : modelName,
+              category : category,
+              detail_category : detailCategory,
+              question : question,
+              solution_detail : solutionDetail,
+              detailed_description: detailedDescription,
+              security_code : securityCode,
+              new_security_code : newSecurityCode,
+          },
+          match: {
+              log_id: log.log_id
+          }
+      })
+      console.log("★★★★★★★★★",logResult)
+      if(logResult.success){
+          alert('수정 완료');
+          return logResult.data;
+      }else{
+          alert('수정 실패');
+          console.error('수정 실패:', logResult);
+          return null;
+      }
+  }
+  
     // 소프트웨어 로그 수정 
     const updateSoftwareLog = async () => {
         const supabaseService = SupabaseService.getInstance();
@@ -173,37 +175,6 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
         }
     }
 
-    // 장비관리 로그 수정
-    const updateDeviceLog = async () => {
-        const supabaseService = SupabaseService.getInstance();
-        const logResult = await supabaseService.update({
-            table: 'as_management_log',
-            data: {
-                work_date: workDate,
-                employee_workspace : employeeWorkspace,
-                employee_department : employeeDepartment,
-                employee_name : employeeName,
-                model_name : modelName,
-                category : category,
-                detail_category : detailCategory,
-                question : question,
-                solution_detail : solutionDetail,
-                detailed_description: detailedDescription,
-            },
-            match: {
-                log_id: log.log_id
-            }
-        })
-        console.log("★★★★★★★★★",logResult)
-        if(logResult.success){
-            alert('수정 완료');
-            return logResult.data;
-        }else{
-            alert('수정 실패');
-            console.error('수정 실패:', logResult);
-            return null;
-        }
-    }
     // 기타 로그 수정
     const updateOtherLog = async () => {
         const supabaseService = SupabaseService.getInstance();
@@ -238,16 +209,13 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
     const handleWriteButton = () => {
         console.log("★★★★★★★★★",log);
         if(workType==="H/W"){
-            updateHardwareLog();
+          updateHardwareLog();
         }
         if(workType==="S/W"){
             updateSoftwareLog();
         }
         if(workType==="네트워크"){
             updateNetworkLog();
-        }
-        if(workType==="장비관리"){
-            updateDeviceLog();
         }
         if(workType==="기타"){  
             updateOtherLog();
@@ -318,18 +286,24 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
         
           {/* 작업유형 별 개별 값 시작*/}
           <div className="flex flex-col gap-4 mb-4 rounded-lg  m-8">
-
-              {workType==="H/W"&&
+            {workType==="H/W"&&
               <div className="flex flex-col gap-y-4">
-                  <h3 className="font-bold text-sm">H/W 선택항목</h3>
+                <h3 className="font-bold text-sm">H/W 선택항목</h3>
+                {/* 소프트웨어 페이지 */}
+                {/* 보안 프로그램 */}
+                <CommonInputSingleCheckbox 
+                  title={"분류"}
+                  value={log.category?log.category:category??"-"}
+                  setValue={setCategory}
+                  options={["PC","모니터","프린터","소모품"]}
+                />
+              </div>
+            }
+              {category==="PC"&&
+              <div className="flex flex-col gap-y-4">
+                  <h3 className="font-bold text-sm">PC 추가 입력</h3>
                   {/* 하드웨어 페이지 */}
-                  {/* 제조번호 */}
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                  <InputLog
-                    label={"제조번호"}
-                    value={serial}
-                    setValue={setSerial}
-                  />
                   <InputLog
                     label={"기존 보안코드"}
                     value={securityCode}
@@ -359,32 +333,8 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
                 />
               </div>
             }
-            {workType==="장비관리"&&
-              <div className="flex flex-col gap-y-4">
-                <h3 className="font-bold text-sm">장비관리 선택항목</h3>
-                {/* 소프트웨어 페이지 */}
-                {/* 보안 프로그램 */}
-                <CommonInputSingleCheckbox 
-                  title={"분류"}
-                  value={log.category?log.category:category??"-"}
-                  setValue={setCategory}
-                  options={["PC","모니터","프린터","소모품"]}
-                />
-              </div>
-            }
-            {(category==="PC"||category==="모니터")&&
-              <div className="flex flex-col gap-y-4">
-                {/* 소프트웨어 페이지 */}
-                {/* 보안 프로그램 */}
-                <CommonInputSingleCheckbox 
-                  title={"세부항목"}
-                  value={log.detail_category?log.detail_category:detailCategory??"-"}
-                  setValue={setDetailCategory}
-                  options={["설치","반납","폐기"]}
-                />
-              </div>
-            }
-
+         
+          
           </div>
           {/* 작업유형 별 개별 값 끝 */}
           {/* 디버깅 정보 */}
