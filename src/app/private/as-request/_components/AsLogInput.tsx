@@ -23,7 +23,6 @@ export default function AsLogInput({workType}:{workType:string}) {
   const [employeeName, setEmployeeName] = useState<string|undefined>(undefined);
   const [modelName, setModelName] = useState<string|undefined>(undefined);
   const [securityCode, setSecurityCode] = useState<string|undefined>(undefined);
-  const [newSecurityCode, setNewSecurityCode] = useState<string|undefined>(undefined);
   const [question, setQuestion] = useState<string|undefined>(undefined);
   const [serial, setSerial] = useState<string|undefined>(undefined);
   const [detailCategory, setDetailCategory] = useState<string|undefined>(undefined);
@@ -163,7 +162,6 @@ export default function AsLogInput({workType}:{workType:string}) {
           detailed_description: detailedDescription,
           solution_detail : solutionDetail,
           security_code : securityCode,
-          new_security_code : newSecurityCode,
         } 
       })
       console.log('H/W 결과',logResult)
@@ -313,11 +311,6 @@ export default function AsLogInput({workType}:{workType:string}) {
                   setValue={setSecurityCode}
                   onKeyDown={()=>fetchDataBySecurityCode(securityCode??"",setEmployeeWorkspace,setEmployeeDepartment,setEmployeeName,setModelName,setSerial)}
                   placeholder=""
-                />
-                <InputLog
-                  label={"신규 보안코드"}
-                  value={newSecurityCode}
-                  setValue={setNewSecurityCode}
                 />
                 </div>
             </div>

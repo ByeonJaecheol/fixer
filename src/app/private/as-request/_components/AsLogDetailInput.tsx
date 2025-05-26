@@ -47,7 +47,6 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
     const [employeeName, setEmployeeName] = useState<string|undefined>(undefined);
     const [modelName, setModelName] = useState<string|undefined>(undefined);
     const [securityCode, setSecurityCode] = useState<string|undefined>(undefined);
-    const [newSecurityCode, setNewSecurityCode] = useState<string|undefined>(undefined);
     const [question, setQuestion] = useState<string|undefined>(undefined);
     const [serial, setSerial] = useState<string|undefined>(undefined);
     const [detailCategory, setDetailCategory] = useState<string|undefined>(undefined);
@@ -70,7 +69,6 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
         setEmployeeName(log.employee_name);
         setModelName(log.model_name);
         setSecurityCode(log.security_code);
-        setNewSecurityCode(log.new_security_code);
         setQuestion(log.question);
         setSerial(log.serial_number);
         setDetailCategory(log.detail_category ?? "");
@@ -98,7 +96,6 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
               solution_detail : solutionDetail,
               detailed_description: detailedDescription,
               security_code : securityCode,
-              new_security_code : newSecurityCode,
           },
           match: {
               log_id: log.log_id
@@ -310,11 +307,6 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
                     setValue={setSecurityCode}
                     onKeyDown={()=>fetchDataBySecurityCode(securityCode??"",setEmployeeWorkspace,setEmployeeDepartment,setEmployeeName,setModelName,setSerial)}
                     placeholder="보안코드 입력 후 엔터시 자동입력"
-                  />
-                  <InputLog
-                    label={"신규 보안코드"}
-                    value={newSecurityCode}
-                    setValue={setNewSecurityCode}
                   />
                   </div>
               </div>
