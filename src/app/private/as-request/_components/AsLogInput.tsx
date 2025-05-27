@@ -13,10 +13,11 @@ import { useState } from "react";
 import EmployeesSelectModal, { EmployeeData } from "../../_components/EmployeesSelectModal";
 import { FormatFormData } from "./formatFormData";
 
-export default function AsLogInput({workType}:{workType:string}) {
+export default function AsLogInput({defaultWorkType}:{defaultWorkType:string}) {
   const { user } = useUser();
   const createdBy = user?.email;
   //workDate 초기값은 오늘 날짜, yyyy-mm-dd 형식
+  const [workType, setWorkType] = useState<string|undefined>(defaultWorkType);
   const [workDate, setWorkDate] = useState(new Date().toISOString().split('T')[0]);
   const [employeeWorkspace, setEmployeeWorkspace] = useState<string|undefined>(undefined);
   const [employeeDepartment, setEmployeeDepartment] = useState<string|undefined>(undefined);
@@ -107,6 +108,7 @@ export default function AsLogInput({workType}:{workType:string}) {
       console.log('S/W 결과',logResult)
       if(logResult.success){
         alert('S/W 완료');
+        setDefault();
         return logResult.data;
       }else{
         alert('S/W 실패');
@@ -135,6 +137,7 @@ export default function AsLogInput({workType}:{workType:string}) {
       console.log('네트워크 결과',logResult)
       if(logResult.success){
         alert('네트워크 완료');
+        setDefault();
         return logResult.data;
       }else{
         alert('네트워크 실패');
@@ -167,6 +170,7 @@ export default function AsLogInput({workType}:{workType:string}) {
       console.log('H/W 결과',logResult)
       if(logResult.success){
         alert('H/W 완료');
+        setDefault();
           return logResult.data;
       }else{
         alert('H/W 실패');
@@ -196,6 +200,7 @@ export default function AsLogInput({workType}:{workType:string}) {
       console.log('기타 결과',logResult)
       if(logResult.success){
         alert('기타 완료');
+        setDefault();
         return logResult.data;
       }else{
         alert('기타 실패');
@@ -219,15 +224,34 @@ export default function AsLogInput({workType}:{workType:string}) {
             setIsModalOpen(true);
       }
       }
-
+    const setDefault = () => {
+          setEmployeeWorkspace(undefined);
+          setEmployeeDepartment(undefined);
+          setEmployeeName(undefined);
+          setModelName(undefined);
+          setSecurityCode(undefined);
+          setQuestion(undefined);
+          setSerial(undefined);
+          setDetailCategory(undefined);
+          setCategory(undefined);
+          setFormat(undefined);
+          setDetailedDescription(undefined);
+          setSolutionDetail(undefined);
+          setIsModalOpen(false);
+          setIsLoading(false);
+          setEmployeeData([]);
+          setEmployeeWorkspace(undefined);
+          setEmployeeDepartment(undefined);
+          setEmployeeName(undefined);
+    }
 
     return (
         <>
-        <EmployeesSelectModal employeeData={employeeData} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} setEmployeeDepartment={setEmployeeDepartment} setEmployeeName={setEmployeeName}/>
+        {/* <EmployeesSelectModal employeeData={employeeData} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} setEmployeeDepartment={setEmployeeDepartment} setEmployeeName={setEmployeeName}/> */}
         
         <div className="text-sm font-semibold text-gray-700 px-4 sm:px-8 my-2">
           <div className="flex flex-row items-center gap-2">
-              <h1>{workType}  수리 정보</h1>
+              <h1>{workType} 이력 작성</h1>
           </div>  
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-4 sm:px-8 mb-4">
@@ -269,12 +293,23 @@ export default function AsLogInput({workType}:{workType:string}) {
             {/* 증상 */}
 
          </div>
+
+         <div className="flex flex-col gap-4 mb-4 rounded-lg  m-8">
+         <div className="flex flex-col gap-y-4">
+              {/* 작업유형 */}
+              <CommonInputSingleCheckbox 
+                title={"작업유형"}
+                value={workType??""}
+                setValue={setWorkType}
+                options={["H/W","S/W","네트워크","기타"]}
+              />
+          </div>
+
+
             {/* 작업유형 별 개별 값 시작*/}
-            <div className="flex flex-col gap-4 mb-4 rounded-lg  m-8">
+            
 
             {/* {workType==="H/W"&& */}
-          
-
          
             {workType==="S/W"&&
             <div className="flex flex-col gap-y-4">
@@ -289,6 +324,8 @@ export default function AsLogInput({workType}:{workType:string}) {
             </div>
             }
           
+       
+
 
             {workType==="H/W"&&
             <div className="flex flex-col gap-y-4">
@@ -306,7 +343,7 @@ export default function AsLogInput({workType}:{workType:string}) {
               {/* 하드웨어 페이지 */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <InputLog
-                  label={"기존 보안코드"}
+                  label={"보안코드"}
                   value={securityCode}
                   setValue={setSecurityCode}
                   onKeyDown={()=>fetchDataBySecurityCode(securityCode??"",setEmployeeWorkspace,setEmployeeDepartment,setEmployeeName,setModelName,setSerial)}
@@ -343,7 +380,13 @@ export default function AsLogInput({workType}:{workType:string}) {
            />
           </div>
           <div className="w-full flex justify-end mb-4 px-4 sm:px-8">
-            <div className="w-36 ">
+            <div className="w-72 flex flex-row gap-2">
+            <OkButton
+              onClick={()=>router.push(`/private/as-request`)}
+              isLoading={isLoading}
+              buttonText={"뒤로가기"}
+              color={"yellow"}
+            />
             <OkButton
               onClick={handleWriteButton}
               isLoading={isLoading}

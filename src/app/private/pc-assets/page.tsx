@@ -244,8 +244,6 @@ export default function PcAssetsPage() {
         return 'bg-yellow-100 text-yellow-800';
       case '수리':
         return 'bg-blue-100 text-blue-800';
-      case '장비관리':
-        return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -294,8 +292,6 @@ export default function PcAssetsPage() {
       workTypeDetail = 'software'
     } else if (workType === '네트워크') {
       workTypeDetail = 'network'
-    } else if (workType === '장비관리') {
-      workTypeDetail = 'device'
     } else if (workType === '기타') {
       workTypeDetail = 'other'
     }

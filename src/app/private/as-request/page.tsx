@@ -9,6 +9,7 @@ import { ChevronUpIcon, ChevronDownIcon, FunnelIcon } from '@heroicons/react/24/
 import { RingLoader } from 'react-spinners';
 import { format, parseISO, isWithinInterval } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import AsWriteButton from './_components/AsWriteButton';
 
 // 필터 타입 정의
 type SortField = 'log_id' | 'created_by' | 'work_date' | 'work_type' | 'model_name' | 'employee_department';
@@ -53,7 +54,7 @@ export default function AsRequestPage() {
   });
   
   // 작업 유형 옵션
-  const workTypeOptions = ['전체', 'H/W', 'S/W', '네트워크', '장비관리', '기타'];
+  const workTypeOptions = ['전체', 'H/W', 'S/W', '네트워크', '기타'];
   
   const gridStyle = {
     gridTemplateColumns: "8% 8% 8% 8% 8% 10% 5% 15% 30%"
@@ -298,7 +299,9 @@ export default function AsRequestPage() {
     
     return (
       <div className="flex items-center justify-between py-3">
+        
         <div className="flex items-center">
+       
           <span className="text-sm text-gray-700">
             총 <span className="font-medium">{totalItems}</span>개 중{' '}
             <span className="font-medium">{startIndex + 1}</span>-
@@ -410,6 +413,9 @@ export default function AsRequestPage() {
       <div className="space-y-4">
         {/* 필터 컨트롤 */}
         <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
+          <div className="flex justify-end mb-4">
+            <AsWriteButton />
+          </div>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             {/* 현재 선택된 기간 표시 */}
             {period !== 'all' && startDateParam && endDateParam && (
@@ -432,12 +438,12 @@ export default function AsRequestPage() {
             <div className="flex items-center">
               <FunnelIcon className="h-5 w-5 text-gray-500 mr-2" />
               <span className="text-sm font-medium text-gray-700">작업 유형:</span>
-              <div className="ml-2 flex space-x-1">
+              <div className="ml-2 flex space-x-2">
                 {workTypeOptions.map(type => (
                   <button
                     key={type}
                     onClick={() => handleWorkTypeChange(type)}
-                    className={`px-2.5 py-1 text-xs rounded-md ${
+                    className={`px-3.5 py-2 text-sm rounded-md font-medium ${
                       (type === '전체' && !filterState.workTypeFilter) || 
                       filterState.workTypeFilter === type
                         ? 'bg-blue-100 text-blue-700'
@@ -513,8 +519,7 @@ export default function AsRequestPage() {
                     href={`/private/as-request/${
                       log.work_type === "H/W" ? "hardware" : 
                       log.work_type === "S/W" ? "software" : 
-                      log.work_type === "네트워크" ? "network" : 
-                      log.work_type === "장비관리" ? "device" : "other"
+                      log.work_type === "네트워크" ? "network" : "other"
                     }/detail/${log.log_id}`}
                     key={log.log_id}
                     style={gridStyle}
@@ -528,7 +533,6 @@ export default function AsRequestPage() {
                         ${log.work_type === "H/W" ? "bg-blue-100 text-blue-800" : 
                           log.work_type === "S/W" ? "bg-orange-100 text-orange-800" : 
                           log.work_type === "네트워크" ? "bg-green-100 text-green-800" : 
-                          log.work_type === "장비관리" ? "bg-purple-100 text-purple-800" : 
                           "bg-gray-100 text-gray-800"}`}>
                         {log.work_type}
                       </span>

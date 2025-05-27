@@ -42,7 +42,7 @@ export default async function NetworkPage() {
 
   return (
     <div>
-        <AsLogInput workType={"네트워크"} />
+        <AsLogInput defaultWorkType={"네트워크"} />
     
         <div className="p-6">
         <div className="space-y-4">

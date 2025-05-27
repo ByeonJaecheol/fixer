@@ -6,7 +6,7 @@ export default function BaseLayout({children,title,description,categories}:{chil
         <Container title={title} description={description}>
       
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <HistoryMenus categories={categories} />
+          {/* <HistoryMenus categories={categories} /> */}
           {children}
           
         </div>

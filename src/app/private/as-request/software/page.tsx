@@ -40,7 +40,7 @@ export default async function SoftwarePage() {
 
   return (
     <div>
-      <AsLogInput workType={"S/W"} />
+      <AsLogInput defaultWorkType={"S/W"} />
       <div className="p-6">
         <DataTable
           columns={columns}

@@ -41,15 +41,7 @@ export default async function DevicePage() {
 
   return (
     <div>
-      <AsLogInput workType={"장비관리"} />
-      <div className="p-6">
-        <DataTable
-          columns={columns}
-          data={asManagementLog}
-          gridTemplateColumns="8% 8% 8% 8% 8% 12% 6% 6% 15% 15%"
-          detailUrlPrefix="/private/as-request/device/detail"
-        />
-      </div>
+      <h1>삭제된 페이지입니다.</h1>
     </div>
   );
 }

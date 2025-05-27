@@ -360,7 +360,6 @@ export default function PrivateDashboard() {
         'H/W': 0,
         'S/W': 0,
         '네트워크': 0,
-        '장비관리': 0,
         '기타': 0
       };
       
@@ -394,7 +393,6 @@ export default function PrivateDashboard() {
           type === 'H/W' ? '#1976D2' :
           type === 'S/W' ? '#388E3C' :
           type === '네트워크' ? '#F57C00' :
-          type === '장비관리' ? '#7B1FA2' :
           '#607D8B'
       }));
       

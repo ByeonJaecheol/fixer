@@ -39,7 +39,7 @@ export default async function OtherPage() {
 
   return (
     <div>
-      <AsLogInput workType={"기타"} />
+      <AsLogInput defaultWorkType={"기타"} />
       <div className="p-6">
         <DataTable
           columns={columns}

@@ -39,8 +39,8 @@ export default async function HardwarePage() {
   ];
 
   return (
-    <div>
-        <AsLogInput workType={"H/W"} />
+    <div className="p-6 ">
+        <AsLogInput defaultWorkType={"H/W"} />
     
     <div className="p-6">
         <DataTable

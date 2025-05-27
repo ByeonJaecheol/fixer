@@ -40,7 +40,7 @@ interface IHardwareLogEntry {
     work_type: "H/W" | "S/W" | "네트워크" | "기타" | string; // 특정 타입을 제한하려면 여기에 추가
   }
 export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
-    const workType = log.work_type;
+    const [workType, setWorkType] = useState(log.work_type);
     const [workDate, setWorkDate] = useState(new Date().toISOString().split('T')[0]);
     const [employeeWorkspace, setEmployeeWorkspace] = useState<string|undefined>(undefined);
     const [employeeDepartment, setEmployeeDepartment] = useState<string|undefined>(undefined);
@@ -86,6 +86,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
           table: 'as_management_log',
           data: {
               work_date: workDate,
+              work_type : workType,
               employee_workspace : employeeWorkspace,
               employee_department : employeeDepartment,
               employee_name : employeeName,
@@ -119,6 +120,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
             table: 'as_management_log',
             data: {
                 work_date: workDate,
+                work_type : workType,
                 employee_workspace : employeeWorkspace,
                 employee_department : employeeDepartment,
                 employee_name : employeeName,
@@ -135,6 +137,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
         console.log("★★★★★★★★★",logResult)
         if(logResult.success){
             alert('수정 완료');
+            setDefault();
             return logResult.data;
         }else{
             alert('수정 실패');
@@ -149,6 +152,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
             table: 'as_management_log',
             data: {
                 work_date: workDate,
+                work_type : workType,
                 employee_workspace : employeeWorkspace,
                 employee_department : employeeDepartment,
                 employee_name : employeeName,
@@ -164,6 +168,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
         console.log("★★★★★★★★★",logResult) 
         if(logResult.success){
             alert('수정 완료');
+            setDefault();
             return logResult.data;
         }else{
             alert('수정 실패');
@@ -179,6 +184,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
             table: 'as_management_log',
             data: {
                 work_date: workDate,
+                work_type : workType,
                 employee_workspace : employeeWorkspace,
                 employee_department : employeeDepartment,
                 employee_name : employeeName,
@@ -194,6 +200,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
         console.log("★★★★★★★★★",logResult)
         if(logResult.success){  
             alert('수정 완료');
+            setDefault();
             return logResult.data;
         }else{
             alert('수정 실패');
@@ -231,11 +238,29 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
         if(logResult.success){
             alert('삭제 완료');
             //해당 workType 페이지로 이동
-            router.push(`/private/as-request/${workType==="H/W"?"hardware":workType==="S/W"?"software":workType==="네트워크"?"network":workType==="장비관리"?"device":"other"}`);
+            router.push(`/private/as-request`);
         }else{
             alert('삭제 실패');
             console.error('삭제 실패:', logResult);
         }
+    }
+
+    const setDefault = () => {
+    setEmployeeWorkspace(undefined);
+    setEmployeeDepartment(undefined);
+    setEmployeeName(undefined);
+    setModelName(undefined);
+    setSecurityCode(undefined);
+    setQuestion(undefined);
+    setSerial(undefined);
+    setDetailCategory(undefined);
+    setCategory(undefined);
+    setDetailedDescription(undefined);
+    setSolutionDetail(undefined);
+    setIsLoading(false);
+    setEmployeeWorkspace(undefined);
+    setEmployeeDepartment(undefined);
+    setEmployeeName(undefined);
     }
     return (
         <>
@@ -281,8 +306,21 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
             {/* 증상 */}
          </div>
         
+
+
           {/* 작업유형 별 개별 값 시작*/}
           <div className="flex flex-col gap-4 mb-4 rounded-lg  m-8">
+
+          <div className="flex flex-col gap-y-4">
+              {/* 작업유형 */}
+              <CommonInputSingleCheckbox 
+                title={"작업유형"}
+                value={workType??""}
+                setValue={setWorkType}
+                options={["H/W","S/W","네트워크","기타"]}
+              />
+          </div>
+
             {workType==="H/W"&&
               <div className="flex flex-col gap-y-4">
                 <h3 className="font-bold text-sm">H/W 선택항목</h3>
@@ -369,7 +407,13 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
            />
           </div>
           <div className="w-full flex justify-end mb-4 px-4 sm:px-8 gap-x-4">
-          <div className="w-36 ">
+          <div className="w-72 flex flex-row gap-2">
+           <OkButton
+              onClick={()=>router.push(`/private/as-request`)}
+              isLoading={isLoading}
+              buttonText={"뒤로가기"}
+              color={"yellow"}
+            />
             <OkButton
               onClick={handleDeleteButton}
               isLoading={isLoading}
