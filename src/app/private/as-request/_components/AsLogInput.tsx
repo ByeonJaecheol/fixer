@@ -9,9 +9,9 @@ import InputTextArea from "@/app/_components/log/new/InputTextArea";
 import { checkSerialNumber, fetchDataBySecurityCode, fetchEmployeeDataByName } from "@/app/utils/util";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import Link from "next/link";
+import { useState, useEffect } from "react";
 import EmployeesSelectModal, { EmployeeData } from "../../_components/EmployeesSelectModal";
-import { FormatFormData } from "./formatFormData";
 
 export default function AsLogInput({defaultWorkType}:{defaultWorkType:string}) {
   const { user } = useUser();
@@ -22,7 +22,33 @@ export default function AsLogInput({defaultWorkType}:{defaultWorkType:string}) {
   const [employeeWorkspace, setEmployeeWorkspace] = useState<string|undefined>(undefined);
   const [employeeDepartment, setEmployeeDepartment] = useState<string|undefined>(undefined);
   const [employeeName, setEmployeeName] = useState<string|undefined>(undefined);
+  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeData|undefined>(undefined);
+  const [employeeAsLogs, setEmployeeAsLogs] = useState<any[]>([]);
   const [modelName, setModelName] = useState<string|undefined>(undefined);
+
+  // 선택된 직원의 AS 이력 가져오기
+  useEffect(() => {
+    const fetchEmployeeAsLogs = async () => {
+      if (selectedEmployee?.이름) {
+        try {
+          const logs = await getEmployeeAsLog(selectedEmployee.이름);
+          // logs가 배열인지 확인하고 설정
+          if (Array.isArray(logs)) {
+            setEmployeeAsLogs(logs);
+          } else {
+            setEmployeeAsLogs([]);
+          }
+        } catch (error) {
+          console.error('AS 이력 가져오기 실패:', error);
+          setEmployeeAsLogs([]);
+        }
+      } else {
+        setEmployeeAsLogs([]);
+      }
+    };
+
+    fetchEmployeeAsLogs();
+  }, [selectedEmployee]);
   const [securityCode, setSecurityCode] = useState<string|undefined>(undefined);
   const [question, setQuestion] = useState<string|undefined>(undefined);
   const [serial, setSerial] = useState<string|undefined>(undefined);
@@ -245,9 +271,25 @@ export default function AsLogInput({defaultWorkType}:{defaultWorkType:string}) {
           setEmployeeName(undefined);
     }
 
+    const getEmployeeAsLog = async (employeeName:string|undefined): Promise<EmployeeData|null> => {
+      const supabaseService = SupabaseService.getInstance();
+      const { success, error, data } = await supabaseService.select({
+        table: 'as_management_log',
+        columns: '*',
+        match: { employee_name: employeeName },
+        order: { column: 'work_date', ascending: false }
+      });
+      console.log('as_management_log',data)
+      if (success) {
+        return data;
+      } else {
+        console.error('Error fetching as_management_log:', error);
+        return null;
+      }
+    };
     return (
         <>
-        {/* <EmployeesSelectModal employeeData={employeeData} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} setEmployeeDepartment={setEmployeeDepartment} setEmployeeName={setEmployeeName}/> */}
+        <EmployeesSelectModal employeeData={employeeData} setSelectedEmployee={setSelectedEmployee} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} setEmployeeDepartment={setEmployeeDepartment} setEmployeeName={setEmployeeName}/>
         
         <div className="text-sm font-semibold text-gray-700 px-4 sm:px-8 my-2">
           <div className="flex flex-row items-center gap-2">
@@ -262,19 +304,6 @@ export default function AsLogInput({defaultWorkType}:{defaultWorkType:string}) {
               name="workDate"
               type="date"
             />
-            {/* 사업장 */}
-            <InputLog
-
-              label={"사업장"}
-              value={employeeWorkspace}
-              setValue={setEmployeeWorkspace}
-            />
-            {/* 부서 */}
-            <InputLog
-              label={"부서"}
-              value={employeeDepartment}
-              setValue={setEmployeeDepartment}
-            />
             {/* 사용자 */}
             <InputLog
               label={"사용자"}
@@ -283,6 +312,19 @@ export default function AsLogInput({defaultWorkType}:{defaultWorkType:string}) {
               onKeyDown={()=>handleEmployeeDataByName(employeeName??"")}
             />  
           
+           
+            {/* 부서 */}
+            <InputLog
+              label={"부서"}
+              value={employeeDepartment}
+              setValue={setEmployeeDepartment}
+            />
+             {/* 사업장 */}
+           <InputLog
+              label={"사업장"}
+              value={employeeWorkspace}
+              setValue={setEmployeeWorkspace}
+            />
             {/* 모델명 */}
             <InputLog
               label={"모델명"}
@@ -319,7 +361,7 @@ export default function AsLogInput({defaultWorkType}:{defaultWorkType:string}) {
                 title={"분류"}
                 value={category??""}
                 setValue={setCategory}
-                options={["보안","프로그램","OS","기타"]}
+                options={["보안","프로그램","OS/성능","기타"]}
               />
             </div>
             }
@@ -396,6 +438,64 @@ export default function AsLogInput({defaultWorkType}:{defaultWorkType:string}) {
             </div>
           </div>
           
+        {selectedEmployee&&
+        <div>
+          <div className="mt-6 px-4 sm:px-8">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">{selectedEmployee.이름}님의 이전 AS 이력</h4>
+            {employeeAsLogs.length > 0 ? (
+              <div className="space-y-4">
+                {employeeAsLogs.map((item: any, index: number) => (
+                  <Link 
+                    key={item.id || index}
+                    href={`/private/as-request/${
+                      item.work_type === "H/W" ? "hardware" : 
+                      item.work_type === "S/W" ? "software" : 
+                      item.work_type === "네트워크" ? "network" : "other"
+                    }/detail/${item.log_id}`}
+                    className="block bg-white border border-gray-300 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer hover:bg-gray-50"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <span className={`px-3 py-1.5 rounded-full text-sm font-semibold ${
+                        item.work_type === "H/W" ? "bg-blue-100 text-blue-800" : 
+                        item.work_type === "S/W" ? "bg-orange-100 text-orange-800" : 
+                        item.work_type === "네트워크" ? "bg-green-100 text-green-800" : 
+                        "bg-gray-100 text-gray-800"
+                      }`}>
+                        {item.work_type}
+                      </span>
+                      <span className="text-sm text-gray-600 font-medium">
+                        {item.work_date ? new Date(item.work_date).toLocaleDateString('ko-KR') : '-'}
+                      </span>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="text-base font-semibold text-gray-800">
+                        {item.model_name || '모델명 없음'}
+                      </div>
+                      {item.question && (
+                        <div className="bg-blue-50 p-3 rounded-md">
+                          <div className="text-sm font-medium text-blue-800 mb-1">문의내용</div>
+                          <div className="text-sm text-gray-700">{item.question}</div>
+                        </div>
+                      )}
+                      {item.solution_detail && (
+                        <div className="bg-green-50 p-3 rounded-md">
+                          <div className="text-sm font-medium text-green-800 mb-1">조치내용</div>
+                          <div className="text-sm text-gray-700">{item.solution_detail}</div>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-base text-gray-500 text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                이전 AS 이력이 없습니다
+              </div>
+            )}
+          </div>
+        </div>
+          
+          }
         </>
     )
   }

@@ -12,9 +12,10 @@ export interface EmployeeData {
 
 }
 
-export default function EmployeesSelectModal({employeeData,  isModalOpen, setIsModalOpen, setEmployeeDepartment, setEmployeeName }:{employeeData:EmployeeData[],
-     isModalOpen:boolean, setIsModalOpen:Dispatch<SetStateAction<boolean>>, setEmployeeDepartment:Function, setEmployeeName:Function}) {
+export default function EmployeesSelectModal({employeeData, setSelectedEmployee, isModalOpen, setIsModalOpen, setEmployeeDepartment, setEmployeeName }:{employeeData:EmployeeData[],
+     setSelectedEmployee:Function,  isModalOpen:boolean, setIsModalOpen:Dispatch<SetStateAction<boolean>>, setEmployeeDepartment:Function, setEmployeeName:Function}) {
     const handleSelectEmployee = (employee: EmployeeData) => {
+        setSelectedEmployee(employee);
         setEmployeeDepartment(employee.부서);
         setEmployeeName(employee.이름);
         setIsModalOpen(false);

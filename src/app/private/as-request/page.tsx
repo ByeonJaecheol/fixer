@@ -12,13 +12,14 @@ import { ko } from 'date-fns/locale';
 import AsWriteButton from './_components/AsWriteButton';
 
 // 필터 타입 정의
-type SortField = 'log_id' | 'created_by' | 'work_date' | 'work_type' | 'model_name' | 'employee_department';
+type SortField = 'log_id' | 'created_by' | 'work_date' | 'work_type'  | 'category' | 'model_name' | 'employee_department' ;
 type SortDirection = 'asc' | 'desc';
 type DateFilterType = 'today' | 'week' | 'month' | 'year' | 'custom' | 'all';
 type FilterState = {
   sortField: SortField;
   sortDirection: SortDirection;
   workTypeFilter: string | null;
+  categoryFilter: string | null;
   searchTerm: string;
   // 페이징 관련 필드 추가
   pageSize: number;
@@ -48,6 +49,7 @@ export default function AsRequestPage() {
     sortField: 'work_date',
     sortDirection: 'desc',
     workTypeFilter: null,
+    categoryFilter: null,
     searchTerm: '',
     pageSize: 20,
     currentPage: 1,
@@ -56,8 +58,11 @@ export default function AsRequestPage() {
   // 작업 유형 옵션
   const workTypeOptions = ['전체', 'H/W', 'S/W', '네트워크', '기타'];
   
+  // 카테고리 옵션
+  const categoryOptions = ['전체', 'PC', '모니터', '프린터', '소모품', '보안', '프로그램', 'OS/성능', '기타'];
+  
   const gridStyle = {
-    gridTemplateColumns: "8% 8% 8% 8% 8% 10% 5% 15% 30%"
+    gridTemplateColumns: "8% 8% 8% 8% 8% 8%10% 5% 15% 30%"
   };
   
   // 기간 라벨 표시
@@ -192,6 +197,15 @@ export default function AsRequestPage() {
     }));
   };
   
+  // 카테고리 필터 변경 함수
+  const handleCategoryChange = (category: string) => {
+    setFilterState(prev => ({
+      ...prev,
+      categoryFilter: category === '전체' ? null : category,
+      currentPage: 1 // 필터 변경 시 1페이지로 리셋
+    }));
+  };
+  
   // 검색어 변경 함수
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilterState(prev => ({
@@ -224,6 +238,11 @@ export default function AsRequestPage() {
     .filter(log => {
       // 작업 유형 필터
       if (filterState.workTypeFilter && log.work_type !== filterState.workTypeFilter) {
+        return false;
+      }
+      
+      // 카테고리 필터
+      if (filterState.categoryFilter && log.category !== filterState.categoryFilter) {
         return false;
       }
       
@@ -435,24 +454,47 @@ export default function AsRequestPage() {
               </div>
             )}
             
-            <div className="flex items-center">
-              <FunnelIcon className="h-5 w-5 text-gray-500 mr-2" />
-              <span className="text-sm font-medium text-gray-700">작업 유형:</span>
-              <div className="ml-2 flex space-x-2">
-                {workTypeOptions.map(type => (
-                  <button
-                    key={type}
-                    onClick={() => handleWorkTypeChange(type)}
-                    className={`px-3.5 py-2 text-sm rounded-md font-medium ${
-                      (type === '전체' && !filterState.workTypeFilter) || 
-                      filterState.workTypeFilter === type
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center">
+                <FunnelIcon className="h-5 w-5 text-gray-500 mr-2" />
+                <span className="text-sm font-medium text-gray-700">작업 유형:</span>
+                <div className="ml-2 flex space-x-2">
+                  {workTypeOptions.map(type => (
+                    <button
+                      key={type}
+                      onClick={() => handleWorkTypeChange(type)}
+                      className={`px-3.5 py-2 text-sm rounded-md font-medium ${
+                        (type === '전체' && !filterState.workTypeFilter) || 
+                        filterState.workTypeFilter === type
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="flex items-center">
+                <FunnelIcon className="h-5 w-5 text-gray-500 mr-2" />
+                <span className="text-sm font-medium text-gray-700">카테고리:</span>
+                <div className="ml-2 flex space-x-2 flex-wrap">
+                  {categoryOptions.map(category => (
+                    <button
+                      key={category}
+                      onClick={() => handleCategoryChange(category)}
+                      className={`px-3.5 py-2 text-sm rounded-md font-medium ${
+                        (category === '전체' && !filterState.categoryFilter) || 
+                        filterState.categoryFilter === category
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             
@@ -501,6 +543,7 @@ export default function AsRequestPage() {
                 <SortHeader field="created_by" label="작성자" />
                 <SortHeader field="work_date" label="작업일" />
                 <SortHeader field="work_type" label="작업유형" />
+                <SortHeader field="category" label="분류" />
                 <SortHeader field="model_name" label="모델명" />
                 <SortHeader field="employee_department" label="부서" />
                 <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">사용자</div>
@@ -536,6 +579,9 @@ export default function AsRequestPage() {
                           "bg-gray-100 text-gray-800"}`}>
                         {log.work_type}
                       </span>
+                    </div>
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">
+                      {truncateDescription(log.category, 9)}
                     </div>
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">
                       {truncateDescription(log.model_name, 9)}

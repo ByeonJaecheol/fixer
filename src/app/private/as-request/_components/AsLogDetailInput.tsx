@@ -9,7 +9,6 @@ import InputTextArea from "@/app/_components/log/new/InputTextArea";
 import { fetchDataBySecurityCode } from "@/app/utils/util";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FormatFormData } from "./formatFormData";
 type LogType = {
   pcDescription: string;
   pcName: string;
@@ -277,25 +276,26 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
               name="workDate"
               type="date"
             />
-            {/* 사업장 */}
-            <InputLog
-
-              label={"사업장"}
-              value={employeeWorkspace}
-              setValue={setEmployeeWorkspace}
-            />
-            {/* 부서 */}
-            <InputLog
-              label={"부서"}
-              value={employeeDepartment}
-              setValue={setEmployeeDepartment}
-            />
             {/* 사용자 */}
             <InputLog
               label={"사용자"}
               value={employeeName}
               setValue={setEmployeeName}
             />  
+          
+            {/* 부서 */}
+            <InputLog
+              label={"부서"}
+              value={employeeDepartment}
+              setValue={setEmployeeDepartment}
+            />
+              {/* 사업장 */}
+              <InputLog
+                label={"사업장"}
+                value={employeeWorkspace}
+                setValue={setEmployeeWorkspace}
+            />
+
             {/* 모델명 */}
             <InputLog
               label={"모델명"}
@@ -359,7 +359,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
                   title={"분류"}
                   value={log.category?log.category:category??"-"}
                   setValue={setCategory}
-                  options={["보안","프로그램","OS","기타"]}
+                  options={["보안","프로그램","OS/성능","기타"]}
                 />
               </div>
             }
