@@ -58,8 +58,17 @@ export default function AsRequestPage() {
   // 작업 유형 옵션
   const workTypeOptions = ['전체', 'H/W', 'S/W', '네트워크', '기타'];
   
-  // 카테고리 옵션
-  const categoryOptions = ['전체', 'PC', '모니터', '프린터', '소모품', '보안', '프로그램', 'OS/성능', '기타'];
+  // 카테고리 옵션 (작업 유형에 따라 동적으로 결정)
+  const getCategoryOptions = (workType: string | null) => {
+    if (workType === 'H/W') {
+      return ['전체', 'PC', '모니터', '프린터', '소모품'];
+    } else if (workType === 'S/W') {
+      return ['전체', '보안', '프로그램', 'OS/성능', '기타'];
+    }
+    return [];
+  };
+  
+  const categoryOptions = getCategoryOptions(filterState.workTypeFilter);
   
   const gridStyle = {
     gridTemplateColumns: "8% 8% 8% 8% 8% 8%10% 5% 15% 30%"
@@ -193,6 +202,7 @@ export default function AsRequestPage() {
     setFilterState(prev => ({
       ...prev,
       workTypeFilter: type === '전체' ? null : type,
+      categoryFilter: null, // 작업 유형 변경 시 카테고리 필터 초기화
       currentPage: 1 // 필터 변경 시 1페이지로 리셋
     }));
   };
@@ -431,43 +441,50 @@ export default function AsRequestPage() {
     <div className="p-6">
       <div className="space-y-4">
         {/* 필터 컨트롤 */}
-        <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
-          <div className="flex justify-end mb-4">
-            <AsWriteButton />
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex justify-between items-center">
+              <h2 className="text-base font-medium text-gray-900">필터 및 검색</h2>
+              <AsWriteButton />
+            </div>
           </div>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          
+          <div className="p-6">
             {/* 현재 선택된 기간 표시 */}
             {period !== 'all' && startDateParam && endDateParam && (
-              <div className="mb-2 md:mb-0 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-200 flex items-center">
-                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <div className="mb-6 bg-blue-50 text-blue-700 px-4 py-3 rounded-md border border-blue-200 flex items-center">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
                 </svg>
-                <span className="font-medium text-sm whitespace-nowrap">
+                <span className="font-medium text-sm">
                   {getPeriodLabel()} ({format(parseISO(startDateParam), 'yyyy-MM-dd')} ~ {format(parseISO(endDateParam), 'yyyy-MM-dd')})
                 </span>
                 <Link 
                   href="/private/as-request"
-                  className="ml-2 text-xs bg-blue-100 hover:bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded-full font-medium"
+                  className="ml-3 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded font-medium transition-colors"
                 >
                   초기화
                 </Link>
               </div>
             )}
             
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center">
-                <FunnelIcon className="h-5 w-5 text-gray-500 mr-2" />
-                <span className="text-sm font-medium text-gray-700">작업 유형:</span>
-                <div className="ml-2 flex space-x-2">
+            <div className="space-y-6">
+              {/* 작업 유형 필터 */}
+              <div>
+                <div className="flex items-center mb-3">
+                  <FunnelIcon className="h-4 w-4 text-gray-500 mr-2" />
+                  <h3 className="text-sm font-medium text-gray-700">작업 유형</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
                   {workTypeOptions.map(type => (
                     <button
                       key={type}
                       onClick={() => handleWorkTypeChange(type)}
-                      className={`px-3.5 py-2 text-sm rounded-md font-medium ${
+                      className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
                         (type === '전체' && !filterState.workTypeFilter) || 
                         filterState.workTypeFilter === type
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                       }`}
                     >
                       {type}
@@ -476,45 +493,59 @@ export default function AsRequestPage() {
                 </div>
               </div>
               
-              <div className="flex items-center">
-                <FunnelIcon className="h-5 w-5 text-gray-500 mr-2" />
-                <span className="text-sm font-medium text-gray-700">카테고리:</span>
-                <div className="ml-2 flex space-x-2 flex-wrap">
-                  {categoryOptions.map(category => (
-                    <button
-                      key={category}
-                      onClick={() => handleCategoryChange(category)}
-                      className={`px-3.5 py-2 text-sm rounded-md font-medium ${
-                        (category === '전체' && !filterState.categoryFilter) || 
-                        filterState.categoryFilter === category
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
+              {/* 카테고리 필터 */}
+              {categoryOptions.length > 0 && (
+                <div>
+                  <div className="flex items-center mb-3">
+                    <FunnelIcon className="h-4 w-4 text-gray-500 mr-2" />
+                    <h3 className="text-sm font-medium text-gray-700">카테고리</h3>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {categoryOptions.map(category => (
+                      <button
+                        key={category}
+                        onClick={() => handleCategoryChange(category)}
+                        className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
+                          (category === '전체' && !filterState.categoryFilter) || 
+                          filterState.categoryFilter === category
+                            ? 'bg-green-600 text-white border-green-600'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </div>
-            
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="검색어 입력..."
-                value={filterState.searchTerm}
-                onChange={handleSearchChange}
-                className="pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full md:w-64"
-              />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+              )}
+              
+              {/* 검색 섹션 */}
+              <div>
+                <div className="flex items-center mb-3">
+                  <svg className="h-4 w-4 text-gray-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <h3 className="text-sm font-medium text-gray-700">검색</h3>
+                </div>
+                <div className="relative max-w-md">
+                  <input
+                    type="text"
+                    placeholder="ID, 작성자, 모델명, 부서, 내용 검색..."
+                    value={filterState.searchTerm}
+                    onChange={handleSearchChange}
+                    className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-500"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           
-          <div className="mt-2 text-xs text-gray-500">
+          <div className="mt-2 flex justify-end text-xs text-gray-500 p-2">
             <span>{filteredLogs.length}개의 결과가 있습니다</span>
             {filterState.sortField && (
               <span className="ml-2">
