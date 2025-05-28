@@ -63,7 +63,7 @@ export default function AsRequestPage() {
     if (workType === 'H/W') {
       return ['전체', 'PC', '모니터', '프린터', '기타'];
     } else if (workType === 'S/W') {
-      return ['전체', '보안', '프로그램', 'OS/성능', '기타'];
+      return ['전체', '보안', '프로그램', 'OS/성능','DATA', '기타'];
     }
     return [];
   };

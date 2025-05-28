@@ -359,7 +359,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
                   title={"분류"}
                   value={log.category?log.category:category??"-"}
                   setValue={setCategory}
-                  options={["보안","프로그램","OS/성능","기타"]}
+                  options={["보안","프로그램","OS/성능","DATA","기타"]}
                 />
               </div>
             }

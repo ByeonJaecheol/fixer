@@ -368,6 +368,7 @@ export default function PrivateDashboard() {
         '보안': 0,
         '프로그램': 0,
         'OS': 0,
+        'DATA': 0,
         '기타': 0
       };
       
@@ -404,7 +405,8 @@ export default function PrivateDashboard() {
           category === '보안' ? '#D32F2F' :
           category === '프로그램' ? '#388E3C' :
           category === 'OS' ? '#1976D2' :
-          '#F57C00'
+          category === 'DATA' ? '#F57C00' :
+          '#607D8B'
       }));
       
       setWorkTypeStats(formattedWorkTypeStats);

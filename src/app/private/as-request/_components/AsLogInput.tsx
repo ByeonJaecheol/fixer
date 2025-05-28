@@ -361,7 +361,7 @@ export default function AsLogInput({defaultWorkType}:{defaultWorkType:string}) {
                 title={"분류"}
                 value={category??""}
                 setValue={setCategory}
-                options={["보안","프로그램","OS/성능","기타"]}
+                options={["보안","프로그램","OS/성능","DATA","기타"]}
               />
             </div>
             }
@@ -376,7 +376,7 @@ export default function AsLogInput({defaultWorkType}:{defaultWorkType:string}) {
                 title={"분류"}
                 value={category??""}
                 setValue={setCategory}
-                options={["PC","모니터","프린터","기타"]}
+                options={["PC","모니터","프린터","소모품"]}
               />
             </div>
             }
