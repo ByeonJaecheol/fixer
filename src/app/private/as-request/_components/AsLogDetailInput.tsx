@@ -330,7 +330,7 @@ export default function AsLogDetailInput({log}:{log: IHardwareLogEntry}) {
                   title={"분류"}
                   value={log.category?log.category:category??"-"}
                   setValue={setCategory}
-                  options={["PC","모니터","프린터","소모품"]}
+                  options={["PC","모니터","프린터","기타"]}
                 />
               </div>
             }

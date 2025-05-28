@@ -61,7 +61,7 @@ export default function AsRequestPage() {
   // 카테고리 옵션 (작업 유형에 따라 동적으로 결정)
   const getCategoryOptions = (workType: string | null) => {
     if (workType === 'H/W') {
-      return ['전체', 'PC', '모니터', '프린터', '소모품'];
+      return ['전체', 'PC', '모니터', '프린터', '기타'];
     } else if (workType === 'S/W') {
       return ['전체', '보안', '프로그램', 'OS/성능', '기타'];
     }

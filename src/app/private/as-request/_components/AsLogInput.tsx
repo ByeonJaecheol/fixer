@@ -376,7 +376,7 @@ export default function AsLogInput({defaultWorkType}:{defaultWorkType:string}) {
                 title={"분류"}
                 value={category??""}
                 setValue={setCategory}
-                options={["PC","모니터","프린터","소모품"]}
+                options={["PC","모니터","프린터","기타"]}
               />
             </div>
             }
