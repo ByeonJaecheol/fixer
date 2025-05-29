@@ -65,7 +65,7 @@ export default function AsRequestPage() {
     } else if (workType === 'S/W') {
       return ['전체', '보안', '프로그램', 'OS/성능','DATA', '기타'];
     }
-    return [];
+    return ['전체', '없음'];
   };
   
   const categoryOptions = getCategoryOptions(filterState.workTypeFilter);
@@ -289,8 +289,18 @@ export default function AsRequestPage() {
       }
       
       // 카테고리 필터
-      if (filterState.categoryFilter && log.category !== filterState.categoryFilter) {
-        return false;
+      if (filterState.categoryFilter && filterState.categoryFilter !== '전체') {
+        if (filterState.categoryFilter === '없음') {
+          // "없음"을 선택했을 때: 카테고리가 없거나 빈 값인 경우
+          if (log.category && log.category.trim() !== '') {
+            return false;
+          }
+        } else {
+          // 특정 카테고리를 선택했을 때
+          if (log.category !== filterState.categoryFilter) {
+            return false;
+          }
+        }
       }
       
       // 검색어 필터
@@ -522,20 +532,18 @@ export default function AsRequestPage() {
               </div>
 
               {/* 카테고리 필터 */}
-              {categoryOptions.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
-                  <select 
-                    value={filterState.categoryFilter || '전체'} 
-                    onChange={(e) => handleCategoryChange(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    {categoryOptions.map(option => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
+                <select 
+                  value={filterState.categoryFilter || '전체'} 
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {categoryOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
 
               {/* 기간 필터 */}
               <div>
@@ -640,7 +648,7 @@ export default function AsRequestPage() {
                         {log.work_type || '-'}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-900">{log.category || '-'}</div>
+                    <div className="text-sm text-gray-900">{log.category && log.category.trim() !== '' ? log.category : '없음'}</div>
                     <div className="text-sm text-gray-900">{log.model_name || '-'}</div>
                     <div className="text-sm text-gray-900">{log.employee_department || '-'}</div>
                     <div className="text-sm text-gray-900">{log.employee_name || '-'}</div>
