@@ -1,22 +1,26 @@
+import AsLogForm from "../../../_components/AsLogForm";
 import SupabaseService from "@/api/supabase/supabaseApi";
-import AsLogDetailInput from "../../../_components/AsLogDetailInput";
 
-export default async function SoftwareDetailPage({params}:{params: {id: string}}) {
-  const id = params.id as string;
-  const supabaseService = SupabaseService.getInstance();
-  const {data: log, error} = await supabaseService.select({table: "as_management_log", match: {log_id: id}});
-  console.log("★★★★★★★★★",log);
-  if (error) {
-    console.error(error);
-  }
-  if (!log) {
-    return <div>존재하지 않는 로그입니다.</div>;
-  } 
-  return (  
-    <div>
-        <AsLogDetailInput log={log[0]} />
-    </div>
-  );
+export default async function SoftwareDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    
+    const getSoftwareManagementLog = async (): Promise<any> => {
+        const supabaseService = SupabaseService.getInstance();
+        const { success, error, data } = await supabaseService.select({
+            table: 'as_management_log',
+            columns: '*',
+            match: { log_id: id },
+        });
+        if (success) {
+            return data;
+        } else {
+            console.error('Error fetching as_management_log:', error);
+            return [];
+        }
+    }
+    const log = await getSoftwareManagementLog();
+    
+    return <AsLogForm mode="edit" log={log[0]} />;
 }
 
 

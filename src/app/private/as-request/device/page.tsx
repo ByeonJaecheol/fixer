@@ -2,7 +2,6 @@ import { formatToKoreanTime, truncateDescription } from "@/utils/utils";
 import { getPcManagementLog } from "@/api/supabase/supabaseTempApi";
 import Link from "next/link";
 import SupabaseService, { IPcManagementLog, IAsManagementLog } from "@/api/supabase/supabaseApi";
-import AsLogInput from "../_components/AsLogInput";
 import DataTable, { Column } from "@/components/shared/DataTable";
 
 export default async function DevicePage() {

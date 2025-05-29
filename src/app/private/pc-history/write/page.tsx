@@ -1,5 +1,5 @@
 import PcLogForm from "../_components/PcLogForm";
 
-export default function AddPcHistory() {
+export default function PcHistoryWrite() {
   return <PcLogForm mode="create" defaultWorkType="입고" />;
 }

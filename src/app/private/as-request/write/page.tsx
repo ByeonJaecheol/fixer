@@ -1,7 +1,7 @@
-import AsLogInput from "../_components/AsLogInput";
+import AsLogForm from "../_components/AsLogForm";
 
-export default function AsRequestWritePage() {
+export default function Page() {
     return (
-        <AsLogInput defaultWorkType="H/W" />
+        <AsLogForm mode="create" defaultWorkType="H/W" />
     )
 }

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import SupabaseService, { IAsManagementLog } from '@/api/supabase/supabaseApi';
 import { formatToKoreanTime, truncateDescription } from '@/utils/utils';
-import { ChevronUpIcon, ChevronDownIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { RingLoader } from 'react-spinners';
 import { format, parseISO, isWithinInterval } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -71,7 +71,7 @@ export default function AsRequestPage() {
   const categoryOptions = getCategoryOptions(filterState.workTypeFilter);
   
   const gridStyle = {
-    gridTemplateColumns: "8% 8% 8% 8% 8% 8%10% 5% 15% 30%"
+    gridTemplateColumns: "8% 8% 8% 8% 8% 8% 10% 5% 15% 30%"
   };
   
   // 기간 라벨 표시
@@ -202,7 +202,7 @@ export default function AsRequestPage() {
     setFilterState(prev => ({
       ...prev,
       workTypeFilter: type === '전체' ? null : type,
-      categoryFilter: null, // 작업 유형 변경 시 카테고리 필터 초기화
+      categoryFilter: null, // 작업 유형 변경 시 카테고리 리셋
       currentPage: 1 // 필터 변경 시 1페이지로 리셋
     }));
   };
@@ -214,6 +214,43 @@ export default function AsRequestPage() {
       categoryFilter: category === '전체' ? null : category,
       currentPage: 1 // 필터 변경 시 1페이지로 리셋
     }));
+  };
+  
+  // 기간 필터 변경 함수
+  const handleDateFilterChange = (filter: DateFilterType) => {
+    if (filter === 'all') {
+      window.location.href = '/private/as-request';
+      return;
+    }
+
+    let startDate, endDate;
+    const today = new Date();
+
+    switch (filter) {
+      case 'today':
+        startDate = endDate = format(today, 'yyyy-MM-dd');
+        break;
+      case 'week':
+        // 이번 주 월요일부터 일요일까지
+        const day = today.getDay();
+        const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+        startDate = format(new Date(today.setDate(diff)), 'yyyy-MM-dd');
+        endDate = format(new Date(new Date(startDate).setDate(new Date(startDate).getDate() + 6)), 'yyyy-MM-dd');
+        break;
+      case 'month':
+        // 이번 달 1일부터 말일까지
+        startDate = format(new Date(today.getFullYear(), today.getMonth(), 1), 'yyyy-MM-dd');
+        endDate = format(new Date(today.getFullYear(), today.getMonth() + 1, 0), 'yyyy-MM-dd');
+        break;
+      case 'year':
+        // 올해 1월 1일부터 12월 31일까지
+        startDate = format(new Date(today.getFullYear(), 0, 1), 'yyyy-MM-dd');
+        endDate = format(new Date(today.getFullYear(), 11, 31), 'yyyy-MM-dd');
+        break;
+    }
+
+    const params = [`period=${filter}`, `startDate=${startDate}`, `endDate=${endDate}`];
+    window.location.href = `/private/as-request?${params.join('&')}`;
   };
   
   // 검색어 변경 함수
@@ -468,79 +505,64 @@ export default function AsRequestPage() {
               </div>
             )}
             
-            <div className="space-y-6">
+            {/* 필터 옵션들 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {/* 작업 유형 필터 */}
               <div>
-                <div className="flex items-center mb-3">
-                  <FunnelIcon className="h-4 w-4 text-gray-500 mr-2" />
-                  <h3 className="text-sm font-medium text-gray-700">작업 유형</h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {workTypeOptions.map(type => (
-                    <button
-                      key={type}
-                      onClick={() => handleWorkTypeChange(type)}
-                      className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
-                        (type === '전체' && !filterState.workTypeFilter) || 
-                        filterState.workTypeFilter === type
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {type}
-                    </button>
+                <label className="block text-sm font-medium text-gray-700 mb-2">작업 유형</label>
+                <select 
+                  value={filterState.workTypeFilter || '전체'} 
+                  onChange={(e) => handleWorkTypeChange(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {workTypeOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
                   ))}
-                </div>
+                </select>
               </div>
-              
+
               {/* 카테고리 필터 */}
               {categoryOptions.length > 0 && (
                 <div>
-                  <div className="flex items-center mb-3">
-                    <FunnelIcon className="h-4 w-4 text-gray-500 mr-2" />
-                    <h3 className="text-sm font-medium text-gray-700">카테고리</h3>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {categoryOptions.map(category => (
-                      <button
-                        key={category}
-                        onClick={() => handleCategoryChange(category)}
-                        className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
-                          (category === '전체' && !filterState.categoryFilter) || 
-                          filterState.categoryFilter === category
-                            ? 'bg-green-600 text-white border-green-600'
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        {category}
-                      </button>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
+                  <select 
+                    value={filterState.categoryFilter || '전체'} 
+                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {categoryOptions.map(option => (
+                      <option key={option} value={option}>{option}</option>
                     ))}
-                  </div>
+                  </select>
                 </div>
               )}
-              
-              {/* 검색 섹션 */}
+
+              {/* 기간 필터 */}
               <div>
-                <div className="flex items-center mb-3">
-                  <svg className="h-4 w-4 text-gray-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  <h3 className="text-sm font-medium text-gray-700">검색</h3>
-                </div>
-                <div className="relative max-w-md">
-                  <input
-                    type="text"
-                    placeholder="ID, 작성자, 모델명, 부서, 내용 검색..."
-                    value={filterState.searchTerm}
-                    onChange={handleSearchChange}
-                    className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-500"
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </div>
-                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">기간</label>
+                <select 
+                  value={period} 
+                  onChange={(e) => handleDateFilterChange(e.target.value as DateFilterType)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="all">전체 기간</option>
+                  <option value="today">오늘</option>
+                  <option value="week">이번 주</option>
+                  <option value="month">이번달</option>
+                  <option value="year">올해</option>
+                </select>
+              </div>
+
+              {/* 검색 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">검색</label>
+                <input
+                  type="text"
+                  value={filterState.searchTerm}
+                  onChange={handleSearchChange}
+                  placeholder="ID, 작성자, 모델명, 부서, 내용 검색..."
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
               </div>
             </div>
           </div>
@@ -564,12 +586,22 @@ export default function AsRequestPage() {
         {/* 페이지네이션 (상단) */}
         {totalItems > 0 && <Pagination />}
         
-        {/* 테이블 */}
-        <div className="overflow-x-auto">
-          <div className="inline-block min-w-full">
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-              {/* 헤더 부분 */}
-              <div className="grid border-b border-gray-200" style={gridStyle}>
+        {/* 데이터 테이블 */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          {filteredLogs.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="text-gray-400 mb-4">
+                <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">데이터가 없습니다</h3>
+              <p className="text-gray-500">조건에 맞는 AS 요청이 없습니다.</p>
+            </div>
+          ) : (
+            <>
+              {/* 테이블 헤더 */}
+              <div className="grid bg-gray-50 border-b border-gray-200 p-4" style={gridStyle}>
                 <SortHeader field="log_id" label="ID" />
                 <SortHeader field="created_by" label="작성자" />
                 <SortHeader field="work_date" label="작업일" />
@@ -577,59 +609,48 @@ export default function AsRequestPage() {
                 <SortHeader field="category" label="분류" />
                 <SortHeader field="model_name" label="모델명" />
                 <SortHeader field="employee_department" label="부서" />
-                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">사용자</div>
-                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">문의내용</div>
-                <div className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">조치내용</div>
+                <div className="text-sm font-semibold text-gray-700 flex items-center">사용자</div>
+                <div className="text-sm font-semibold text-gray-700 flex items-center">문의내용</div>
+                <div className="text-sm font-semibold text-gray-700 flex items-center">조치내용</div>
               </div>
               
-              {/* 데이터 행 */}
-              {paginatedLogs.length === 0 ? (
-                <div className="px-6 py-8 text-center text-gray-500">
-                  데이터가 없습니다
-                </div>
-              ) : (
-                paginatedLogs.map((log: IAsManagementLog) => (
+              {/* 테이블 바디 */}
+              <div className="divide-y divide-gray-200">
+                {paginatedLogs.map((log: IAsManagementLog) => (
                   <Link 
+                    key={log.log_id}
                     href={`/private/as-request/${
                       log.work_type === "H/W" ? "hardware" : 
                       log.work_type === "S/W" ? "software" : 
                       log.work_type === "네트워크" ? "network" : "other"
                     }/detail/${log.log_id}`}
-                    key={log.log_id}
+                    className="grid p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                     style={gridStyle}
-                    className="grid border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150"
                   >
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center bg-gray-50">{log.log_id}</div>
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.created_by ? log.created_by.split("@")[0] : "-"}</div>
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{formatToKoreanTime(log.work_date, 'date')}</div>
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium 
-                        ${log.work_type === "H/W" ? "bg-blue-100 text-blue-800" : 
-                          log.work_type === "S/W" ? "bg-orange-100 text-orange-800" : 
-                          log.work_type === "네트워크" ? "bg-green-100 text-green-800" : 
-                          "bg-gray-100 text-gray-800"}`}>
-                        {log.work_type}
+                    <div className="text-sm text-gray-900">{log.log_id}</div>
+                    <div className="text-sm text-gray-900">{log.created_by ? log.created_by.split('@')[0] : '-'}</div>
+                    <div className="text-sm text-gray-900">{log.work_date ? formatToKoreanTime(log.work_date, 'date') : '-'}</div>
+                    <div className="text-sm">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        log.work_type === 'H/W' ? 'bg-blue-100 text-blue-800' :
+                        log.work_type === 'S/W' ? 'bg-green-100 text-green-800' :
+                        log.work_type === '네트워크' ? 'bg-purple-100 text-purple-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {log.work_type || '-'}
                       </span>
                     </div>
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">
-                      {truncateDescription(log.category, 9)}
-                    </div>
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">
-                      {truncateDescription(log.model_name, 9)}
-                    </div>
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.employee_department ?? '-'}</div>
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.employee_name ?? '-'}</div>
-                    <div className="px-2 py-4 text-sm text-gray-500 border-l border-gray-200" title={log.question}>
-                      {truncateDescription(log.question, 30)}
-                    </div>
-                    <div className="px-2 py-4 text-sm text-gray-500 overflow-hidden border-l border-gray-200" title={log.solution_detail}>
-                      {truncateDescription(log.solution_detail, 30)}
-                    </div>
+                    <div className="text-sm text-gray-900">{log.category || '-'}</div>
+                    <div className="text-sm text-gray-900">{log.model_name || '-'}</div>
+                    <div className="text-sm text-gray-900">{log.employee_department || '-'}</div>
+                    <div className="text-sm text-gray-900">{log.employee_name || '-'}</div>
+                    <div className="text-sm text-gray-900">{truncateDescription(log.question, 20) || '-'}</div>
+                    <div className="text-sm text-gray-900">{truncateDescription(log.solution_detail, 20) || '-'}</div>
                   </Link>
-                ))
-              )}
-            </div>
-          </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
         
         {/* 페이지네이션 (하단) */}
