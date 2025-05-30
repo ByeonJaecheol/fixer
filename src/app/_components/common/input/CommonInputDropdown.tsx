@@ -11,7 +11,7 @@ export default function CommonInputDropdown({ value, setValue, type, name, place
       <select
         id={name}
         name={name}
-        value={value||undefined}
+        value={value||''}
         onChange={(e) => setValue(e.target.value)}
         ref={ref}
         required={required}
@@ -22,15 +22,14 @@ export default function CommonInputDropdown({ value, setValue, type, name, place
           pr-10
           cursor-pointer
           ${disabled ? 'cursor-not-allowed bg-gray-200' : 'cursor-pointer'}
+          ${!value ? 'text-gray-500' : 'text-gray-900'}
         `}
       >
-        {placeholder && (
-          <option value="" disabled>
-            {placeholder}
-          </option>
-        )}
+        <option value="" disabled className="text-gray-500">
+          {placeholder || '선택하세요'}
+        </option>
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option key={option.value} value={option.value} className="text-gray-900">
             {option.label}
           </option>
         ))}

@@ -142,6 +142,58 @@ export interface IAsManagementLog {
   question : string
 }
 
+export interface IImage {
+  id: number;
+  brand: string;
+  model_name: string;
+  win_version: string;
+  base_description: string;
+  is_active: boolean;
+  created_at: string;
+  created_by: string;
+}
+
+export interface IImageInfo {
+  id: number;
+  image_id: number;
+  version_name: string;
+  work_date: string;
+  work_type: string;
+  office_version: string;
+  detail_description: string;
+  next_update: string;
+  created_at: string;
+  created_by: string;
+}
+
+export interface IImageInfoWithImage {
+  id: number;
+  image_id: number;
+  version_name: string;
+  work_date: string;
+  work_type: string;
+  office_version: string;
+  detail_description: string;
+  next_update: string;
+  created_at: string;
+  created_by: string;
+  image: IImage;
+}
+
+export interface IWindowImageLog {
+  id: number;
+  created_at: string;
+  created_by: string;
+  model_name: string;
+  work_date: string;
+  work_type: string;
+  win_version: string;
+  office_version: string;
+  detail_description: string;
+  brand: string;
+  next_update: string;
+}
+
   // 조인 조건을 위한 타입 정의
 interface JoinCondition {
   table: string;

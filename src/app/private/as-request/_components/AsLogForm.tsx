@@ -355,8 +355,8 @@ export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps
                     
                     {/* 작업유형 설명 */}
                     {workType && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <div className="text-sm text-blue-800">
+                        <div className="">
+                            <div className="text-xs text-gray-500">
                                 <span className="font-semibold">{workType}</span>
                                 <span className="ml-2">
                                     {workType === "H/W" && "모든 하드웨어 관련 조치 사항 (장비의 수리, 설치, 반납, 폐기, 업그레이드 등)"}
@@ -385,8 +385,8 @@ export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps
                         
                         {/* S/W 카테고리 설명 */}
                         {((mode === 'edit' ? (category !== undefined ? category : log?.category) : category)) && (
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                                <div className="text-sm text-green-800">
+                            <div className="">
+                                <div className="text-xs text-gray-500">
                                     <span className="font-semibold">{mode === 'edit' ? (category !== undefined ? category : log?.category) : category}</span>
                                     <span className="ml-2">
                                         {((mode === 'edit' ? (category !== undefined ? category : log?.category) : category) === "보안") && "보안 시스템 및 바이러스 관련 항목 조치 사항 (PC보안, DRM, 집중화, ECM, 알약 등) + 바이러스(악성코드 제거)"}
@@ -417,8 +417,8 @@ export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps
                         
                         {/* H/W 카테고리 설명 */}
                         {((mode === 'edit' ? (category !== undefined ? category : log?.category) : category)) && (
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <div className="text-sm text-blue-800">
+                            <div className="">
+                                <div className="text-xs text-gray-500">
                                     <span className="font-semibold">{mode === 'edit' ? (category !== undefined ? category : log?.category) : category}</span>
                                     <span className="ml-2 text-gray-600">
                                         카테고리 설명이 추후 추가될 예정입니다.
