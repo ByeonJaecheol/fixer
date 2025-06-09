@@ -38,6 +38,7 @@ interface AsLogFormProps {
     defaultWorkType?: string;
     log?: IHardwareLogEntry;
 }
+export const AsWorkTypeOptions = ['H/W', '보안', 'S/W', '네트워크', '기타'];
 
 export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps) {
     const { user } = useUser();
@@ -350,7 +351,7 @@ export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps
                         title={"작업유형"}
                         value={workType??""}
                         setValue={setWorkType}
-                        options={["H/W","S/W","네트워크","기타"]}
+                        options={AsWorkTypeOptions}
                     />
                     
                     {/* 작업유형 설명 */}
@@ -361,6 +362,7 @@ export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps
                                 <span className="ml-2">
                                     {workType === "H/W" && "모든 하드웨어 관련 조치 사항 (장비의 수리, 설치, 반납, 폐기, 업그레이드 등)"}
                                     {workType === "S/W" && "모든 프로그램 관련 조치 사항 (하드웨어 이외 항목들)"}
+                                    {workType === "보안" && "보안 시스템 및 바이러스 관련 항목 조치 사항 (PC보안, DRM, 집중화, ECM, 알약 등) + 바이러스(악성코드 제거)"}
                                     {workType === "네트워크" && "모든 네트워크 관련 조치 및 점검 내역 (장비 점검, 랜케이블 설치 작업)"}
                                     {workType === "기타" && "이외의 사항들 (기타 장비 수리, 예방 점검 등)"}
                                 </span>
@@ -380,7 +382,7 @@ export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps
                                 (category ?? "")
                             }
                             setValue={setCategory}
-                            options={["보안","프로그램","OS/성능","데이터","기타"]}
+                            options={["프로그램","OS/성능","데이터","기타"]}
                         />
                         
                         {/* S/W 카테고리 설명 */}
@@ -389,7 +391,6 @@ export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps
                                 <div className="text-xs text-gray-500">
                                     <span className="font-semibold">{mode === 'edit' ? (category !== undefined ? category : log?.category) : category}</span>
                                     <span className="ml-2">
-                                        {((mode === 'edit' ? (category !== undefined ? category : log?.category) : category) === "보안") && "보안 시스템 및 바이러스 관련 항목 조치 사항 (PC보안, DRM, 집중화, ECM, 알약 등) + 바이러스(악성코드 제거)"}
                                         {((mode === 'edit' ? (category !== undefined ? category : log?.category) : category) === "프로그램") && "프로그램 설치 또는 조치 사항 (보안 이외 항목들 예: office, sap, cad 등) + 장치 드라이버 설치 및 업데이트"}
                                         {((mode === 'edit' ? (category !== undefined ? category : log?.category) : category) === "OS/성능") && "운영체제 관련 조치 사항 (윈도우 재설치, 복원, 업데이트, 시스템 설정) + 신규 및 재배치 장비 OS설치 작업 + 시스템 성능 저하로 최적화 작업 및 시스템 설정"}
                                         {((mode === 'edit' ? (category !== undefined ? category : log?.category) : category) === "데이터") && "요청에 의한 데이터 백업 및 복구 관련 작업"}
