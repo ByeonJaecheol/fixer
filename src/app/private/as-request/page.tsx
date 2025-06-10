@@ -10,7 +10,7 @@ import { RingLoader } from 'react-spinners';
 import { format, parseISO, isWithinInterval } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import AsWriteButton from './_components/AsWriteButton';
-import { AsWorkTypeOptions } from './_components/AsLogForm';
+import { AsHwCategoryOptions, AsSwCategoryOptions, AsWorkTypeOptions } from './_components/AsLogForm';
 
 // 필터 타입 정의
 type SortField = 'log_id' | 'created_by' | 'work_date' | 'work_type'  | 'category' | 'model_name' | 'employee_department' ;
@@ -62,9 +62,9 @@ export default function AsRequestPage() {
   // 카테고리 옵션 (작업 유형에 따라 동적으로 결정)
   const getCategoryOptions = (workType: string | null) => {
     if (workType === 'H/W') {
-      return ['전체', 'PC', '모니터', '프린터', '기타'];
+      return AsHwCategoryOptions;
     } else if (workType === 'S/W') {
-      return ['전체', '프로그램', 'OS/성능','DATA', '기타'];
+      return AsSwCategoryOptions;
     }
     return ['전체', '없음'];
   };
