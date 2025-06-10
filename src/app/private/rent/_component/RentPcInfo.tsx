@@ -23,7 +23,7 @@ export default function RentPcInfo({ rentResultAsset }: { rentResultAsset: IRent
             columns: '*',
             match: { id: rent_id }
         });
-        console.log('RentPcInfo - 반납 - rentAssetResult ',rentAssetResultData);
+        // console.log('RentPcInfo - 반납 - rentAssetResult ',rentAssetResultData);
         if(rentAssetResultData.success){
             const selectedAsset = rentAssetResultData.data[0];
             const result = await supabaseService.update({
@@ -107,13 +107,23 @@ export default function RentPcInfo({ rentResultAsset }: { rentResultAsset: IRent
               <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"> 
                 <span className="text-white bg-black/50 px-2 py-1 rounded-md text-sm font-medium">이력보기</span>
               </div>  
-              <Image 
-                src={item.pc_assets.brand === 'HP' ? HP : LG} 
+              {item.pc_assets?.brand === 'HP' ? (
+                <Image 
+                  src={HP} 
+                  alt="PC 이미지" 
+                  width={160} 
+                  height={160} 
+                  className="w-40 h-40" 
+                />
+              ) : (
+                <Image 
+                  src={LG} 
                 alt="PC 이미지" 
                 width={160} 
                 height={160} 
                 className="w-40 h-40" 
               />
+              )}
             </Link>
             <div className="absolute top-2 right-3">
             {item.is_rented ? (

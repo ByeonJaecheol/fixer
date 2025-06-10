@@ -33,6 +33,7 @@ export default async function RentPage({
       order: { column: 'id', ascending: true },
     });
     if (success) {
+      console.log(data,'임대 목록');
       return data;
     } else {
       console.error('Error fetching rent_assets:', error);
