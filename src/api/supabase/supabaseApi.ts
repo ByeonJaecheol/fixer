@@ -72,7 +72,7 @@ export interface IRentResultAsset {
   pc_assets: IPcAsset;
   is_rented : boolean;
   rent_type : string;
-  rent_name : string;
+  rent_name : number;
   host : string;
   rent_start_date : string;
   rent_end_date : string;

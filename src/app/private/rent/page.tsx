@@ -30,7 +30,7 @@ export default async function RentPage({
       // match: { is_rented: false },
       // 필요에 따라 추가 조건 설정
       match: { rent_type: type },
-      order: { column: 'id', ascending: true },
+      order: { column: 'rent_name', ascending: true },
     });
     if (success) {
       console.log(data,'임대 목록');

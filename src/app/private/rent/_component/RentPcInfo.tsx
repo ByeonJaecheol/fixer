@@ -11,7 +11,7 @@ export default function RentPcInfo({ rentResultAsset }: { rentResultAsset: IRent
     const router = useRouter();
     const [rentId, setRentId] = useState<number>(0);
     const [rentType, setRentType] = useState<string>('');
-    const [rentName, setRentName] = useState<string>('');
+    const [rentName, setRentName] = useState<number|undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
     
     const UpdateIsRented = async (rent_id: number) => {
@@ -93,7 +93,7 @@ export default function RentPcInfo({ rentResultAsset }: { rentResultAsset: IRent
   }
   return (
     <div className="w-full flex flex-row gap-x-4">
-      <RentModal id={rentId} rentType={rentType} rentName={rentName} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <RentModal id={rentId} rentType={rentType} rentName={rentName?.toString() || ''} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6 p-6">
       {rentResultAsset?.map((item: IRentResultAsset) => (
         <div 
@@ -143,7 +143,7 @@ export default function RentPcInfo({ rentResultAsset }: { rentResultAsset: IRent
             {/* PC 정보 */}
             <div className="mb-2">
               <h3 className="text-base font-bold text-gray-900 text-right px-2">
-                {item.rent_type} {item.rent_name}
+                {item.rent_type} 임시대여 {item.rent_name}
               </h3>
               
               <div className="space-y-2 px-2">
