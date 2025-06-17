@@ -38,7 +38,7 @@ interface AsLogFormProps {
     defaultWorkType?: string;
     log?: IHardwareLogEntry;
 }
-export const AsWorkTypeOptions = ['H/W',  'S/W', '보안', '네트워크', '기타'];
+export const AsWorkTypeOptions = ['전체', 'H/W',  'S/W', '보안', '네트워크', '기타'];
 export const AsSwCategoryOptions = ['프로그램','드라이버','OS/성능','데이터','기타'];
 export const AsHwCategoryOptions = ['PC','모니터','프린터','기타'];
 

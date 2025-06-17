@@ -367,7 +367,8 @@ export default function PrivateDashboard() {
       const swCategoryCounts: Record<string, number> = {
         '보안': 0,
         '프로그램': 0,
-        'OS': 0,
+        '드라이버': 0,
+        'OS/성능': 0,
         'DATA': 0,
         '기타': 0
       };
@@ -404,7 +405,8 @@ export default function PrivateDashboard() {
         color: 
           category === '보안' ? '#D32F2F' :
           category === '프로그램' ? '#388E3C' :
-          category === 'OS' ? '#1976D2' :
+          category === '드라이버' ? '#0097A7' :
+          category === 'OS/성능' ? '#1976D2' :
           category === 'DATA' ? '#F57C00' :
           '#607D8B'
       }));
