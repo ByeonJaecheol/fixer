@@ -62,9 +62,9 @@ export default function AsRequestPage() {
   // 카테고리 옵션 (작업 유형에 따라 동적으로 결정)
   const getCategoryOptions = (workType: string | null) => {
     if (workType === 'H/W') {
-      return AsHwCategoryOptions;
+      return ['전체', ...AsHwCategoryOptions];
     } else if (workType === 'S/W') {
-      return AsSwCategoryOptions;
+      return ['전체', ...AsSwCategoryOptions];
     }
     return ['전체', '없음'];
   };
@@ -114,8 +114,8 @@ export default function AsRequestPage() {
         const { success, error, data } = await supabaseService.selectWithRelations({
           table: 'as_management_log',
           columns: '*',
-          // 기본 정렬은 서버에서 최신순으로 가져옴
-          order: { column: 'created_at', ascending: false }
+          // 기본 정렬은 work_date 기준으로 최신순으로 가져옴
+          order: { column: 'work_date', ascending: false }
         });
         
         if (success) {
@@ -149,9 +149,13 @@ export default function AsRequestPage() {
         // 하루 끝까지 포함하기 위해 endDate 조정
         endDate.setHours(23, 59, 59, 999);
         
-        // 날짜 범위에 맞는 요청만 필터링
+        // 날짜 범위에 맞는 요청만 필터링 (work_date 기준)
         const filtered = logs.filter(log => {
-          const logDate = new Date(log.created_at);
+          // work_date가 없는 경우 created_at을 대신 사용
+          const dateToCheck = log.work_date || log.created_at;
+          if (!dateToCheck) return false;
+          
+          const logDate = new Date(dateToCheck);
           return isWithinInterval(logDate, { start: startDate, end: endDate });
         });
         
@@ -178,8 +182,16 @@ export default function AsRequestPage() {
       valueA = a.created_by ? a.created_by.split('@')[0] : '';
       valueB = b.created_by ? b.created_by.split('@')[0] : '';
     } else if (sortField === 'work_date') {
-      valueA = new Date(a.work_date || '').getTime();
-      valueB = new Date(b.work_date || '').getTime();
+      // work_date가 null이거나 빈 값인 경우 created_at을 대신 사용
+      const dateA = a.work_date || a.created_at;
+      const dateB = b.work_date || b.created_at;
+      
+      if (!dateA && !dateB) return 0;
+      if (!dateA) return 1;
+      if (!dateB) return -1;
+      
+      valueA = new Date(dateA).getTime();
+      valueB = new Date(dateB).getTime();
     }
     
     // 정렬 방향에 따라 결과 반환
@@ -303,6 +315,7 @@ export default function AsRequestPage() {
           }
         }
       }
+      // "전체"를 선택했을 때는 해당 작업유형의 모든 카테고리를 보여줌 (추가 필터링 없음)
       
       // 검색어 필터
       if (filterState.searchTerm) {
@@ -314,7 +327,11 @@ export default function AsRequestPage() {
           (log.employee_name?.toLowerCase().includes(searchTerm)) ||
           (log.employee_department?.toLowerCase().includes(searchTerm)) ||
           (log.question?.toLowerCase().includes(searchTerm)) ||
-          (log.detail_description?.toLowerCase().includes(searchTerm))
+          (log.detail_description?.toLowerCase().includes(searchTerm)) ||
+          (log.category?.toLowerCase().includes(searchTerm)) ||
+          (log.solution_detail?.toLowerCase().includes(searchTerm)) ||
+          (log.detailed_category?.toLowerCase().includes(searchTerm))
+          
         );
       }
       
