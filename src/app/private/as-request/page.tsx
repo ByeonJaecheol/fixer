@@ -57,7 +57,7 @@ export default function AsRequestPage() {
   });
   
   // 작업 유형 옵션
-  const workTypeOptions = AsWorkTypeOptions;
+  const workTypeOptions = ['전체', ...AsWorkTypeOptions];
   
   // 카테고리 옵션 (작업 유형에 따라 동적으로 결정)
   const getCategoryOptions = (workType: string | null) => {
@@ -297,9 +297,10 @@ export default function AsRequestPage() {
   const filteredLogs = filteredByDateLogs
     .filter(log => {
       // 작업 유형 필터
-      if (filterState.workTypeFilter && log.work_type !== filterState.workTypeFilter) {
+      if (filterState.workTypeFilter && filterState.workTypeFilter !== '전체' && log.work_type !== filterState.workTypeFilter) {
         return false;
       }
+      // "전체"를 선택했을 때는 모든 작업유형을 보여줌 (추가 필터링 없음)
       
       // 카테고리 필터
       if (filterState.categoryFilter && filterState.categoryFilter !== '전체') {
