@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import SupabaseService, { IAsManagementLog } from '@/api/supabase/supabaseApi';
 import { formatToKoreanTime, truncateDescription } from '@/utils/utils';
+import { exportAsLogsToExcel } from '@/utils/excelUtils';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { RingLoader } from 'react-spinners';
 import { format, parseISO, isWithinInterval } from 'date-fns';
@@ -39,6 +40,7 @@ export default function AsRequestPage() {
   const [filteredByDateLogs, setFilteredByDateLogs] = useState<IAsManagementLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
   
   // URL에서 기간 파라미터 가져오기
   const period = searchParams.get('period') as DateFilterType || 'all';
@@ -481,6 +483,48 @@ export default function AsRequestPage() {
     );
   };
 
+  // 엑셀 다운로드 함수들
+  const handleExportAll = () => {
+    setExporting(true);
+    try {
+      const today = format(new Date(), 'yyyyMMdd');
+      const filename = `KET_정비일지_${today}`;
+      exportAsLogsToExcel(logs, filename);
+    } catch (error) {
+      console.error('엑셀 다운로드 오류:', error);
+      alert('엑셀 다운로드 중 오류가 발생했습니다.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportFiltered = () => {
+    setExporting(true);
+    try {
+      const workType = filterState.workTypeFilter || '전체';
+      const category = filterState.categoryFilter || '전체';
+      
+      let periodStr: string;
+      if (period === 'all') {
+        periodStr = '전체기간';
+      } else if (startDateParam && endDateParam) {
+        const start = format(parseISO(startDateParam), 'yyMMdd');
+        const end = format(parseISO(endDateParam), 'yyMMdd');
+        periodStr = `${start}-${end}`;
+      } else {
+        periodStr = period;
+      }
+
+      const filename = `KET_정비일지_${workType}_${category}_(${periodStr})`;
+      exportAsLogsToExcel(filteredLogs, filename);
+    } catch (error) {
+      console.error('엑셀 다운로드 오류:', error);
+      alert('엑셀 다운로드 중 오류가 발생했습니다.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-6 flex justify-center">
@@ -507,7 +551,60 @@ export default function AsRequestPage() {
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <h2 className="text-base font-medium text-gray-900">필터 및 검색</h2>
-              <AsWriteButton />
+              <div className="flex items-center space-x-3">
+                {/* 엑셀 다운로드 버튼들 */}
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleExportAll}
+                    disabled={exporting || logs.length === 0}
+                    className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
+                      exporting || logs.length === 0
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                    }`}
+                  >
+                    {exporting ? (
+                      <div className="flex items-center">
+                        <RingLoader size={12} color="#059669" />
+                        <span className="ml-2">다운로드 중...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 00-.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        전체 다운로드
+                      </div>
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={handleExportFiltered}
+                    disabled={exporting || filteredLogs.length === 0}
+                    className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
+                      exporting || filteredLogs.length === 0
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
+                    }`}
+                  >
+                    {exporting ? (
+                      <div className="flex items-center">
+                        <RingLoader size={12} color="#2563eb" />
+                        <span className="ml-2">다운로드 중...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+                        </svg>
+                        필터 다운로드
+                      </div>
+                    )}
+                  </button>
+                </div>
+                
+                <AsWriteButton />
+              </div>
             </div>
           </div>
           
@@ -590,10 +687,13 @@ export default function AsRequestPage() {
             </div>
           </div>
           
-          <div className="mt-2 flex justify-end text-xs text-gray-500 p-2">
-            <span>{filteredLogs.length}개의 결과가 있습니다</span>
+          <div className="mt-2 flex justify-between text-xs text-gray-500 p-2">
+            <div className="flex items-center space-x-4">
+              <span>전체: {logs.length}개</span>
+              <span>필터링: {filteredLogs.length}개</span>
+            </div>
             {filterState.sortField && (
-              <span className="ml-2">
+              <span>
                 (정렬: {filterState.sortField === 'log_id' ? 'ID' : 
                        filterState.sortField === 'created_by' ? '작성자' :
                        filterState.sortField === 'work_date' ? '작업일' :
