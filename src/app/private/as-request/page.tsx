@@ -149,13 +149,12 @@ export default function AsRequestPage() {
         // 하루 끝까지 포함하기 위해 endDate 조정
         endDate.setHours(23, 59, 59, 999);
         
-        // 날짜 범위에 맞는 요청만 필터링 (work_date 기준)
+        // 날짜 범위에 맞는 요청만 필터링 (work_date 기준만 사용)
         const filtered = logs.filter(log => {
-          // work_date가 없는 경우 created_at을 대신 사용
-          const dateToCheck = log.work_date || log.created_at;
-          if (!dateToCheck) return false;
+          // work_date가 없는 경우 해당 항목은 제외
+          if (!log.work_date) return false;
           
-          const logDate = new Date(dateToCheck);
+          const logDate = new Date(log.work_date);
           return isWithinInterval(logDate, { start: startDate, end: endDate });
         });
         
@@ -182,16 +181,13 @@ export default function AsRequestPage() {
       valueA = a.created_by ? a.created_by.split('@')[0] : '';
       valueB = b.created_by ? b.created_by.split('@')[0] : '';
     } else if (sortField === 'work_date') {
-      // work_date가 null이거나 빈 값인 경우 created_at을 대신 사용
-      const dateA = a.work_date || a.created_at;
-      const dateB = b.work_date || b.created_at;
+      // work_date가 null이거나 빈 값인 경우 가장 뒤로 정렬
+      if (!a.work_date && !b.work_date) return 0;
+      if (!a.work_date) return 1;
+      if (!b.work_date) return -1;
       
-      if (!dateA && !dateB) return 0;
-      if (!dateA) return 1;
-      if (!dateB) return -1;
-      
-      valueA = new Date(dateA).getTime();
-      valueB = new Date(dateB).getTime();
+      valueA = new Date(a.work_date).getTime();
+      valueB = new Date(b.work_date).getTime();
     }
     
     // 정렬 방향에 따라 결과 반환

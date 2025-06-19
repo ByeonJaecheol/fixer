@@ -13,6 +13,7 @@ import { RingLoader } from 'react-spinners';
 import RecentSchedules from './_components/RecentSchedules';
 import { Activity, Asset, DateFilterOption, DateFilterType, RentAsset } from '../constants/chart';
 import RentStatusChart from './_components/RentStatusChart';
+import { IAsManagementLog } from '@/api/supabase/supabaseApi';
 
 // 차트 데이터 타입 정의
 interface AssetStatusCount {
@@ -54,7 +55,7 @@ export default function PrivateDashboard() {
   // 원시 데이터 상태
   const [assets, setAssets] = useState<Asset[]>([]);
   const [rentAssets, setRentAssets] = useState<RentAsset[]>([]);
-  const [asActivities, setAsActivities] = useState<Activity[]>([]);
+  const [asActivities, setAsActivities] = useState<IAsManagementLog[]>([]);
   const [pcActivities, setPcActivities] = useState<Activity[]>([]);
   
   // 계산된 데이터 상태
@@ -128,6 +129,20 @@ export default function PrivateDashboard() {
   ): T[] => {
     return data.filter(item => {
       const itemDate = new Date(item.created_at);
+      return isWithinInterval(itemDate, dateRange);
+    });
+  };
+
+  // AS 활동 데이터 필터링 함수 (work_date 기준)
+  const filterAsDataByDateRange = (
+    data: IAsManagementLog[],
+    dateRange: { start: Date, end: Date }
+  ): IAsManagementLog[] => {
+    return data.filter(item => {
+      // work_date가 없는 경우 해당 항목은 제외
+      if (!item.work_date) return false;
+      
+      const itemDate = new Date(item.work_date);
       return isWithinInterval(itemDate, dateRange);
     });
   };
@@ -260,7 +275,7 @@ export default function PrivateDashboard() {
       const dateRange = getDateRangeByFilter(activeFilter);
       
       // 해당 기간 데이터만 필터링
-      const filteredAsActivities = filterDataByDateRange(asActivities, dateRange);
+      const filteredAsActivities = filterAsDataByDateRange(asActivities, dateRange);
       const filteredPcActivities = filterDataByDateRange(pcActivities, dateRange);
       
       // 1. 자산 상태별 통계 (자산 상태는 필터링하지 않음)
@@ -298,7 +313,7 @@ export default function PrivateDashboard() {
       
       // AS 활동 집계
       filteredAsActivities.forEach(activity => {
-        const date = format(new Date(activity.created_at), 'yyyy-MM-dd');
+        const date = format(new Date(activity.work_date), 'yyyy-MM-dd');
         if (activityByDate[date]) {
           activityByDate[date].as_requests++;
         }
@@ -853,7 +868,7 @@ function StatsCardGrid({
 }: { 
   assets: Asset[]; 
   pcActivities: Activity[]; 
-  asActivities: Activity[]; 
+  asActivities: IAsManagementLog[]; 
   rentAssets: RentAsset[]; 
   activeFilter: DateFilterType;
   getDateRangeByFilter: (filter: DateFilterType) => { start: Date, end: Date };
@@ -861,8 +876,8 @@ function StatsCardGrid({
   // 현재 선택된 기간 범위 가져오기
   const currentDateRange = getDateRangeByFilter(activeFilter);
   
-  // 과거 데이터 비교용 함수
-  const calculatePreviousPeriodData = (activities: Activity[], filter: DateFilterType): number => {
+  // 과거 데이터 비교용 함수 (AS 활동용)
+  const calculatePreviousPeriodData = (activities: IAsManagementLog[], filter: DateFilterType): number => {
     // 현재 범위
     const currentRange = getDateRangeByFilter(filter);
     
@@ -908,7 +923,62 @@ function StatsCardGrid({
         break;
     }
     
-    // 과거 기간에 해당하는 활동 개수 계산
+    // 과거 기간에 해당하는 활동 개수 계산 (work_date 기준)
+    return activities.filter(activity => {
+      if (!activity.work_date) return false;
+      const activityDate = new Date(activity.work_date);
+      return activityDate >= previousRange.start && activityDate <= previousRange.end;
+    }).length;
+  };
+
+  // 과거 데이터 비교용 함수 (PC 활동용)
+  const calculatePreviousPeriodPcData = (activities: Activity[], filter: DateFilterType): number => {
+    // 현재 범위
+    const currentRange = getDateRangeByFilter(filter);
+    
+    // 비교 범위 (과거 데이터)
+    let previousRange = { start: new Date(), end: new Date() };
+    
+    switch (filter) {
+      case 'today':
+        // 지난주 같은 요일
+        previousRange.start = new Date(currentRange.start);
+        previousRange.end = new Date(currentRange.end);
+        previousRange.start.setDate(previousRange.start.getDate() - 7);
+        previousRange.end.setDate(previousRange.end.getDate() - 7);
+        break;
+      case 'week':
+        // 지난주
+        previousRange.start = new Date(currentRange.start);
+        previousRange.end = new Date(currentRange.end);
+        previousRange.start.setDate(previousRange.start.getDate() - 7);
+        previousRange.end.setDate(previousRange.end.getDate() - 7);
+        break;
+      case 'month':
+        // 지난달
+        previousRange.start = new Date(currentRange.start);
+        previousRange.end = new Date(currentRange.end);
+        previousRange.start.setMonth(previousRange.start.getMonth() - 1);
+        previousRange.end.setMonth(previousRange.end.getMonth() - 1);
+        break;
+      case 'year':
+        // 지난해
+        previousRange.start = new Date(currentRange.start);
+        previousRange.end = new Date(currentRange.end);
+        previousRange.start.setFullYear(previousRange.start.getFullYear() - 1);
+        previousRange.end.setFullYear(previousRange.end.getFullYear() - 1);
+        break;
+      case 'custom':
+        // 작년 동일 기간
+        const duration = currentRange.end.getTime() - currentRange.start.getTime();
+        previousRange.start = new Date(currentRange.start);
+        previousRange.end = new Date(currentRange.end);
+        previousRange.start.setFullYear(previousRange.start.getFullYear() - 1);
+        previousRange.end.setFullYear(previousRange.end.getFullYear() - 1);
+        break;
+    }
+    
+    // 과거 기간에 해당하는 활동 개수 계산 (created_at 기준)
     return activities.filter(activity => {
       const activityDate = new Date(activity.created_at);
       return activityDate >= previousRange.start && activityDate <= previousRange.end;
@@ -1005,7 +1075,7 @@ function StatsCardGrid({
   }).length;
   
   // 과거 기간의 PC 활동 이력 건수
-  const previousPcActivitiesCount = calculatePreviousPeriodData(pcActivities, activeFilter);
+  const previousPcActivitiesCount = calculatePreviousPeriodPcData(pcActivities, activeFilter);
   
   // PC 활동 이력 증감률 및 트렌드 계산
   const pcActivitiesDiff = currentPcActivitiesCount - previousPcActivitiesCount;
@@ -1014,8 +1084,9 @@ function StatsCardGrid({
   
   // 현재 기간의 AS 요청 건수
   const currentAsActivitiesCount = asActivities.filter(activity => {
+    if (!activity.work_date) return false;
     const dateRange = getDateRangeByFilter(activeFilter);
-    return isWithinInterval(new Date(activity.created_at), dateRange);
+    return isWithinInterval(new Date(activity.work_date), dateRange);
   }).length;
   
   // 과거 기간의 AS 요청 건수
