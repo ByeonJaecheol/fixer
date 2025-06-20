@@ -156,7 +156,7 @@ export default function AsRequestPage() {
           // work_date가 없는 경우 해당 항목은 제외
           if (!log.work_date) return false;
           
-          const logDate = new Date(log.work_date);
+          const logDate = parseISO(log.work_date);
           return isWithinInterval(logDate, { start: startDate, end: endDate });
         });
         
@@ -329,8 +329,9 @@ export default function AsRequestPage() {
           (log.detail_description?.toLowerCase().includes(searchTerm)) ||
           (log.category?.toLowerCase().includes(searchTerm)) ||
           (log.solution_detail?.toLowerCase().includes(searchTerm)) ||
-          (log.detailed_category?.toLowerCase().includes(searchTerm))
-          
+          (log.detailed_category?.toLowerCase().includes(searchTerm)) ||
+          (log.security_code?.toLowerCase().includes(searchTerm)) ||
+          (log.work_type?.toLowerCase().includes(searchTerm))
         );
       }
       
@@ -680,7 +681,7 @@ export default function AsRequestPage() {
                   type="text"
                   value={filterState.searchTerm}
                   onChange={handleSearchChange}
-                  placeholder="ID, 작성자, 모델명, 부서, 내용 검색..."
+                  placeholder="ID, 작성자, 모델명, 부서, 상세설명 등..."
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -767,8 +768,8 @@ export default function AsRequestPage() {
                     <div className="text-sm text-gray-900">{log.model_name || '-'}</div>
                     <div className="text-sm text-gray-900">{log.employee_department || '-'}</div>
                     <div className="text-sm text-gray-900">{log.employee_name || '-'}</div>
-                    <div className="text-sm text-gray-900">{truncateDescription(log.question, 20) || '-'}</div>
-                    <div className="text-sm text-gray-900">{truncateDescription(log.solution_detail, 20) || '-'}</div>
+                    <div className="text-sm text-gray-900" title={log.question || ''}>{truncateDescription(log.question, 20) || '-'}</div>
+                    <div className="text-sm text-gray-900" title={log.solution_detail || ''}>{truncateDescription(log.solution_detail, 20) || '-'}</div>
                   </Link>
                 ))}
               </div>
