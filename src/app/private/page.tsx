@@ -46,6 +46,12 @@ interface SwCategoryStats {
   color: string;
 }
 
+interface HwCategoryStats {
+  category: string;
+  count: number;
+  color: string;
+}
+
 export default function PrivateDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +73,7 @@ export default function PrivateDashboard() {
   // 새로운 상태 추가
   const [workTypeStats, setWorkTypeStats] = useState<WorkTypeStats[]>([]);
   const [swCategoryStats, setSwCategoryStats] = useState<SwCategoryStats[]>([]);
+  const [hwCategoryStats, setHwCategoryStats] = useState<HwCategoryStats[]>([]);
   
   // 필터 상태 추가
   const [activeFilter, setActiveFilter] = useState<DateFilterType>('week');
@@ -402,32 +409,67 @@ export default function PrivateDashboard() {
         }
       });
       
-      // 작업 유형 통계 데이터 포맷
-      const formattedWorkTypeStats = Object.entries(workTypeCounts).map(([type, count]) => ({
+      // H/W 카테고리별 통계
+      const hwCategoryCounts: Record<string, number> = {
+        'PC': 0,
+        '모니터': 0,
+        '프린터': 0,
+        '기타': 0
+      };
+      filteredAsActivities.forEach(activity => {
+        // H/W 카테고리 카운트
+        if (activity.work_type === 'H/W' && activity.category) {
+          hwCategoryCounts[activity.category] = (hwCategoryCounts[activity.category] || 0) + 1;
+        }
+      });
+      
+      // 작업 유형 통계 데이터 포맷 (색상: 빨주노초파남보)
+      const formattedWorkTypeStats = Object.entries(workTypeCounts).map(([type, count], idx) => ({
         type,
         count,
-        color: 
-          type === 'H/W' ? '#1976D2' :
-          type === 'S/W' ? '#388E3C' :
-          type === '네트워크' ? '#F57C00' :
-          '#607D8B'
+        color:
+          type === 'H/W' ? '#FF3B30' :      // 빨강
+          type === 'S/W' ? '#FF9500' :      // 주황
+          type === '네트워크' ? '#FFD600' : // 노랑
+          type === '보안' ? '#34C759' :     // 초록
+          type === '기타' ? '#007AFF' :    // 파랑
+          idx === 5 ? '#5856D6' :           // 남색(6번째 항목)
+          idx === 6 ? '#AF52DE' :           // 보라(7번째 항목)
+          '#BDBDBD'
       }));
       
       // S/W 카테고리 통계 데이터 포맷
       const formattedSwCategoryStats = Object.entries(swCategoryCounts).map(([category, count]) => ({
         category,
         count,
-        color: 
-          category === '보안' ? '#D32F2F' :
-          category === '프로그램' ? '#388E3C' :
-          category === '드라이버' ? '#0097A7' :
-          category === 'OS/성능' ? '#1976D2' :
-          category === 'DATA' ? '#F57C00' :
-          '#607D8B'
+        color:
+          category === '보안' ? '#FF3B30' :      // 빨강
+          category === '프로그램' ? '#FF9500' : // 주황
+          category === '드라이버' ? '#FFD600' : // 노랑
+          category === 'OS/성능' ? '#34C759' :   // 초록
+          category === 'DATA' ? '#007AFF' :      // 파랑
+          '#AF52DE' // 보라(기타)
+      }));
+
+      // H/W 카테고리 통계 데이터 포맷
+      const formattedHwCategoryStats = Object.entries(hwCategoryCounts).map(([category, count]) => ({
+        category,
+        count,
+        color:
+          category === 'PC' ? '#FF3B30' :      // 빨강
+          category === '모니터' ? '#FF9500' : // 주황
+          category === '프린터' ? '#FFD600' : // 노랑
+          category === '기타' ? '#34C759' :   // 초록
+          '#007AFF' // 파랑(남색, 보라까지 필요시 추가)
       }));
       
       setWorkTypeStats(formattedWorkTypeStats);
       setSwCategoryStats(formattedSwCategoryStats);
+      setHwCategoryStats(formattedHwCategoryStats);
+      
+      // 보안, 네트워크 전체 건수 계산 (filteredAsActivities 기준)
+      const securityCount = filteredAsActivities.filter(a => a.work_type === '보안').length;
+      const networkCount = filteredAsActivities.filter(a => a.work_type === '네트워크').length;
       
     } catch (error) {
       console.error('데이터 계산 오류:', error);
@@ -469,6 +511,11 @@ export default function PrivateDashboard() {
     
     return `${formattedStart} ~ ${formattedEnd}`;
   };
+
+  const dateRange = getDateRangeByFilter(activeFilter);
+  const filteredAsActivities = filterAsDataByDateRange(asActivities, dateRange);
+  const securityCount = filteredAsActivities.filter(a => a.work_type === '보안').length;
+  const networkCount = filteredAsActivities.filter(a => a.work_type === '네트워크').length;
 
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-50">
@@ -582,38 +629,40 @@ export default function PrivateDashboard() {
           )}
         </ChartCard>
 
-          {/* 작업 유형별 통계 차트 */}
+          {/* 작업 유형별 통계 차트 - 수평 막대 차트 */}
           <ChartCard title="작업 유형별 통계" theme="amber">
           {loading ? (
             <ChartSkeleton />
           ) : workTypeStats.length > 0 ? (
             <ResponsiveContainer width="99%" height="100%">
-              <PieChart>
-                <Pie
-                  data={workTypeStats}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={55}
-                  dataKey="count"
-                  nameKey="type"
-                  label={({ name, percent }) => 
-                    percent > 0.01 ? `${name}: ${(percent * 100).toFixed(0)}%` : null
-                  }
-                >
+              <BarChart data={workTypeStats} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis type="number" tick={{ fill: '#616161', fontSize: 11 }} allowDecimals={false} />
+                <YAxis type="category" dataKey="type" tick={{ fill: '#616161', fontSize: 13, fontWeight: 600 }} width={80} />
+                <Tooltip formatter={(value: number) => [`${value}건`, '처리 건수']} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="count" name="처리 건수">
                   {workTypeStats.map((entry) => (
                     <Cell key={`cell-${entry.type}`} fill={entry.color} />
                   ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-                  formatter={(value: number) => [`${value}건`, '처리 건수']}
-                />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-              </PieChart>
-            </ResponsiveContainer>
+                </Bar>
+            </BarChart>
+          </ResponsiveContainer>
           ) : (
             <NoDataDisplay />
+          )}
+        </ChartCard>
+
+          {/* 임대PC 대여 현황 차트 */}
+          <ChartCard title="임대PC 대여 현황" theme="purple">
+          {loading ? (
+            <ChartSkeleton />
+          ) : rentStatusData && rentStatusData.length > 0 ? (
+            <RentStatusChart data={rentStatusData} />
+          ) : (
+            <div className="flex items-center justify-center h-[300px]">
+              <p className="text-gray-500">데이터가 없습니다</p>
+            </div>
           )}
         </ChartCard>
         
@@ -647,19 +696,62 @@ export default function PrivateDashboard() {
           )}
         </ChartCard>
 
-        {/* 임대PC 대여 현황 차트 */}
-        <ChartCard title="임대PC 대여 현황" theme="purple">
+        {/* H/W 카테고리별 통계 차트 */}
+        <ChartCard title="H/W 카테고리별 통계" theme="cyan">
           {loading ? (
             <ChartSkeleton />
-          ) : rentStatusData && rentStatusData.length > 0 ? (
-            <RentStatusChart data={rentStatusData} />
-          ) : (
-            <div className="flex items-center justify-center h-[300px]">
-              <p className="text-gray-500">데이터가 없습니다</p>
-            </div>
-          )}
-        </ChartCard>
+          ) : hwCategoryStats.length > 0 ? (
+            <ResponsiveContainer width="99%" height="100%">
+              <BarChart data={hwCategoryStats} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis type="number" tick={{ fill: '#616161', fontSize: 11 }} />
+                <YAxis type="category" dataKey="category" tick={{ fill: '#616161', fontSize: 11 }} width={70} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+                  formatter={(value: number) => [`${value}건`, '처리 건수']}
+                />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar 
+                  dataKey="count" 
+                  name="처리 건수" 
+                >
+                  {hwCategoryStats.map((entry) => (
+                    <Cell key={`cell-${entry.category}`} fill={entry.color} />
+                  ))}
+                </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <NoDataDisplay />
+        )}
+      </ChartCard>
 
+      
+
+        {/* 보안/네트워크 전체 건수 카드 - 세로 배치 */}
+        <div className="bg-gradient-to-br from-white to-cyan-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
+          <div className="p-5 h-full border-b-4 border-cyan-600 relative">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-cyan-600 opacity-10 rounded-full -mr-6 -mt-6 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="flex flex-col gap-4">
+              {/* 보안 Stat */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <svg className="w-6 h-6 text-rose-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2zm0 0V7m0 4v4m0 0h4m-4 0H8" /></svg>
+                  <span className="text-base font-semibold text-rose-700">보안</span>
+                </div>
+                <div className="text-3xl font-bold text-rose-600">{securityCount.toLocaleString()}<span className="text-base font-normal text-gray-500 ml-1">건</span></div>
+              </div>
+              {/* 네트워크 Stat */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <svg className="w-6 h-6 text-cyan-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 20v-6m0 0V4m0 10l-4-4m4 4l4-4" /></svg>
+                  <span className="text-base font-semibold text-cyan-700">네트워크</span>
+                </div>
+                <div className="text-3xl font-bold text-cyan-600">{networkCount.toLocaleString()}<span className="text-base font-normal text-gray-500 ml-1">건</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
       
       </div>
     </div>
@@ -1102,6 +1194,10 @@ function StatsCardGrid({
   
   // 대여 비교 결과 계산
   const rentComparison = calculateRentComparison();
+  
+  // 보안, 네트워크 전체 건수 계산 (filteredAsActivities 기준)
+  const securityCount = asActivities.filter(a => a.work_type === '보안').length;
+  const networkCount = asActivities.filter(a => a.work_type === '네트워크').length;
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
