@@ -47,7 +47,7 @@ const navigationItems = [
   },
   {
     icon: DocumentTextIcon,
-    text: '자료실',
+    text: '대시보드',
     href: '/'
   },
   {

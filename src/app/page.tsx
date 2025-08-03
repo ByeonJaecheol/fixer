@@ -17,7 +17,7 @@ const menuItems = [
   },
   {
     icon: DocumentTextIcon,
-    text: '자료실'
+    text: '대시보드'
   },
   {
     icon: Cog6ToothIcon,

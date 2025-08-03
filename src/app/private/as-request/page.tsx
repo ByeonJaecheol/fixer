@@ -233,33 +233,31 @@ export default function AsRequestPage() {
       window.location.href = '/private/as-request';
       return;
     }
-
+    if (filter === 'custom') {
+      setShowCustomModal(true);
+      return;
+    }
     let startDate, endDate;
     const today = new Date();
-
     switch (filter) {
       case 'today':
         startDate = endDate = format(today, 'yyyy-MM-dd');
         break;
       case 'week':
-        // 이번 주 월요일부터 일요일까지
         const day = today.getDay();
         const diff = today.getDate() - day + (day === 0 ? -6 : 1);
         startDate = format(new Date(today.setDate(diff)), 'yyyy-MM-dd');
         endDate = format(new Date(new Date(startDate).setDate(new Date(startDate).getDate() + 6)), 'yyyy-MM-dd');
         break;
       case 'month':
-        // 이번 달 1일부터 말일까지
         startDate = format(new Date(today.getFullYear(), today.getMonth(), 1), 'yyyy-MM-dd');
         endDate = format(new Date(today.getFullYear(), today.getMonth() + 1, 0), 'yyyy-MM-dd');
         break;
       case 'year':
-        // 올해 1월 1일부터 12월 31일까지
         startDate = format(new Date(today.getFullYear(), 0, 1), 'yyyy-MM-dd');
         endDate = format(new Date(today.getFullYear(), 11, 31), 'yyyy-MM-dd');
         break;
     }
-
     const params = [`period=${filter}`, `startDate=${startDate}`, `endDate=${endDate}`];
     window.location.href = `/private/as-request?${params.join('&')}`;
   };
@@ -526,6 +524,30 @@ export default function AsRequestPage() {
     }
   };
 
+  const [customStartDate, setCustomStartDate] = useState(startDateParam || '');
+  const [customEndDate, setCustomEndDate] = useState(endDateParam || '');
+  const [showCustomModal, setShowCustomModal] = useState(false);
+
+  // 날짜 포맷팅 하이드레이션 에러 방지용
+  const [dateLabel, setDateLabel] = useState<string | null>(null);
+  useEffect(() => {
+    if (startDateParam && endDateParam) {
+      setDateLabel(
+        `${format(parseISO(startDateParam), 'yyyy-MM-dd')} ~ ${format(parseISO(endDateParam), 'yyyy-MM-dd')}`
+      );
+    } else {
+      setDateLabel(null);
+    }
+  }, [startDateParam, endDateParam]);
+
+  // 기간 필터 변경 함수
+  const handleCustomDateSearch = () => {
+    if (customStartDate && customEndDate) {
+      setShowCustomModal(false);
+      window.location.href = `/private/as-request?period=custom&startDate=${customStartDate}&endDate=${customEndDate}`;
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-6 flex justify-center">
@@ -609,101 +631,81 @@ export default function AsRequestPage() {
             </div>
           </div>
           
-          <div className="p-6">
-            {/* 현재 선택된 기간 표시 */}
-            {period !== 'all' && startDateParam && endDateParam && (
-              <div className="mb-6 bg-blue-50 text-blue-700 px-4 py-3 rounded-md border border-blue-200 flex items-center">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
-                </svg>
-                <span className="font-medium text-sm">
-                  {getPeriodLabel()} ({format(parseISO(startDateParam), 'yyyy-MM-dd')} ~ {format(parseISO(endDateParam), 'yyyy-MM-dd')})
-                </span>
-                <Link 
-                  href="/private/as-request"
-                  className="ml-3 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded font-medium transition-colors"
-                >
-                  초기화
-                </Link>
-              </div>
-            )}
-            
-            {/* 필터 옵션들 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              {/* 작업 유형 필터 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">작업 유형</label>
-                <select 
-                  value={filterState.workTypeFilter || '전체'} 
-                  onChange={(e) => handleWorkTypeChange(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {workTypeOptions.map(option => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 카테고리 필터 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
-                <select 
-                  value={filterState.categoryFilter || '전체'} 
-                  onChange={(e) => handleCategoryChange(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {categoryOptions.map(option => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 기간 필터 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">기간</label>
-                <select 
-                  value={period} 
-                  onChange={(e) => handleDateFilterChange(e.target.value as DateFilterType)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="all">전체 기간</option>
-                  <option value="today">오늘</option>
-                  <option value="week">이번 주</option>
-                  <option value="month">이번달</option>
-                  <option value="year">올해</option>
-                </select>
-              </div>
-
-              {/* 검색 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">검색</label>
-                <input
-                  type="text"
-                  value={filterState.searchTerm}
-                  onChange={handleSearchChange}
-                  placeholder="ID, 작성자, 모델명, 부서, 상세설명 등..."
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
+          {/* 항상 기간 표시 */}
+          <div className="mb-6 bg-blue-50 text-blue-700 px-4 py-3 rounded-md border border-blue-200 flex items-center">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
+            </svg>
+            <span className="font-medium text-sm">
+              {getPeriodLabel()}
+              {dateLabel && ` (${dateLabel})`}
+            </span>
+            <Link 
+              href="/private/as-request"
+              className="ml-3 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded font-medium transition-colors"
+            >
+              초기화
+            </Link>
           </div>
-          
-          <div className="mt-2 flex justify-between text-xs text-gray-500 p-2">
-            <div className="flex items-center space-x-4">
-              <span>전체: {logs.length}개</span>
-              <span>필터링: {filteredLogs.length}개</span>
+
+          {/* 필터 옵션들 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {/* 작업 유형 필터 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">작업 유형</label>
+              <select 
+                value={filterState.workTypeFilter || '전체'} 
+                onChange={(e) => handleWorkTypeChange(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {workTypeOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
             </div>
-            {filterState.sortField && (
-              <span>
-                (정렬: {filterState.sortField === 'log_id' ? 'ID' : 
-                       filterState.sortField === 'created_by' ? '작성자' :
-                       filterState.sortField === 'work_date' ? '작업일' :
-                       filterState.sortField === 'work_type' ? '작업유형' : 
-                       filterState.sortField === 'model_name' ? '모델명' : 
-                       '부서'} 
-                {filterState.sortDirection === 'asc' ? '오름차순' : '내림차순'})
-              </span>
-            )}
+
+            {/* 카테고리 필터 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
+              <select 
+                value={filterState.categoryFilter || '전체'} 
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {categoryOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 기간 필터 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">기간</label>
+              <select 
+                value={period} 
+                onChange={(e) => handleDateFilterChange(e.target.value as DateFilterType)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">전체 기간</option>
+                <option value="today">오늘</option>
+                <option value="week">이번 주</option>
+                <option value="month">이번달</option>
+                <option value="year">올해</option>
+                <option value="custom">사용자 지정</option>
+              </select>
+            </div>
+
+            {/* 검색 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">검색</label>
+              <input
+                type="text"
+                value={filterState.searchTerm}
+                onChange={handleSearchChange}
+                placeholder="ID, 작성자, 모델명, 부서, 상세설명 등..."
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
           </div>
         </div>
         
@@ -716,7 +718,7 @@ export default function AsRequestPage() {
             <div className="p-12 text-center">
               <div className="text-gray-400 mb-4">
                 <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 00-.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">데이터가 없습니다</h3>
@@ -780,6 +782,45 @@ export default function AsRequestPage() {
         {/* 페이지네이션 (하단) */}
         {totalItems > 0 && <Pagination />}
       </div>
+
+      {/* custom 기간 선택 모달 */}
+      {showCustomModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs">
+            <h3 className="text-lg font-semibold mb-4">조회기간 사용자 지정</h3>
+            <div className="flex items-center space-x-2 mb-4">
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={e => setCustomStartDate(e.target.value)}
+                className="border border-gray-300 rounded-md px-2 py-1 text-sm w-28"
+              />
+              <span>~</span>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={e => setCustomEndDate(e.target.value)}
+                className="border border-gray-300 rounded-md px-2 py-1 text-sm w-28"
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setShowCustomModal(false)}
+                className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-xs"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleCustomDateSearch}
+                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs"
+                disabled={!customStartDate || !customEndDate}
+              >
+                조회
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
