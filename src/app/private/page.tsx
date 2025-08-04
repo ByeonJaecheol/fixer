@@ -5,7 +5,7 @@ import { format, parseISO, subDays, startOfWeek, startOfYear, isWithinInterval, 
 import { ko } from 'date-fns/locale';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell, AreaChart, Area
+  PieChart, Pie, Cell, AreaChart, Area, LabelList
 } from 'recharts';
 import { supabase } from "@/utils/supabase";
 import Link from 'next/link';
@@ -387,7 +387,6 @@ export default function PrivateDashboard() {
       
       // S/W 카테고리별 통계
       const swCategoryCounts: Record<string, number> = {
-        '보안': 0,
         '프로그램': 0,
         '드라이버': 0,
         'OS/성능': 0,
@@ -443,7 +442,6 @@ export default function PrivateDashboard() {
         category,
         count,
         color:
-          category === '보안' ? '#FF3B30' :      // 빨강
           category === '프로그램' ? '#FF9500' : // 주황
           category === '드라이버' ? '#FFD600' : // 노랑
           category === 'OS/성능' ? '#34C759' :   // 초록
@@ -645,6 +643,30 @@ export default function PrivateDashboard() {
                   {workTypeStats.map((entry) => (
                     <Cell key={`cell-${entry.type}`} fill={entry.color} />
                   ))}
+                  <LabelList
+                    dataKey="count"
+                    content={({ x, y, width, height, value }) => {
+                      const threshold = 40; // px
+                      const w = typeof width === 'number' ? width : Number(width);
+                      const h = typeof height === 'number' ? height : Number(height);
+                      const xx = typeof x === 'number' ? x : Number(x);
+                      const yy = typeof y === 'number' ? y : Number(y);
+                      const isInside = w > threshold;
+                      return (
+                        <text
+                          x={isInside ? (xx + w - 8) : (xx + w + 8)}
+                          y={yy + h / 2}
+                          fill={isInside ? '#fff' : '#222'}
+                          fontWeight={600}
+                          fontSize={15}
+                          textAnchor={isInside ? 'end' : 'start'}
+                          alignmentBaseline="middle"
+                        >
+                          {value ? `${value}건` : ''}
+                        </text>
+                      );
+                    }}
+                  />
                 </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -674,7 +696,7 @@ export default function PrivateDashboard() {
             <ResponsiveContainer width="99%" height="100%">
               <BarChart data={swCategoryStats} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis type="number" tick={{ fill: '#616161', fontSize: 11 }} />
+                <XAxis type="number" tick={{ fill: '#616161', fontSize: 11 }} allowDecimals={false} />
                 <YAxis type="category" dataKey="category" tick={{ fill: '#616161', fontSize: 11 }} width={70} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
@@ -688,6 +710,30 @@ export default function PrivateDashboard() {
                   {swCategoryStats.map((entry) => (
                     <Cell key={`cell-${entry.category}`} fill={entry.color} />
                   ))}
+                  <LabelList
+                    dataKey="count"
+                    content={({ x, y, width, height, value }) => {
+                      const threshold = 40;
+                      const w = typeof width === 'number' ? width : Number(width);
+                      const h = typeof height === 'number' ? height : Number(height);
+                      const xx = typeof x === 'number' ? x : Number(x);
+                      const yy = typeof y === 'number' ? y : Number(y);
+                      const isInside = w > threshold;
+                      return (
+                        <text
+                          x={isInside ? (xx + w - 8) : (xx + w + 8)}
+                          y={yy + h / 2}
+                          fill={isInside ? '#fff' : '#222'}
+                          fontWeight={600}
+                          fontSize={15}
+                          textAnchor={isInside ? 'end' : 'start'}
+                          alignmentBaseline="middle"
+                        >
+                          {value ? `${value}건` : ''}
+                        </text>
+                      );
+                    }}
+                  />
                 </Bar>
         </BarChart>
             </ResponsiveContainer>
@@ -704,7 +750,7 @@ export default function PrivateDashboard() {
             <ResponsiveContainer width="99%" height="100%">
               <BarChart data={hwCategoryStats} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis type="number" tick={{ fill: '#616161', fontSize: 11 }} />
+                <XAxis type="number" tick={{ fill: '#616161', fontSize: 11 }} allowDecimals={false} />
                 <YAxis type="category" dataKey="category" tick={{ fill: '#616161', fontSize: 11 }} width={70} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
@@ -718,6 +764,30 @@ export default function PrivateDashboard() {
                   {hwCategoryStats.map((entry) => (
                     <Cell key={`cell-${entry.category}`} fill={entry.color} />
                   ))}
+                  <LabelList
+                    dataKey="count"
+                    content={({ x, y, width, height, value }) => {
+                      const threshold = 40;
+                      const w = typeof width === 'number' ? width : Number(width);
+                      const h = typeof height === 'number' ? height : Number(height);
+                      const xx = typeof x === 'number' ? x : Number(x);
+                      const yy = typeof y === 'number' ? y : Number(y);
+                      const isInside = w > threshold;
+                      return (
+                        <text
+                          x={isInside ? (xx + w - 8) : (xx + w + 8)}
+                          y={yy + h / 2}
+                          fill={isInside ? '#fff' : '#222'}
+                          fontWeight={600}
+                          fontSize={15}
+                          textAnchor={isInside ? 'end' : 'start'}
+                          alignmentBaseline="middle"
+                        >
+                          {value ? `${value}건` : ''}
+                        </text>
+                      );
+                    }}
+                  />
                 </Bar>
             </BarChart>
           </ResponsiveContainer>

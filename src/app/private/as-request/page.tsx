@@ -570,7 +570,7 @@ export default function AsRequestPage() {
     <div className="p-6">
       <div className="space-y-4">
         {/* 필터 컨트롤 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <h2 className="text-base font-medium text-gray-900">필터 및 검색</h2>
@@ -632,21 +632,23 @@ export default function AsRequestPage() {
           </div>
           
           {/* 항상 기간 표시 */}
-          <div className="mb-6 bg-blue-50 text-blue-700 px-4 py-3 rounded-md border border-blue-200 flex items-center">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
-            </svg>
-            <span className="font-medium text-sm">
-              {getPeriodLabel()}
-              {dateLabel && ` (${dateLabel})`}
-            </span>
-            <Link 
-              href="/private/as-request"
-              className="ml-3 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded font-medium transition-colors"
-            >
-              초기화
-            </Link>
-          </div>
+          {period !== 'all' && (
+            <div className="mb-6 bg-blue-50 text-blue-700 px-4 py-3 rounded-md border border-blue-200 flex items-center">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
+              </svg>
+              <span className="font-medium text-sm">
+                {getPeriodLabel()}
+                {dateLabel && ` (${dateLabel})`}
+              </span>
+              <Link 
+                href="/private/as-request"
+                className="ml-3 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded font-medium transition-colors"
+              >
+                초기화
+              </Link>
+            </div>
+          )}
 
           {/* 필터 옵션들 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
