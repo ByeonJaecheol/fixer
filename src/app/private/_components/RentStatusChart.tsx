@@ -14,12 +14,12 @@ export default function RentStatusChart({ data }: RentStatusProps) {
   // 새로운 색상 팔레트 정의
   const colors = {
     대여가능: {
-      main: '#E2E8F0', // 부드러운 회색
-      hover: '#002d64'
+      main: '#E2E8F0',
+      hover: '#CBD5E1'
     },
     대여중: {
-      main: '#7C3AED', // 세련된 보라색
-      hover: '#6D28D9'
+      main: '#1E3A5F',
+      hover: '#152A45'
     }
   };
 
@@ -65,7 +65,7 @@ export default function RentStatusChart({ data }: RentStatusProps) {
               padding: '12px'
             }}
             formatter={(value: number) => [`${value}대`]}
-            cursor={{ fill: 'rgba(124, 58, 237, 0.05)' }} // 호버 효과
+            cursor={{ fill: 'rgba(30, 58, 95, 0.05)' }}
           />
           <Legend 
             wrapperStyle={{

@@ -18,7 +18,7 @@ export default async function PrivateLayout({
 
   return (
     <UserProvider user={data.user}>
-      <div className="flex-1 min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100 text-black">
+      <div className="flex-1 min-h-screen bg-slate-100 text-slate-900">
         <div className="flex flex-col min-h-screen">
           {/* <Header /> */}
           <PrivateHeader/>

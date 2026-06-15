@@ -1,7 +1,7 @@
 'use client';
 
 import { supabase } from "@/app/utils/supabase";
-import { parseISO, format } from "date-fns";
+import { parseISO, format, differenceInCalendarDays, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useEffect, useState } from "react";
 
@@ -20,16 +20,45 @@ export default function RecentSchedules( {recentSchedules, setRecentSchedules, l
 
   
    
-    // 날짜 형식 변환 (YYYY-MM-DD -> YYYY년 MM월 DD일)
-    const formatDate = (dateString: string) => {
-      const date = parseISO(dateString);
-      return format(date, 'yyyy년 MM월 dd일', { locale: ko });
+    // 날짜 형식 — 읽기 쉬우면서도 카드 너비에 맞는 길이
+    const formatScheduleRange = (startDate: string, endDate: string) => {
+      const start = parseISO(startDate);
+      const end = parseISO(endDate);
+      const sameDay =
+        start.getFullYear() === end.getFullYear() &&
+        start.getMonth() === end.getMonth() &&
+        start.getDate() === end.getDate();
+
+      if (sameDay) {
+        return format(start, 'M월 d일', { locale: ko });
+      }
+      if (start.getFullYear() === end.getFullYear()) {
+        return `${format(start, 'M월 d일', { locale: ko })} ~ ${format(end, 'M월 d일', { locale: ko })}`;
+      }
+      return `${format(start, 'yy.M.d', { locale: ko })} ~ ${format(end, 'yy.M.d', { locale: ko })}`;
     };
-  
-    // 시간 형식 변환 (ISO -> MM월 DD일 HH:MM)
+
     const formatDateTime = (dateTimeString: string) => {
       const date = new Date(dateTimeString);
       return format(date, 'MM월 dd일 HH:mm', { locale: ko });
+    };
+
+    /** D-day: 당일/종료 후 -NN일(빨강), 시작 전 -NN일 */
+    const getDDay = (startDate: string, endDate: string) => {
+      const today = startOfDay(new Date());
+      const start = startOfDay(parseISO(startDate));
+      const end = startOfDay(parseISO(endDate));
+      const pad = (n: number) => String(n).padStart(2, '0');
+
+      if (end < today) {
+        const days = differenceInCalendarDays(today, end);
+        return { text: `-${pad(days)}일`, isRed: true };
+      }
+      if (start <= today && end >= today) {
+        return { text: '-00일', isRed: true };
+      }
+      const days = differenceInCalendarDays(start, today);
+      return { text: `-${pad(days)}일`, isRed: false };
     };
   
     // 이메일에서 이니셜 추출
@@ -45,53 +74,67 @@ export default function RecentSchedules( {recentSchedules, setRecentSchedules, l
     const minHeight = loading || recentSchedules.length === 0 ? 'min-h-[100px]' : '';
   
     return (
-      <div className="w-full rounded-xl bg-gradient-to-br from-white to-indigo-50 shadow-md flex flex-col h-full overflow-hidden hover:shadow-lg transition-shadow duration-300">
-        <div className="p-4 border-b border-indigo-100 flex items-center">
-          <svg className="w-5 h-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <div className="w-full rounded-lg bg-white border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center">
+          <svg className="w-4 h-4 text-slate-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <h2 className="text-lg font-semibold text-gray-800">최근 등록된 일정</h2>
+          <h2 className="text-base font-semibold text-slate-800">최근 등록된 일정</h2>
         </div>
-        <div className={`divide-y divide-indigo-100 ${minHeight}`}>
+        <div className={`divide-y divide-slate-100 ${minHeight}`}>
           {loading ? (
             <div className="p-6 flex justify-center items-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-600"></div>
             </div>
           ) : recentSchedules.length > 0 ? (
-            recentSchedules.map((schedule: ISchedule) => (
-              <div key={schedule.id} className="p-4 hover:bg-indigo-50 transition-colors duration-200">
-                <div className="flex items-start">
-                  <div 
-                    className="w-10 h-10 rounded-lg flex items-center justify-center text-white mr-3 flex-shrink-0 shadow-sm transform hover:scale-105 transition-transform duration-200"
+            recentSchedules.map((schedule: ISchedule) => {
+              const dday = getDDay(schedule.start_date, schedule.end_date);
+              return (
+              <div key={schedule.id} className="p-4 hover:bg-slate-50 transition-colors">
+                <div className="flex items-start gap-3">
+                  <div
+                    className="w-10 h-10 rounded-md flex items-center justify-center text-white flex-shrink-0"
                     style={{ backgroundColor: schedule.color }}
                   >
                     <span className="font-bold text-xs">{getInitials(schedule.created_by)}</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{schedule.title}</p>
-                    <div className="flex items-center mt-1 text-xs text-gray-500">
-                      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span>
-                        {formatDate(schedule.start_date)} ~ {formatDate(schedule.end_date)}
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-base font-semibold text-slate-900 truncate">{schedule.title}</p>
+                      <span
+                        className={`text-sm font-bold shrink-0 tabular-nums ${
+                          dday.isRed ? 'text-red-600' : 'text-slate-600'
+                        }`}
+                      >
+                        {dday.text}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center mt-2 text-xs">
-                      <span className="text-gray-500 truncate flex items-center">
-                        <svg className="w-3 h-3 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <div className="flex items-start gap-1.5 mt-1 text-sm text-slate-600 leading-relaxed">
+                      <svg className="w-4 h-4 flex-shrink-0 mt-0.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="break-keep">
+                        {formatScheduleRange(schedule.start_date, schedule.end_date)}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="text-sm text-slate-500 flex items-center min-w-0">
+                        <svg className="w-4 h-4 mr-1 flex-shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
-                        {schedule.created_by}
+                        <span className="truncate">{schedule.created_by}</span>
                       </span>
-                      <span className="text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded-full">
-                        {schedule.created_at ? formatDateTime(schedule.created_at) : ''}
-                      </span>
+                      {schedule.created_at && (
+                        <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded shrink-0">
+                          {formatDateTime(schedule.created_at)}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
-            ))
+            );
+            })
           ) : (
             <div className="p-6 text-center text-sm text-gray-500 flex flex-col items-center justify-center">
               <svg className="w-10 h-10 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -101,10 +144,10 @@ export default function RecentSchedules( {recentSchedules, setRecentSchedules, l
             </div>
           )}
         </div>
-        <div className="p-3 bg-indigo-50 text-right rounded-b-lg border-t border-indigo-100 mt-auto group">
-          <a href="/private/schedule" className="text-xs font-medium text-indigo-600 hover:text-indigo-800 inline-flex items-center transition-colors duration-200">
+        <div className="px-4 py-2.5 bg-slate-50 text-right border-t border-slate-200 mt-auto">
+          <a href="/private/schedule" className="text-sm font-medium text-slate-600 hover:text-slate-900 inline-flex items-center transition-colors">
             모든 일정 보기
-            <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </a>

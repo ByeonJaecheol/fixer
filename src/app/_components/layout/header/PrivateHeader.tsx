@@ -11,8 +11,7 @@ export default function PrivateHeader() {
     <div className='flex justify-between items-center p-4 gap-x-2'>
        <Link
       href="/private"
-      className="text-5xl font-bold bg-gradient-to-r from-purple-700 to-purple-500 bg-clip-text text-transparent 
-                 transition-transform duration-300 ease-in-out hover:scale-105"
+      className="text-3xl font-bold tracking-tight text-slate-800 hover:text-slate-600 transition-colors"
     >
       {APP_NAME}
     </Link>

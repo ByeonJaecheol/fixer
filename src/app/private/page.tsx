@@ -1,19 +1,66 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { format, parseISO, subDays, startOfWeek, startOfYear, isWithinInterval, addDays, endOfWeek, endOfYear } from 'date-fns';
+import {
+  format, parseISO, subDays, startOfWeek, startOfYear, isWithinInterval, addDays,
+  endOfWeek, endOfYear, startOfDay, endOfDay, startOfMonth, endOfMonth,
+} from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area, LabelList
 } from 'recharts';
-import { supabase } from "@/utils/supabase";
+import { createClient } from '@/app/utils/client';
 import Link from 'next/link';
 import { RingLoader } from 'react-spinners';
+import {
+  ComputerDesktopIcon,
+  ClipboardDocumentListIcon,
+  WrenchScrewdriverIcon,
+  DeviceTabletIcon,
+  ArrowRightIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
+} from '@heroicons/react/24/outline';
 import RecentSchedules from './_components/RecentSchedules';
 import { Activity, Asset, DateFilterOption, DateFilterType, RentAsset } from '../constants/chart';
 import RentStatusChart from './_components/RentStatusChart';
 import { IAsManagementLog } from '@/api/supabase/supabaseApi';
+import { fetchAllAsManagementLogs, fetchAllTableRows } from '@/utils/asLogExport';
+
+/** yyyy-MM-dd 문자열을 로컬 날짜로 파싱 (타임존 오차 방지) */
+function parseDateValue(value: string): Date {
+  const datePart = value.split('T')[0];
+  if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+    const [y, m, d] = datePart.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+  return parseISO(value);
+}
+
+function toDateInterval(dateRange: { start: Date; end: Date }) {
+  return { start: startOfDay(dateRange.start), end: endOfDay(dateRange.end) };
+}
+
+/** AS 이력의 작업일·등록일 후보 */
+function getAsDateCandidates(log: IAsManagementLog): Date[] {
+  const dates: Date[] = [];
+  if (log.work_date) dates.push(parseDateValue(log.work_date));
+  if (log.created_at) dates.push(startOfDay(parseISO(log.created_at)));
+  return dates;
+}
+
+function matchesDateRange(dates: Date[], dateRange: { start: Date; end: Date }): boolean {
+  if (!dates.length) return false;
+  const interval = toDateInterval(dateRange);
+  return dates.some((d) => isWithinInterval(d, interval));
+}
+
+function getAsBucketDate(log: IAsManagementLog): string | null {
+  if (log.work_date) return format(parseDateValue(log.work_date), 'yyyy-MM-dd');
+  if (log.created_at) return format(parseISO(log.created_at), 'yyyy-MM-dd');
+  return null;
+}
 
 // 차트 데이터 타입 정의
 interface AssetStatusCount {
@@ -76,7 +123,7 @@ export default function PrivateDashboard() {
   const [hwCategoryStats, setHwCategoryStats] = useState<HwCategoryStats[]>([]);
   
   // 필터 상태 추가
-  const [activeFilter, setActiveFilter] = useState<DateFilterType>('week');
+  const [activeFilter, setActiveFilter] = useState<DateFilterType>('month');
   const [customDateRange, setCustomDateRange] = useState({
     start: format(subDays(new Date(), 30), 'yyyy-MM-dd'),
     end: format(new Date(), 'yyyy-MM-dd')
@@ -93,39 +140,28 @@ export default function PrivateDashboard() {
 
   // 날짜 필터 함수
   const getDateRangeByFilter = (filter: DateFilterType): { start: Date, end: Date } => {
-    const today = new Date();
-    
+    const now = new Date();
+
     switch (filter) {
       case 'today':
-        return {
-          start: new Date(today.setHours(0, 0, 0, 0)),
-          end: new Date(today.setHours(23, 59, 59, 999))
-        };
+        return { start: startOfDay(now), end: endOfDay(now) };
       case 'week':
+        // 달력 주(월~일)가 아닌 최근 7일(오늘 포함) — 주 초반에도 최근 작업이 보이도록
         return {
-          start: startOfWeek(today, { weekStartsOn: 1 }), // 월요일 시작
-          end: endOfWeek(today, { weekStartsOn: 1 })
+          start: startOfDay(subDays(now, 6)),
+          end: endOfDay(now),
         };
       case 'month':
-        return {
-          start: new Date(today.getFullYear(), today.getMonth(), 1),
-          end: new Date(today.getFullYear(), today.getMonth() + 1, 0)
-        };
+        return { start: startOfMonth(now), end: endOfMonth(now) };
       case 'year':
-        return {
-          start: startOfYear(today),
-          end: endOfYear(today)
-        };
+        return { start: startOfYear(now), end: endOfYear(now) };
       case 'custom':
         return {
-          start: parseISO(customDateRange.start),
-          end: parseISO(customDateRange.end)
+          start: startOfDay(parseISO(customDateRange.start)),
+          end: endOfDay(parseISO(customDateRange.end)),
         };
       default:
-        return {
-          start: startOfWeek(today, { weekStartsOn: 1 }),
-          end: endOfWeek(today, { weekStartsOn: 1 })
-        };
+        return { start: startOfMonth(now), end: endOfMonth(now) };
     }
   };
 
@@ -134,24 +170,19 @@ export default function PrivateDashboard() {
     data: T[],
     dateRange: { start: Date, end: Date }
   ): T[] => {
+    const interval = toDateInterval(dateRange);
     return data.filter(item => {
-      const itemDate = new Date(item.created_at);
-      return isWithinInterval(itemDate, dateRange);
+      const itemDate = parseISO(item.created_at);
+      return isWithinInterval(itemDate, interval);
     });
   };
 
-  // AS 활동 데이터 필터링 함수 (work_date 기준)
+  // AS 활동: 작업일(work_date) 또는 등록일(created_at) 중 하나라도 기간에 포함되면 집계
   const filterAsDataByDateRange = (
     data: IAsManagementLog[],
     dateRange: { start: Date, end: Date }
   ): IAsManagementLog[] => {
-    return data.filter(item => {
-      // work_date가 없는 경우 해당 항목은 제외
-      if (!item.work_date) return false;
-      
-      const itemDate = new Date(item.work_date);
-      return isWithinInterval(itemDate, dateRange);
-    });
+    return data.filter((item) => matchesDateRange(getAsDateCandidates(item), dateRange));
   };
 
   // 타입 정의에 새로운 상태 추가
@@ -162,80 +193,35 @@ export default function PrivateDashboard() {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
-        // 1. PC 자산 데이터 가져오기
-        const { data: assetsData, error: assetsError } = await supabase
-          .from('pc_assets')
-          .select('*');
-        
-        if (assetsError) throw new Error('PC 자산 데이터를 불러올 수 없습니다: ' + assetsError.message);
-        
-        // 2. 렌트 자산 데이터 가져오기
-        const { data: rentAssetsData, error: rentAssetsError } = await supabase
-          .from('rent_assets')
-          .select('*');
-        
-        if (rentAssetsError) throw new Error('렌트 자산 데이터를 불러올 수 없습니다: ' + rentAssetsError.message);
-        
-        // 3. AS 활동 로그 가져오기
-        // 일단 1년치 데이터를 가져와서 클라이언트에서 필터링
-        const oneYearAgo = format(subDays(new Date(), 365), 'yyyy-MM-dd');
-        const { data: asActivitiesData, error: asActivitiesError } = await supabase
-          .from('as_management_log')
-          .select('*')
-          .gte('created_at', oneYearAgo);
-        
-        if (asActivitiesError) throw new Error('AS 활동 데이터를 불러올 수 없습니다: ' + asActivitiesError.message);
-        
-        // 4. PC 활동 로그 가져오기
-        const { data: pcActivitiesData, error: pcActivitiesError } = await supabase
-          .from('pc_management_log')
-          .select('*')
-          .gte('created_at', oneYearAgo);
-        
-        if (pcActivitiesError) throw new Error('PC 활동 데이터를 불러올 수 없습니다: ' + pcActivitiesError.message);
-        
-        // 원시 데이터 설정
-        setAssets(assetsData || []);
-        setRentAssets(rentAssetsData || []);
-        setAsActivities(asActivitiesData || []);
-        setPcActivities(pcActivitiesData || []);
-        
-        console.log('Data loaded:', {
-          assets: assetsData?.length || 0,
-          rentAssets: rentAssetsData?.length || 0,
-          asActivities: asActivitiesData?.length || 0,
-          pcActivities: pcActivitiesData?.length || 0
+        const [assetsData, rentAssetsData, asActivitiesData, pcActivitiesData] = await Promise.all([
+          fetchAllTableRows<Asset>('pc_assets', 'asset_id', true),
+          fetchAllTableRows<RentAsset>('rent_assets', 'id', true),
+          fetchAllAsManagementLogs(),
+          fetchAllTableRows<Activity>('pc_management_log', 'created_at', false),
+        ]);
+
+        setAssets(assetsData);
+        setRentAssets(rentAssetsData);
+        setAsActivities(asActivitiesData);
+        setPcActivities(pcActivitiesData);
+
+        const rentTypeMap: Record<string, { total: number; rented: number }> = {};
+        rentAssetsData.forEach((asset) => {
+          const type = asset.rent_type || '미분류';
+          if (!rentTypeMap[type]) rentTypeMap[type] = { total: 0, rented: 0 };
+          rentTypeMap[type].total += 1;
+          if (asset.is_rented) rentTypeMap[type].rented += 1;
         });
 
-        // 렌트 자산 데이터 처리
-        const rentTypeStats = {
-          '사무용': { total: 0, rented: 0 },
-          '설계용': { total: 0, rented: 0 },
-          '전용': { total: 0, rented: 0 }
-        };
-
-        if (rentAssetsData) {
-          rentAssetsData.forEach(asset => {
-            const type = asset.rent_type;
-            if (type && type in rentTypeStats) {
-              rentTypeStats[type as keyof typeof rentTypeStats].total += 1;
-              if (asset.is_rented) {
-                rentTypeStats[type as keyof typeof rentTypeStats].rented += 1;
-              }
-            }
-          });
-        }
-
-        const formattedRentData = Object.entries(rentTypeStats).map(([type, stats]) => ({
-          type,
-          total: stats.total,
-          rented: stats.rented
-        }));
-
-        console.log('차트용 최종 데이터:', formattedRentData);
-        setRentStatusData(formattedRentData);
+        setRentStatusData(
+          Object.entries(rentTypeMap).map(([type, stats]) => ({
+            type,
+            total: stats.total,
+            rented: stats.rented,
+          }))
+        );
       } catch (error) {
         console.error('데이터 처리 중 오류:', error);
         setError(error instanceof Error ? error.message : '데이터를 불러오는 중 오류가 발생했습니다.');
@@ -248,25 +234,24 @@ export default function PrivateDashboard() {
   }, []);
 
   useEffect(() => {
+    const supabase = createClient();
+
     const fetchRecentSchedules = async () => {
       try {
-        // 오늘 날짜의 시작 시간 (00:00:00) 설정
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
+
         const { data, error } = await supabase
           .from('todos')
           .select('*')
-          .gte('start_date', today.toISOString()) // 오늘 이후의 일정만 선택
-          .order('start_date', { ascending: true }) // 날짜가 가까운 순으로 정렬
+          .gte('start_date', today.toISOString())
+          .order('start_date', { ascending: true })
           .limit(3);
-        
+
         if (error) throw error;
         setRecentSchedules(data || []);
       } catch (error) {
         console.error('최근 일정을 불러오는 중 오류 발생:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -320,15 +305,15 @@ export default function PrivateDashboard() {
       
       // AS 활동 집계
       filteredAsActivities.forEach(activity => {
-        const date = format(new Date(activity.work_date), 'yyyy-MM-dd');
-        if (activityByDate[date]) {
+        const date = getAsBucketDate(activity);
+        if (date && activityByDate[date]) {
           activityByDate[date].as_requests++;
         }
       });
       
       // PC 활동 집계
       filteredPcActivities.forEach(activity => {
-        const date = format(new Date(activity.created_at), 'yyyy-MM-dd');
+        const date = format(parseISO(activity.created_at), 'yyyy-MM-dd');
         if (activityByDate[date]) {
           activityByDate[date].pc_activities++;
         }
@@ -382,7 +367,8 @@ export default function PrivateDashboard() {
         'H/W': 0,
         'S/W': 0,
         '네트워크': 0,
-        '기타': 0
+        '보안': 0,
+        '기타': 0,
       };
       
       // S/W 카테고리별 통계
@@ -481,7 +467,7 @@ export default function PrivateDashboard() {
   if (loading) {
     return (
       <div className="w-full flex justify-center items-center h-96">
-        <RingLoader  speedMultiplier={1.5} color="#982cd6" />
+        <RingLoader  speedMultiplier={1.5} color="#475569" />
       </div>
     );
   }
@@ -516,32 +502,27 @@ export default function PrivateDashboard() {
   const networkCount = filteredAsActivities.filter(a => a.work_type === '네트워크').length;
 
   return (
-    <div className="container mx-auto px-4 py-8 bg-gray-50">
-      <div className="mb-6 flex items-center justify-between">
-        {/* 최근 등록된 일정 리스트 5개 표시 */}
+    <div className="container mx-auto px-4 py-6 max-w-7xl">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">자산 관리 대시보드</h1>
-          <p className="text-gray-600 mt-1">PC 자산 현황 및 관리 통계</p>
+          <h1 className="text-xl font-semibold text-slate-900 tracking-tight">자산 관리 대시보드</h1>
+          <p className="text-sm text-slate-500 mt-0.5">PC 자산 현황 및 관리 통계</p>
         </div>
         
         {/* 날짜 필터 컨트롤 */}
-        <div className="flex items-center space-x-2">
-          <div className="text-sm text-gray-500 mr-2">기간:</div>
-          <div className="inline-flex rounded-md shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="text-xs text-slate-500 font-medium">조회 기간</div>
+          <div className="inline-flex rounded-md border border-slate-300 bg-white overflow-hidden">
             {filterOptions.map((option) => (
               <button
                 key={option.id}
                 type="button"
                 onClick={() => setActiveFilter(option.id)}
-                className={`px-4 py-2 text-sm font-medium ${
+                className={`px-3 py-1.5 text-xs font-medium border-r border-slate-300 last:border-r-0 transition-colors ${
                   activeFilter === option.id
-                    ? 'bg-blue-700 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                } ${
-                  option.id === filterOptions[0].id ? 'rounded-l-md' : ''
-                } ${
-                  option.id === filterOptions[filterOptions.length - 1].id ? 'rounded-r-md' : ''
-                } border border-gray-300`}
+                    ? 'bg-slate-800 text-white'
+                    : 'bg-white text-slate-600 hover:bg-slate-50'
+                }`}
               >
                 {option.label}
               </button>
@@ -550,19 +531,19 @@ export default function PrivateDashboard() {
           
           {/* 커스텀 기간 선택 */}
           {activeFilter === 'custom' && (
-            <div className="flex items-center ml-2 space-x-2">
+            <div className="flex items-center space-x-2">
               <input
                 type="date"
                 value={customDateRange.start}
                 onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
-                className="px-2 py-1 border border-gray-300 rounded text-sm"
+                className="px-2 py-1 border border-slate-300 rounded text-xs bg-white text-slate-700"
               />
-              <span className="text-gray-500">~</span>
+              <span className="text-slate-400 text-xs">~</span>
               <input
                 type="date"
                 value={customDateRange.end}
                 onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
-                className="px-2 py-1 border border-gray-300 rounded text-sm"
+                className="px-2 py-1 border border-slate-300 rounded text-xs bg-white text-slate-700"
               />
             </div>
           )}
@@ -570,18 +551,16 @@ export default function PrivateDashboard() {
       </div>
       
       {/* 선택된 날짜 범위 표시 */}
-      <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 px-4 py-3 rounded-lg border border-blue-200 shadow-sm">
-        <div className="flex items-center justify-between">
-          <span className="font-medium flex items-center">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            {getDateRangeText()}
-          </span>
-          <span className="text-sm bg-blue-100 px-2 py-1 rounded-full text-blue-800 font-medium">
-            {activeFilter === 'week' ? '주간 데이터' : activeFilter === 'today' ? '오늘 데이터' : activeFilter === 'month' ? '월간 데이터' : activeFilter === 'year' ? '연간 데이터' : '커스텀 기간'}
-          </span>
-        </div>
+      <div className="mb-6 bg-white text-slate-700 px-4 py-2.5 rounded-md border border-slate-200 flex items-center justify-between">
+        <span className="text-sm font-medium flex items-center">
+          <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          {getDateRangeText()}
+        </span>
+          <span className="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-medium">
+          {activeFilter === 'week' ? '최근 7일' : activeFilter === 'today' ? '일간' : activeFilter === 'month' ? '월간' : activeFilter === 'year' ? '연간' : '사용자 지정'}
+        </span>
       </div>
 
       {/* 상단 영역: 왼쪽에 통계 카드, 오른쪽에 최근 등록된 일정 */}
@@ -607,7 +586,7 @@ export default function PrivateDashboard() {
       {/* 차트 섹션 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         {/* 활동 차트 */}
-        <ChartCard title={`${activeFilter === 'today' ? '오늘' : activeFilter === 'week' ? '이번 주' : activeFilter === 'month' ? '이번달' : activeFilter === 'year' ? '올해' : '선택 기간'} 활동`} theme="blue">
+        <ChartCard title={`${activeFilter === 'today' ? '오늘' : activeFilter === 'week' ? '이번 주' : activeFilter === 'month' ? '이번달' : activeFilter === 'year' ? '올해' : '선택 기간'} 활동`}>
           {loading ? (
             <ChartSkeleton />
           ) : activityData.length > 0 ? (
@@ -618,8 +597,8 @@ export default function PrivateDashboard() {
                 <YAxis tick={{ fill: '#616161', fontSize: 11 }} />
                 <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="as_requests" name="작업이력" fill="#3949AB" />
-                <Bar dataKey="pc_activities" name="장비이력" fill="#00796B" />
+                <Bar dataKey="as_requests" name="작업이력" fill="#1E3A5F" />
+                <Bar dataKey="pc_activities" name="장비이력" fill="#64748B" />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -628,7 +607,7 @@ export default function PrivateDashboard() {
         </ChartCard>
 
           {/* 작업 유형별 통계 차트 - 수평 막대 차트 */}
-          <ChartCard title="작업 유형별 통계" theme="amber">
+          <ChartCard title="작업 유형별 통계">
           {loading ? (
             <ChartSkeleton />
           ) : workTypeStats.length > 0 ? (
@@ -676,7 +655,7 @@ export default function PrivateDashboard() {
         </ChartCard>
 
           {/* 임대PC 대여 현황 차트 */}
-          <ChartCard title="임대PC 대여 현황" theme="purple">
+          <ChartCard title="임대PC 대여 현황">
           {loading ? (
             <ChartSkeleton />
           ) : rentStatusData && rentStatusData.length > 0 ? (
@@ -689,7 +668,7 @@ export default function PrivateDashboard() {
         </ChartCard>
         
         {/* S/W 카테고리별 통계 차트 */}
-        <ChartCard title="S/W 카테고리별 통계" theme="rose">
+        <ChartCard title="S/W 카테고리별 통계">
           {loading ? (
             <ChartSkeleton />
           ) : swCategoryStats.length > 0 ? (
@@ -743,7 +722,7 @@ export default function PrivateDashboard() {
         </ChartCard>
 
         {/* H/W 카테고리별 통계 차트 */}
-        <ChartCard title="H/W 카테고리별 통계" theme="cyan">
+        <ChartCard title="H/W 카테고리별 통계">
           {loading ? (
             <ChartSkeleton />
           ) : hwCategoryStats.length > 0 ? (
@@ -798,26 +777,20 @@ export default function PrivateDashboard() {
 
       
 
-        {/* 보안/네트워크 전체 건수 카드 - 세로 배치 */}
-        <div className="bg-gradient-to-br from-white to-cyan-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
-          <div className="p-5 h-full border-b-4 border-cyan-600 relative">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-cyan-600 opacity-10 rounded-full -mr-6 -mt-6 group-hover:scale-150 transition-transform duration-500"></div>
+        {/* 보안/네트워크 전체 건수 카드 */}
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
+            <h2 className="text-sm font-semibold text-slate-800">보안 · 네트워크</h2>
+          </div>
+          <div className="p-4">
             <div className="flex flex-col gap-4">
-              {/* 보안 Stat */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <svg className="w-6 h-6 text-rose-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2zm0 0V7m0 4v4m0 0h4m-4 0H8" /></svg>
-                  <span className="text-base font-semibold text-rose-700">보안</span>
-                </div>
-                <div className="text-3xl font-bold text-rose-600">{securityCount.toLocaleString()}<span className="text-base font-normal text-gray-500 ml-1">건</span></div>
+              <div className="flex items-center justify-between py-2 border-b border-slate-100">
+                <span className="text-sm font-medium text-slate-700">보안</span>
+                <div className="text-2xl font-semibold text-slate-900 tabular-nums">{securityCount.toLocaleString()}<span className="text-sm font-normal text-slate-500 ml-1">건</span></div>
               </div>
-              {/* 네트워크 Stat */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <svg className="w-6 h-6 text-cyan-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 20v-6m0 0V4m0 10l-4-4m4 4l4-4" /></svg>
-                  <span className="text-base font-semibold text-cyan-700">네트워크</span>
-                </div>
-                <div className="text-3xl font-bold text-cyan-600">{networkCount.toLocaleString()}<span className="text-base font-normal text-gray-500 ml-1">건</span></div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm font-medium text-slate-700">네트워크</span>
+                <div className="text-2xl font-semibold text-slate-900 tabular-nums">{networkCount.toLocaleString()}<span className="text-sm font-normal text-slate-500 ml-1">건</span></div>
               </div>
             </div>
           </div>
@@ -829,31 +802,13 @@ export default function PrivateDashboard() {
 }
 
 // 차트 카드 컴포넌트
-function ChartCard({ title, children, theme = 'blue' }: { title: string; children: React.ReactNode; theme?: 'blue' | 'green' | 'amber' | 'purple' | 'rose' | 'cyan' }) {
-  // 테마별 스타일 매핑
-  const themeStyles = {
-    blue: 'border-blue-200 bg-blue-50',
-    green: 'border-green-200 bg-green-50',
-    amber: 'border-amber-200 bg-amber-50', 
-    purple: 'border-purple-200 bg-purple-50',
-    rose: 'border-rose-200 bg-rose-50',
-    cyan: 'border-cyan-200 bg-cyan-50'
-  };
-
-  // 테마별 헤더 스타일
-  const headerStyles = {
-    blue: 'text-blue-800',
-    green: 'text-green-800',
-    amber: 'text-amber-800',
-    purple: 'text-purple-800',
-    rose: 'text-rose-800',
-    cyan: 'text-cyan-800'
-  };
-
+function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className={`bg-white p-3 sm:p-4 rounded-lg shadow-sm border ${themeStyles[theme]}`}>
-      <h2 className={`text-sm sm:text-base font-semibold ${headerStyles[theme]} mb-2 truncate`}>{title}</h2>
-      <div className="h-[220px] sm:h-[250px] md:h-[280px]">
+    <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+      <div className="px-4 py-2.5 border-b border-slate-200 bg-slate-50">
+        <h2 className="text-sm font-semibold text-slate-800 truncate">{title}</h2>
+      </div>
+      <div className="p-3 sm:p-4 h-[220px] sm:h-[250px] md:h-[280px]">
         {children}
       </div>
     </div>
@@ -863,12 +818,12 @@ function ChartCard({ title, children, theme = 'blue' }: { title: string; childre
 // 데이터 없음 디스플레이
 function NoDataDisplay() {
   return (
-    <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg">
+    <div className="flex items-center justify-center h-full bg-slate-50 rounded border border-dashed border-slate-200">
       <div className="text-center">
-        <svg className="w-10 h-10 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-8 h-8 mx-auto text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
-        <p className="mt-2 text-xs text-gray-500">데이터가 없습니다</p>
+        <p className="mt-2 text-xs text-slate-400">데이터가 없습니다</p>
       </div>
     </div>
   );
@@ -880,134 +835,122 @@ interface StatCardProps {
   value: number;
   trend: string;
   trendType: 'up' | 'down' | 'neutral';
-  color: string;
   dateFilter: DateFilterType;
   link?: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  iconBg: string;
 }
 
-function StatCard({ title, value, trend, trendType, color, dateFilter, link }: StatCardProps) {
-  // 필터에 따른 레이블 생성
+function StatCard({ title, value, trend, trendType, dateFilter, link, icon: Icon, iconBg }: StatCardProps) {
   const getPeriodLabel = (filter: DateFilterType): string => {
     switch (filter) {
-      case 'today':
-        return '오늘';
-      case 'week':
-        return '이번 주';
-      case 'month':
-        return '이번달';
-      case 'year':
-        return '올해';
-      case 'custom':
-        return '선택 기간';
-      default:
-        return '전체';
+      case 'today': return '오늘';
+      case 'week': return '최근 7일';
+      case 'month': return '이번달';
+      case 'year': return '올해';
+      case 'custom': return '선택 기간';
+      default: return '전체';
     }
   };
 
-  // 비교 기간 텍스트 생성
   const getComparisonText = (filter: DateFilterType): string => {
     switch (filter) {
-      case 'today':
-        return '지난주 같은 요일';
-      case 'week':
-        return '지난주 총계';
-      case 'month':
-        return '지난달 총계';
-      case 'year':
-        return '지난해 총계';
-      case 'custom':
-        return '작년 동일 기간';
-      default:
-        return '이전 기간';
+      case 'today': return '지난주 같은 요일';
+      case 'week': return '이전 7일';
+      case 'month': return '지난달';
+      case 'year': return '지난해';
+      case 'custom': return '작년 동일 기간';
+      default: return '이전 기간';
     }
   };
 
-  // 기간 정보를 URL 파라미터로 변환
   const getPeriodParams = (filter: DateFilterType): string => {
-    // 현재 날짜
     const today = new Date();
     let startDate = '';
     let endDate = '';
 
     switch (filter) {
       case 'today': {
-        // 오늘 (yyyy-MM-dd 형식)
         const date = format(today, 'yyyy-MM-dd');
         startDate = date;
         endDate = date;
         break;
       }
       case 'week': {
-        // 이번 주 시작일과 종료일
-        const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // 월요일부터 시작
-        const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
-        startDate = format(weekStart, 'yyyy-MM-dd');
-        endDate = format(weekEnd, 'yyyy-MM-dd');
+        startDate = format(startOfDay(subDays(today, 6)), 'yyyy-MM-dd');
+        endDate = format(endOfDay(today), 'yyyy-MM-dd');
         break;
       }
       case 'month': {
-        // 이번 달 시작일과 종료일
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        startDate = format(monthStart, 'yyyy-MM-dd');
-        endDate = format(monthEnd, 'yyyy-MM-dd');
+        startDate = format(startOfMonth(today), 'yyyy-MM-dd');
+        endDate = format(endOfMonth(today), 'yyyy-MM-dd');
         break;
       }
       case 'year': {
-        // 올해 시작일과 종료일
-        const yearStart = new Date(today.getFullYear(), 0, 1);
-        const yearEnd = new Date(today.getFullYear(), 11, 31);
-        startDate = format(yearStart, 'yyyy-MM-dd');
-        endDate = format(yearEnd, 'yyyy-MM-dd');
+        startDate = format(startOfYear(today), 'yyyy-MM-dd');
+        endDate = format(endOfYear(today), 'yyyy-MM-dd');
         break;
       }
       case 'custom':
-        // 커스텀 기간은 별도 처리 필요 (현재는 공란)
         break;
     }
 
     return `period=${filter}&startDate=${startDate}&endDate=${endDate}`;
   };
 
-  const cardContent = (
-    <div className="pt-6">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-lg font-semibold text-gray-700">{title}</p>
-        <span className="px-2 py-1 text-xs font-medium rounded-full bg-opacity-80 bg-blue-100 text-blue-800">
-          {getPeriodLabel(dateFilter)}
-        </span>
+  const trendStyles =
+    trendType === 'up'
+      ? 'bg-emerald-50 text-emerald-700'
+      : trendType === 'down'
+        ? 'bg-red-50 text-red-600'
+        : 'bg-slate-100 text-slate-600';
+
+  const cardBody = (
+    <div className="flex flex-col h-full min-h-[148px]">
+      <div className="p-4 pb-2 flex items-start justify-between gap-2">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className={`flex-shrink-0 w-10 h-10 rounded-lg ${iconBg} flex items-center justify-center shadow-sm`}>
+            <Icon className="w-5 h-5 text-white" strokeWidth={1.75} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-slate-800 leading-tight">{title}</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">{getPeriodLabel(dateFilter)}</p>
+          </div>
+        </div>
+        {link && (
+          <ArrowRightIcon className="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors flex-shrink-0 mt-1" />
+        )}
       </div>
-      <p className="text-3xl font-bold mb-3 text-gray-800">{value.toLocaleString()}</p>
-      <div className="flex items-center mt-2 bg-gray-50 bg-opacity-70 rounded-lg p-2">
-        {trendType === 'up' && (
-          <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-          </svg>
-        )}
-        {trendType === 'down' && (
-          <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
-          </svg>
-        )}
-        <span className={`ml-2 text-sm font-medium ${trendType === 'up' ? 'text-green-700' : trendType === 'down' ? 'text-red-700' : 'text-gray-600'}`}>
-          {trend} {getComparisonText(dateFilter)} 대비
+
+      <div className="px-4 py-2 flex-1">
+        <p className="text-[2rem] font-bold text-slate-900 tabular-nums leading-none tracking-tight">
+          {value.toLocaleString()}
+        </p>
+      </div>
+
+      <div className="px-4 py-3 border-t border-slate-100 bg-slate-50/80 flex items-center gap-2 flex-wrap">
+        <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-xs font-semibold ${trendStyles}`}>
+          {trendType === 'up' && <ArrowTrendingUpIcon className="w-3.5 h-3.5" />}
+          {trendType === 'down' && <ArrowTrendingDownIcon className="w-3.5 h-3.5" />}
+          {trend}
         </span>
+        <span className="text-[11px] text-slate-400">{getComparisonText(dateFilter)} 대비</span>
       </div>
     </div>
   );
 
+  const cardClass =
+    'group bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all h-full overflow-hidden block';
+
   if (link) {
-    // 링크에 기간 파라미터 추가
-    const linkWithParams = `${link}?${getPeriodParams(dateFilter)}`;
-    
     return (
-      <Link href={linkWithParams} className="block h-full hover:opacity-95 transition-opacity duration-300">
-        {cardContent}
+      <Link href={`${link}?${getPeriodParams(dateFilter)}`} className={cardClass}>
+        {cardBody}
       </Link>
     );
   }
-  
-  return <div className="h-full">{cardContent}</div>;
+
+  return <div className={cardClass}>{cardBody}</div>;
 }
 
 function ChartSkeleton() {
@@ -1087,9 +1030,7 @@ function StatsCardGrid({
     
     // 과거 기간에 해당하는 활동 개수 계산 (work_date 기준)
     return activities.filter(activity => {
-      if (!activity.work_date) return false;
-      const activityDate = new Date(activity.work_date);
-      return activityDate >= previousRange.start && activityDate <= previousRange.end;
+      return matchesDateRange(getAsDateCandidates(activity), previousRange);
     }).length;
   };
 
@@ -1233,7 +1174,8 @@ function StatsCardGrid({
   // 현재 기간의 PC 활동 이력 건수
   const currentPcActivitiesCount = pcActivities.filter(activity => {
     const dateRange = getDateRangeByFilter(activeFilter);
-    return isWithinInterval(new Date(activity.created_at), dateRange);
+    const interval = { start: startOfDay(dateRange.start), end: endOfDay(dateRange.end) };
+    return isWithinInterval(parseISO(activity.created_at), interval);
   }).length;
   
   // 과거 기간의 PC 활동 이력 건수
@@ -1245,11 +1187,9 @@ function StatsCardGrid({
   const pcActivitiesTrendType = pcActivitiesDiff >= 0 ? 'up' : 'down';
   
   // 현재 기간의 AS 요청 건수
-  const currentAsActivitiesCount = asActivities.filter(activity => {
-    if (!activity.work_date) return false;
-    const dateRange = getDateRangeByFilter(activeFilter);
-    return isWithinInterval(new Date(activity.work_date), dateRange);
-  }).length;
+  const currentAsActivitiesCount = asActivities.filter(activity =>
+    matchesDateRange(getAsDateCandidates(activity), getDateRangeByFilter(activeFilter))
+  ).length;
   
   // 과거 기간의 AS 요청 건수
   const previousAsActivitiesCount = calculatePreviousPeriodData(asActivities, activeFilter);
@@ -1270,64 +1210,47 @@ function StatsCardGrid({
   const networkCount = asActivities.filter(a => a.work_type === '네트워크').length;
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-      <div className="bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
-        <div className="p-5 h-full border-b-4 border-blue-600 relative">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-blue-600 opacity-10 rounded-full -mr-6 -mt-6 group-hover:scale-150 transition-transform duration-500"></div>
-          <StatCard
-            title="전체 PC 자산"
-            value={assets.length}
-            trend={assetComparison.diffText}
-            trendType={assetComparison.trendType as 'up' | 'down' | 'neutral'}
-            color="bg-transparent"
-            dateFilter={activeFilter}
-            link="/private/pc-assets"
-          />
-        </div>
-      </div>
-      <div className="bg-gradient-to-br from-white to-green-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
-        <div className="p-5 h-full border-b-4 border-green-600 relative">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-green-600 opacity-10 rounded-full -mr-6 -mt-6 group-hover:scale-150 transition-transform duration-500"></div>
-          <StatCard
-            title="장비이력"
-            value={currentPcActivitiesCount}
-            trend={pcActivitiesDiffText}
-            trendType={pcActivitiesTrendType as 'up' | 'down' | 'neutral'}
-            color="bg-transparent"
-            dateFilter={activeFilter}
-            link="/private/pc-history"
-          />
-        </div>
-      </div>
-      <div className="bg-gradient-to-br from-white to-amber-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
-        <div className="p-5 h-full border-b-4 border-amber-600 relative">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-amber-600 opacity-10 rounded-full -mr-6 -mt-6 group-hover:scale-150 transition-transform duration-500"></div>
-          <StatCard
-            title="작업이력"
-            value={currentAsActivitiesCount}
-            trend={asActivitiesDiffText}
-            trendType={asActivitiesTrendType as 'up' | 'down' | 'neutral'}
-            color="bg-transparent"
-            dateFilter={activeFilter}
-            link="/private/as-request"
-          />
-        </div>
-      </div>
-      <div className="bg-gradient-to-br from-white to-purple-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
-        <div className="p-5 h-full border-b-4 border-purple-600 relative">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-purple-600 opacity-10 rounded-full -mr-6 -mt-6 group-hover:scale-150 transition-transform duration-500"></div>
-          <StatCard
-            title="현재 대여 중"
-            value={rentComparison.currentCount}
-            trend={rentComparison.diffText}
-            trendType={rentComparison.trendType as 'up' | 'down' | 'neutral'}
-            color="bg-transparent"
-            dateFilter={activeFilter}
-            link="/private/rent"
-          />
-        </div>
-      </div>
-      
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 h-full">
+      <StatCard
+        title="전체 PC"
+        value={assets.length}
+        trend={assetComparison.diffText}
+        trendType={assetComparison.trendType as 'up' | 'down' | 'neutral'}
+        dateFilter={activeFilter}
+        link="/private/pc-assets"
+        icon={ComputerDesktopIcon}
+        iconBg="bg-slate-800"
+      />
+      <StatCard
+        title="장비이력"
+        value={currentPcActivitiesCount}
+        trend={pcActivitiesDiffText}
+        trendType={pcActivitiesTrendType as 'up' | 'down' | 'neutral'}
+        dateFilter={activeFilter}
+        link="/private/pc-history"
+        icon={ClipboardDocumentListIcon}
+        iconBg="bg-slate-600"
+      />
+      <StatCard
+        title="작업이력"
+        value={currentAsActivitiesCount}
+        trend={asActivitiesDiffText}
+        trendType={asActivitiesTrendType as 'up' | 'down' | 'neutral'}
+        dateFilter={activeFilter}
+        link="/private/as-request"
+        icon={WrenchScrewdriverIcon}
+        iconBg="bg-slate-700"
+      />
+      <StatCard
+        title="현재 대여 중"
+        value={rentComparison.currentCount}
+        trend={rentComparison.diffText}
+        trendType={rentComparison.trendType as 'up' | 'down' | 'neutral'}
+        dateFilter={activeFilter}
+        link="/private/rent"
+        icon={DeviceTabletIcon}
+        iconBg="bg-teal-700"
+      />
     </div>
   );
 }
