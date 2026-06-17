@@ -577,6 +577,7 @@ export default function AsRequestPage() {
               <div className="flex items-center space-x-3">
                 {/* 엑셀 다운로드 버튼들 */}
                 <div className="flex items-center space-x-2">
+                  {/* 전체 데이터보내기 → /private/report 로 이동 (임시 비활성화)
                   <Link
                     href="/private/as-request/export"
                     className="px-3 py-2 text-sm font-medium rounded-md border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
@@ -588,6 +589,7 @@ export default function AsRequestPage() {
                       전체 데이터보내기
                     </div>
                   </Link>
+                  */}
                   <button
                     onClick={handleExportAll}
                     disabled={exporting || logs.length === 0}

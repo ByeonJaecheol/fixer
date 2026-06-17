@@ -127,6 +127,64 @@ export function getExportFilename(): string {
   return `KET_작업이력_전체_${today}`;
 }
 
+export interface ReportLogRow {
+  no: number;
+  logId: string;
+  author: string;
+  workDate: string;
+  workType: string;
+  category: string;
+  modelName: string;
+  department: string;
+  employeeName: string;
+  question: string;
+  detailDescription: string;
+  solutionDetail: string;
+}
+
+function getMonthKey(workDate?: string): string {
+  if (!workDate) return '날짜 없음';
+  const date = new Date(workDate);
+  return `${date.getFullYear()}년 ${String(date.getMonth() + 1).padStart(2, '0')}월`;
+}
+
+/** 작업이력을 월별로 그룹화 (최신 월 우선) */
+export function groupAsLogsByMonth(data: IAsManagementLog[]): { monthKey: string; logs: IAsManagementLog[] }[] {
+  const logsByMonth: Record<string, IAsManagementLog[]> = {};
+
+  data.forEach((log) => {
+    const monthKey = getMonthKey(log.work_date);
+    if (!logsByMonth[monthKey]) logsByMonth[monthKey] = [];
+    logsByMonth[monthKey].push(log);
+  });
+
+  return Object.keys(logsByMonth)
+    .sort((a, b) => {
+      if (a === '날짜 없음') return 1;
+      if (b === '날짜 없음') return -1;
+      return b.localeCompare(a);
+    })
+    .map((monthKey) => ({ monthKey, logs: logsByMonth[monthKey] }));
+}
+
+/** 보고서 테이블용 행 변환 */
+export function toReportRows(logs: IAsManagementLog[]): ReportLogRow[] {
+  return logs.map((log, index) => ({
+    no: index + 1,
+    logId: log.log_id?.toString() || '',
+    author: log.created_by ? log.created_by.split('@')[0] : '',
+    workDate: log.work_date ? new Date(log.work_date).toLocaleDateString('ko-KR') : '',
+    workType: log.work_type || '',
+    category: log.category || '없음',
+    modelName: log.model_name || '',
+    department: log.employee_department || '',
+    employeeName: log.employee_name || '',
+    question: log.question || '',
+    detailDescription: log.detail_description || '',
+    solutionDetail: log.solution_detail || '',
+  }));
+}
+
 function emptyToNull(value: unknown): unknown {
   if (value === undefined || value === null) return null;
   if (typeof value === 'string' && value.trim() === '') return null;

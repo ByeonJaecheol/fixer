@@ -146,10 +146,9 @@ export default function PrivateDashboard() {
       case 'today':
         return { start: startOfDay(now), end: endOfDay(now) };
       case 'week':
-        // 달력 주(월~일)가 아닌 최근 7일(오늘 포함) — 주 초반에도 최근 작업이 보이도록
         return {
-          start: startOfDay(subDays(now, 6)),
-          end: endOfDay(now),
+          start: startOfWeek(now, { weekStartsOn: 1 }),
+          end: endOfWeek(now, { weekStartsOn: 1 }),
         };
       case 'month':
         return { start: startOfMonth(now), end: endOfMonth(now) };
@@ -559,7 +558,7 @@ export default function PrivateDashboard() {
           {getDateRangeText()}
         </span>
           <span className="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-medium">
-          {activeFilter === 'week' ? '최근 7일' : activeFilter === 'today' ? '일간' : activeFilter === 'month' ? '월간' : activeFilter === 'year' ? '연간' : '사용자 지정'}
+          {activeFilter === 'week' ? '이번 주' : activeFilter === 'today' ? '일간' : activeFilter === 'month' ? '월간' : activeFilter === 'year' ? '연간' : '사용자 지정'}
         </span>
       </div>
 
@@ -845,7 +844,7 @@ function StatCard({ title, value, trend, trendType, dateFilter, link, icon: Icon
   const getPeriodLabel = (filter: DateFilterType): string => {
     switch (filter) {
       case 'today': return '오늘';
-      case 'week': return '최근 7일';
+      case 'week': return '이번 주';
       case 'month': return '이번달';
       case 'year': return '올해';
       case 'custom': return '선택 기간';
@@ -856,7 +855,7 @@ function StatCard({ title, value, trend, trendType, dateFilter, link, icon: Icon
   const getComparisonText = (filter: DateFilterType): string => {
     switch (filter) {
       case 'today': return '지난주 같은 요일';
-      case 'week': return '이전 7일';
+      case 'week': return '지난주';
       case 'month': return '지난달';
       case 'year': return '지난해';
       case 'custom': return '작년 동일 기간';
@@ -877,8 +876,8 @@ function StatCard({ title, value, trend, trendType, dateFilter, link, icon: Icon
         break;
       }
       case 'week': {
-        startDate = format(startOfDay(subDays(today, 6)), 'yyyy-MM-dd');
-        endDate = format(endOfDay(today), 'yyyy-MM-dd');
+        startDate = format(startOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+        endDate = format(endOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd');
         break;
       }
       case 'month': {
