@@ -270,37 +270,43 @@ export type Database = {
   };
   "employees_data": {
     Row: {
-      이름: string;
-      아이뒤: string;
-      사번: string;
-      회사: string;
-      부서: string;
-      직위: string;
-      직책: string;
-      성별: string;
-      퇴사여부: string;
+      id: number;
+      created_at: string;
+      이름: string | null;
+      아이뒤: string | null;
+      사번: string | null;
+      회사: string | null;
+      부서: string | null;
+      직위: string | null;
+      직책: string | null;
+      성별: string | null;
+      퇴사: string | null;
     }
     Insert: {
-      이름: string;
-      아이뒤: string;
-      사번: string;
-      회사: string;
-      부서: string;
-      직위: string;
-      직책: string;
-      성별: string;
-      퇴사여부: string;
+      id?: number;
+      created_at?: string;
+      이름?: string | null;
+      아이뒤?: string | null;
+      사번?: string | null;
+      회사?: string | null;
+      부서?: string | null;
+      직위?: string | null;
+      직책?: string | null;
+      성별?: string | null;
+      퇴사?: string | null;
     }
     Update: {
-      이름: string;
-      아이뒤: string;
-      사번: string;
-      회사: string;
-      부서: string;
-      직위: string;
-      직책: string;
-      성별: string;
-      퇴사여부: string;
+      id?: number;
+      created_at?: string;
+      이름?: string | null;
+      아이뒤?: string | null;
+      사번?: string | null;
+      회사?: string | null;
+      부서?: string | null;
+      직위?: string | null;
+      직책?: string | null;
+      성별?: string | null;
+      퇴사?: string | null;
     }
   };
 }
