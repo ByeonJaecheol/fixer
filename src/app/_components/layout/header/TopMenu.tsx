@@ -26,6 +26,11 @@ const navigationItems = [
     href: 'as-request'
   },
   {
+    icon: WrenchIcon,
+    text: '작업이력(신)',
+    href: 'v2/as-request'
+  },
+  {
     icon: DeviceTabletIcon,
     text: '장비대여',
     href: 'rent?type=사무용'

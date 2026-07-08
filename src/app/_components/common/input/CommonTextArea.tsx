@@ -4,7 +4,7 @@ export default function CommonTextArea({ value, setValue, name, placeholder }: {
     return (
         <textarea
             name={name}
-            value={value||undefined}
+            value={value ?? ""}
             onChange={(e) => setValue(e.target.value)}
             rows={4}
             placeholder={placeholder??""}

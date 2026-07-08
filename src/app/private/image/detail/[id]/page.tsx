@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import LoadingSpinner from '@/app/_components/common/LoadingSpinner';
 import SupabaseService, { IImage, IImageInfo } from '@/api/supabase/supabaseApi';
+import { formatAuthorName } from '@/utils/userProfile';
 import { formatToKoreanTime } from '@/utils/utils';
 
 async function ImageDetailContent({ id }: { id: string }) {
@@ -80,7 +81,7 @@ async function ImageDetailContent({ id }: { id: string }) {
               </div>
               <div className="flex">
                 <dt className="w-20 text-sm font-medium text-gray-500">등록자:</dt>
-                <dd className="text-sm text-gray-900">{image.created_by ? image.created_by.split('@')[0] : '-'}</dd>
+                <dd className="text-sm text-gray-900">{formatAuthorName(image.created_by)}</dd>
               </div>
               <div className="flex">
                 <dt className="w-20 text-sm font-medium text-gray-500">등록일:</dt>
@@ -165,7 +166,7 @@ async function ImageDetailContent({ id }: { id: string }) {
                     {version.next_update || '-'}
                   </div>
                   <div className="text-sm text-gray-900">
-                    {version.created_by ? version.created_by.split('@')[0] : '-'}
+                    {formatAuthorName(version.created_by)}
                   </div>
                 </Link>
               ))}

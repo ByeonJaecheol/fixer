@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import SupabaseService, { IAsManagementLog } from '@/api/supabase/supabaseApi';
+import { formatAuthorName } from '@/utils/userProfile';
 import { formatToKoreanTime, truncateDescription } from '@/utils/utils';
 import { exportAsLogsToExcel } from '@/utils/excelUtils';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
@@ -180,8 +181,8 @@ export default function AsRequestPage() {
     
     // 특수 필드 처리 (null 값, 날짜 등)
     if (sortField === 'created_by') {
-      valueA = a.created_by ? a.created_by.split('@')[0] : '';
-      valueB = b.created_by ? b.created_by.split('@')[0] : '';
+      valueA = formatAuthorName(a.created_by);
+      valueB = formatAuthorName(b.created_by);
     } else if (sortField === 'work_date') {
       // work_date가 null이거나 빈 값인 경우 가장 뒤로 정렬
       if (!a.work_date && !b.work_date) return 0;
@@ -769,7 +770,7 @@ export default function AsRequestPage() {
                     style={gridStyle}
                   >
                     <div className="text-sm text-gray-900">{log.log_id}</div>
-                    <div className="text-sm text-gray-900">{log.created_by ? log.created_by.split('@')[0] : '-'}</div>
+                    <div className="text-sm text-gray-900">{formatAuthorName(log.created_by)}</div>
                     <div className="text-sm text-gray-900">{log.work_date ? formatToKoreanTime(log.work_date, 'date') : '-'}</div>
                     <div className="text-sm">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${

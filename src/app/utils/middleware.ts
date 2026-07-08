@@ -1,5 +1,17 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { V2_LOGIN_PATH } from '@/v2/auth/constants'
+
+function isPublicPath(pathname: string): boolean {
+  if (pathname === '/') return true
+  if (pathname.startsWith('/auth')) return true
+  if (pathname.startsWith('/v2/login')) return true
+  if (pathname.startsWith('/v2/signup')) return true
+  if (pathname.startsWith('/error')) return true
+  if (pathname.startsWith('/user')) return true
+  if (pathname.startsWith('/login')) return true
+  return false
+}
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -38,14 +50,17 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth')
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  const { pathname } = request.nextUrl
+
+  if (!user && pathname.startsWith('/private/v2')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = V2_LOGIN_PATH
+    return NextResponse.redirect(url)
+  }
+
+  if (!user && !isPublicPath(pathname)) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
     return NextResponse.redirect(url)
   }
 

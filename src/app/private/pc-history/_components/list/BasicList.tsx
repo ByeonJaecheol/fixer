@@ -1,4 +1,5 @@
 import { IPcManagementLog } from "@/api/supabase/supabaseApi";
+import { formatAuthorName } from "@/utils/userProfile";
 import { formatToKoreanTime } from "@/utils/utils";
 
 export default function BasicList({log}: {log: IPcManagementLog}) {
@@ -7,7 +8,7 @@ export default function BasicList({log}: {log: IPcManagementLog}) {
            {/* id */}
            <div className="px-2 py-4 text-sm  text-gray-500 text-center bg-gray-50">{log.log_id === null ? "-" : log.log_id}</div>
                 {/* 작성자 */}
-                  <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.created_by === null ? "-" : log.created_by.split("@")[0]}</div>
+                  <div className="px-2 py-4 text-sm text-gray-500 text-center">{formatAuthorName(log.created_by)}</div>
                 {/* 입고일 */}
                   <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.work_date === null ? "-" : formatToKoreanTime(log.work_date, 'date')}</div>
                 {/* 작업유형 */}

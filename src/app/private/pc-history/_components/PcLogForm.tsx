@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/context/UserContext';
+import { useAuthorName, useUser } from '@/context/UserContext';
 import SupabaseService, { IPcManagementLog } from '@/api/supabase/supabaseApi';
 import OkButton from '@/app/_components/common/input/button/OkButton';
 import InputDate from '@/app/_components/log/InputDate';
@@ -46,6 +46,7 @@ interface PcLogFormProps {
 
 export default function PcLogForm({ mode, defaultWorkType, log }: PcLogFormProps) {
   const { user } = useUser();
+  const authorName = useAuthorName();
   const router = useRouter();
   const ref = useRef<HTMLSelectElement>(null);
 
@@ -174,7 +175,7 @@ export default function PcLogForm({ mode, defaultWorkType, log }: PcLogFormProps
         security_code: securityCode,
         work_type: workType,
         work_date: workDate,
-        created_by: user?.email,
+        created_by: authorName,
         detailed_description: detailedDescription,
       }
     });
@@ -197,7 +198,7 @@ export default function PcLogForm({ mode, defaultWorkType, log }: PcLogFormProps
         asset_id: asset_id,
         work_type: workType,
         work_date: workDate,
-        created_by: user?.email,
+        created_by: authorName,
         location: location,
         security_code: newSecurityCode || security_code_array[0],
         requester: requester,
@@ -229,7 +230,7 @@ export default function PcLogForm({ mode, defaultWorkType, log }: PcLogFormProps
         asset_id: asset_id,
         work_type: workType,
         work_date: workDate,
-        created_by: user?.email,
+        created_by: authorName,
         location: location,
         security_code: securityCode,
         requester: requester,
@@ -260,7 +261,7 @@ export default function PcLogForm({ mode, defaultWorkType, log }: PcLogFormProps
         asset_id: asset_id,
         work_type: workType,
         work_date: workDate,
-        created_by: user?.email,
+        created_by: authorName,
         location: location,
         security_code: securityCode,
         requester: requester,

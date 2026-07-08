@@ -268,6 +268,27 @@ export type Database = {
       workplace: string;
     }
   };
+  user_profiles: {
+    Row: {
+      id: string;
+      email: string;
+      nickname: string;
+      created_at: string;
+      updated_at: string;
+    };
+    Insert: {
+      id: string;
+      email: string;
+      nickname: string;
+      created_at?: string;
+      updated_at?: string;
+    };
+    Update: {
+      email?: string;
+      nickname?: string;
+      updated_at?: string;
+    };
+  };
   "employees_data": {
     Row: {
       id: number;

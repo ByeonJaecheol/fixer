@@ -1,4 +1,5 @@
 import { IPcManagementLog } from "@/api/supabase/supabaseApi";
+import { formatAuthorName } from "@/utils/userProfile";
 import { formatToKoreanTime, truncateDescription } from "@/utils/utils";
 import Link from "next/link";
 
@@ -36,7 +37,7 @@ export default function LinstIn({pcManagementLog}:{pcManagementLog:IPcManagement
                   {/* id */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center bg-gray-50">{log.log_id}</div>
                   {/* 작성자 */}
-                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{log.created_by?log.created_by.split("@")[0]:"-"}</div>
+                    <div className="px-2 py-4 text-sm text-gray-500 text-center">{formatAuthorName(log.created_by)}</div>
                   {/* 입고일 */}
                     <div className="px-2 py-4 text-sm text-gray-500 text-center">{formatToKoreanTime(log.work_date, 'date')}</div>
                   {/* 작업유형 */}

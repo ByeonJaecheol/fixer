@@ -6,11 +6,13 @@ import CommonInputSingleCheckbox from "@/app/_components/common/input/CommonInpu
 import InputDate from "@/app/_components/log/InputDate";
 import InputLog from "@/app/_components/log/new/InputLog";
 import InputTextArea from "@/app/_components/log/new/InputTextArea";
+import InputDateTimePicker from "@/app/_components/log/new/InputDateTimePicker";
 import { fetchDataBySecurityCode, fetchEmployeeDataByName } from "@/app/utils/util";
-import { useUser } from "@/context/UserContext";
-import { useRouter } from "next/navigation";
+import { useUser, useAuthorName } from "@/context/UserContext";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
+import { RingLoader } from "react-spinners";
 import EmployeesSelectModal, { EmployeeData } from "../../_components/EmployeesSelectModal";
 
 interface IHardwareLogEntry {
@@ -42,32 +44,135 @@ export const AsWorkTypeOptions = ['H/W',  'S/W', '보안', '네트워크', '기�
 export const AsSwCategoryOptions = ['프로그램','드라이버','OS/성능','DATA','기타'];
 export const AsHwCategoryOptions = ['PC','모니터','프린터','기타'];
 
-export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps) {
+function parseAsLogQueryParams(
+    searchParams: { get: (key: string) => string | null },
+    defaultWorkType?: string
+) {
+    const get = (key: string) => searchParams.get(key) ?? undefined;
+    return {
+        workType: get('work_type') ?? defaultWorkType,
+        workDate: get('work_date') ?? new Date().toISOString().split('T')[0],
+        employeeName: get('employee_name'),
+        employeeDepartment: get('employee_department'),
+        employeeWorkspace: get('employee_workspace'),
+        modelName: get('model_name'),
+        question: get('question'),
+        solutionDetail: get('solution_detail'),
+        pcInfo: get('pc_info'),
+        securityCode: get('security_code'),
+        serialNumber: get('serial_number'),
+        category: get('category'),
+        detailCategory: get('detail_category'),
+        createdAt: get('created_at'),
+    };
+}
+
+function applyQueryParams(
+    query: ReturnType<typeof parseAsLogQueryParams>,
+    setters: {
+        setWorkType: (v: string | undefined) => void;
+        setWorkDate: (v: string) => void;
+        setEmployeeName: (v: string | undefined) => void;
+        setEmployeeDepartment: (v: string | undefined) => void;
+        setEmployeeWorkspace: (v: string | undefined) => void;
+        setModelName: (v: string | undefined) => void;
+        setQuestion: (v: string | undefined) => void;
+        setSolutionDetail: (v: string | undefined) => void;
+        setPcInfo: (v: string | undefined) => void;
+        setSecurityCode: (v: string | undefined) => void;
+        setSerial: (v: string | undefined) => void;
+        setCategory: (v: string | undefined) => void;
+        setDetailCategory: (v: string | undefined) => void;
+        setCreatedAtInput: (v: string | undefined) => void;
+    }
+) {
+    if (query.workType) setters.setWorkType(query.workType);
+    setters.setWorkDate(query.workDate);
+    if (query.employeeName) setters.setEmployeeName(query.employeeName);
+    if (query.employeeDepartment) setters.setEmployeeDepartment(query.employeeDepartment);
+    if (query.employeeWorkspace) setters.setEmployeeWorkspace(query.employeeWorkspace);
+    if (query.modelName) setters.setModelName(query.modelName);
+    if (query.question) setters.setQuestion(query.question);
+    if (query.solutionDetail) setters.setSolutionDetail(query.solutionDetail);
+    if (query.pcInfo) setters.setPcInfo(query.pcInfo);
+    if (query.securityCode) setters.setSecurityCode(query.securityCode);
+    if (query.serialNumber) setters.setSerial(query.serialNumber);
+    if (query.category) setters.setCategory(query.category);
+    if (query.detailCategory) setters.setDetailCategory(query.detailCategory);
+    if (query.createdAt) setters.setCreatedAtInput(query.createdAt);
+}
+
+export default function AsLogForm(props: AsLogFormProps) {
+    return (
+        <Suspense
+            fallback={
+                <div className="flex justify-center items-center py-24">
+                    <RingLoader size={32} color="#475569" />
+                </div>
+            }
+        >
+            <AsLogFormContent {...props} />
+        </Suspense>
+    );
+}
+
+function AsLogFormContent({ mode, defaultWorkType, log }: AsLogFormProps) {
     const { user } = useUser();
-    const createdBy = user?.email;
+    const authorName = useAuthorName();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const queryInitial = mode === 'create'
+        ? parseAsLogQueryParams(searchParams, defaultWorkType)
+        : null;
 
     // State 정의
     const [workType, setWorkType] = useState<string|undefined>(
-        mode === 'edit' ? log?.work_type : defaultWorkType
+        mode === 'edit' ? log?.work_type : queryInitial?.workType
     );
-    const [workDate, setWorkDate] = useState(new Date().toISOString().split('T')[0]);
-    const [employeeWorkspace, setEmployeeWorkspace] = useState<string|undefined>(undefined);
-    const [employeeDepartment, setEmployeeDepartment] = useState<string|undefined>(undefined);
-    const [employeeName, setEmployeeName] = useState<string|undefined>(undefined);
+    const [workDate, setWorkDate] = useState(
+        mode === 'edit' && log ? log.work_date : (queryInitial?.workDate ?? new Date().toISOString().split('T')[0])
+    );
+    const [employeeWorkspace, setEmployeeWorkspace] = useState<string|undefined>(
+        mode === 'edit' ? log?.employee_workspace : queryInitial?.employeeWorkspace
+    );
+    const [employeeDepartment, setEmployeeDepartment] = useState<string|undefined>(
+        mode === 'edit' ? log?.employee_department : queryInitial?.employeeDepartment
+    );
+    const [employeeName, setEmployeeName] = useState<string|undefined>(
+        mode === 'edit' ? log?.employee_name : queryInitial?.employeeName
+    );
     const [selectedEmployee, setSelectedEmployee] = useState<EmployeeData|undefined>(undefined);
     const [employeeAsLogs, setEmployeeAsLogs] = useState<any[]>([]);
-    const [modelName, setModelName] = useState<string|undefined>(undefined);
-    const [securityCode, setSecurityCode] = useState<string|undefined>(undefined);
-    const [question, setQuestion] = useState<string|undefined>(undefined);
-    const [serial, setSerial] = useState<string|undefined>(undefined);
-    const [detailCategory, setDetailCategory] = useState<string|undefined>(undefined);
-    const [category, setCategory] = useState<string|undefined>(undefined);
-    const [detailedDescription, setDetailedDescription] = useState<string|undefined>(undefined);
-    const [solutionDetail, setSolutionDetail] = useState<string|undefined>(undefined);
+    const [modelName, setModelName] = useState<string|undefined>(
+        mode === 'edit' ? log?.model_name : queryInitial?.modelName
+    );
+    const [securityCode, setSecurityCode] = useState<string|undefined>(
+        mode === 'edit' ? log?.security_code : queryInitial?.securityCode
+    );
+    const [question, setQuestion] = useState<string|undefined>(
+        mode === 'edit' ? log?.question : queryInitial?.question
+    );
+    const [serial, setSerial] = useState<string|undefined>(
+        mode === 'edit' ? log?.serial_number : queryInitial?.serialNumber
+    );
+    const [detailCategory, setDetailCategory] = useState<string|undefined>(
+        mode === 'edit' ? (log?.detail_category ?? undefined) : queryInitial?.detailCategory
+    );
+    const [category, setCategory] = useState<string|undefined>(
+        mode === 'edit' ? (log?.category ?? undefined) : queryInitial?.category
+    );
+    const [detailedDescription, setDetailedDescription] = useState<string|undefined>(
+        mode === 'edit' ? log?.detailed_description : undefined
+    );
+    const [pcInfo, setPcInfo] = useState<string|undefined>(queryInitial?.pcInfo);
+    const [solutionDetail, setSolutionDetail] = useState<string|undefined>(
+        mode === 'edit' ? log?.solution_detail : queryInitial?.solutionDetail
+    );
+    const [createdAtInput, setCreatedAtInput] = useState<string|undefined>(queryInitial?.createdAt);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [employeeData, setEmployeeData] = useState<EmployeeData[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const prevWorkTypeRef = useRef(workType);
 
     // Edit 모드일 때 초기값 설정
     useEffect(() => {
@@ -86,6 +191,28 @@ export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps
             setSolutionDetail(log.solution_detail);
         }
     }, [mode, log]);
+
+    // Create 모드: URL 쿼리스트링 변경 시 폼 값 동기화
+    useEffect(() => {
+        if (mode !== 'create') return;
+
+        applyQueryParams(parseAsLogQueryParams(searchParams, defaultWorkType), {
+            setWorkType,
+            setWorkDate,
+            setEmployeeName,
+            setEmployeeDepartment,
+            setEmployeeWorkspace,
+            setModelName,
+            setQuestion,
+            setSolutionDetail,
+            setPcInfo,
+            setSecurityCode,
+            setSerial,
+            setCategory,
+            setDetailCategory,
+            setCreatedAtInput,
+        });
+    }, [mode, searchParams, defaultWorkType]);
 
     // Create 모드에서 선택된 직원의 AS 이력 가져오기
     useEffect(() => {
@@ -109,9 +236,13 @@ export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps
         }
     }, [selectedEmployee, mode]);
 
-    // workType 변경 시 category 초기화
+    // workType 변경 시 category 초기화 (사용자가 직접 변경한 경우만)
     useEffect(() => {
-        setCategory(undefined);
+        if (prevWorkTypeRef.current !== workType) {
+            setCategory(undefined);
+            setDetailCategory(undefined);
+            prevWorkTypeRef.current = workType;
+        }
     }, [workType]);
 
     // AS 이력 조회 함수
@@ -149,7 +280,7 @@ export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps
             work_type: workType,
             work_date: workDate,
             model_name: modelName,
-            created_by: createdBy,
+            created_by: authorName,
             employee_workspace: employeeWorkspace,
             employee_department: employeeDepartment,
             employee_name: employeeName,
@@ -284,6 +415,7 @@ export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps
         setDetailCategory(undefined);
         setCategory(undefined);
         setDetailedDescription(undefined);
+        setPcInfo(undefined);
         setSolutionDetail(undefined);
         setIsModalOpen(false);
         setIsLoading(false);
@@ -310,40 +442,58 @@ export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps
                 </div>  
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-4 sm:px-8 mb-4">
-                <InputDate
-                    label={"작업일"}
-                    value={workDate}
-                    setValue={setWorkDate}
-                    name="workDate"
-                    type="date"
-                />
-                
-                <InputLog
-                    label={"사용자"}
-                    value={employeeName}
-                    setValue={setEmployeeName}
-                    onKeyDown={() => handleEmployeeDataByName(employeeName ?? "")}
-                    placeholder={mode === 'create' ? "사원명 입력 후 엔터시 자동입력" : ""}
-                />
-                
-                <InputLog
-                    label={"부서"}
-                    value={employeeDepartment}
-                    setValue={setEmployeeDepartment}
-                />
-                
-                <InputLog
-                    label={"사업장"}
-                    value={employeeWorkspace}
-                    setValue={setEmployeeWorkspace}
-                />
+            <div className="flex flex-col gap-4 px-4 sm:px-8 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <InputLog
+                        label={"작성자"}
+                        value={mode === 'edit' ? log?.created_by : authorName}
+                        setValue={() => {}}
+                        disabled
+                    />
 
-                <InputLog
-                    label={"모델명"}
-                    value={modelName}
-                    setValue={setModelName}
-                />
+                    <InputDate
+                        label={"작업일"}
+                        value={workDate}
+                        setValue={setWorkDate}
+                        name="workDate"
+                        type="date"
+                    />
+
+                    <InputDateTimePicker
+                        label={"작성일시"}
+                        value={createdAtInput}
+                        setValue={setCreatedAtInput}
+                        placeholder="yyyy-MM-dd HH:mm:ss"
+                    />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <InputLog
+                        label={"사용자"}
+                        value={employeeName}
+                        setValue={setEmployeeName}
+                        onKeyDown={() => handleEmployeeDataByName(employeeName ?? "")}
+                        placeholder={mode === 'create' ? "사원명 입력 후 엔터시 자동입력" : ""}
+                    />
+
+                    <InputLog
+                        label={"부서"}
+                        value={employeeDepartment}
+                        setValue={setEmployeeDepartment}
+                    />
+
+                    <InputLog
+                        label={"사업장"}
+                        value={employeeWorkspace}
+                        setValue={setEmployeeWorkspace}
+                    />
+
+                    <InputLog
+                        label={"모델명"}
+                        value={modelName}
+                        setValue={setModelName}
+                    />
+                </div>
             </div>
 
             <div className="flex flex-col gap-4 mb-4 rounded-lg m-8">
@@ -467,10 +617,17 @@ export default function AsLogForm({ mode, defaultWorkType, log }: AsLogFormProps
             <div className="w-full mb-4 px-4 sm:px-8">
                 <InputTextArea
                     label={"상세설명"}
-                    value={detailedDescription}
-                    setValue={setDetailedDescription}
+                    value={detailedDescription ?? ""}
+                    setValue={(value) => setDetailedDescription(value)}
                     placeholder={""}
                 />
+            </div>
+
+            <div className="w-full mb-4 px-4 sm:px-8">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">PC 정보</h3>
+                <div className="min-h-[96px] p-3 rounded-md border border-slate-200 bg-slate-50 text-sm text-slate-800 whitespace-pre-wrap break-words">
+                    {pcInfo?.trim() ? pcInfo : 'PC 정보가 없습니다.'}
+                </div>
             </div>
 
             {/* 버튼 영역 */}

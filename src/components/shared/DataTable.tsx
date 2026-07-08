@@ -2,7 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { formatToKoreanTime, truncateDescription } from "@/utils/utils";
+import { formatAuthorName } from '@/utils/userProfile';
+import { formatToKoreanTime, truncateDescription } from '@/utils/utils';
 
 // 셀 타입 정의
 export type CellType = 
@@ -66,7 +67,7 @@ const DataTable: React.FC<DataTableProps> = ({
         return formatToKoreanTime(value, 'date');
       
       case 'email':
-        return value.split('@')[0];
+        return formatAuthorName(value);
       
       case 'truncate':
         return truncateDescription(value, column.truncateLength || 30);

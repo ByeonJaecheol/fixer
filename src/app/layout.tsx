@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { APP_DESCRIPTION, APP_NAME } from "./constants/constNames";
+import SiteMigrationNoticeModal from "./_components/SiteMigrationNoticeModal";
 
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default function RootLayout({
             <main className="flex-1 flex justify-center items-center">
               {children}
             </main>
+            <SiteMigrationNoticeModal />
             
           </div>
       </body>

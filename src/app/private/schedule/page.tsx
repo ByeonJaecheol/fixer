@@ -6,7 +6,8 @@ import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterv
 import { ko } from 'date-fns/locale';
 import { supabase } from '@/utils/supabase';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/context/UserContext';
+import { formatAuthorName, getAuthorInitials } from '@/utils/userProfile';
+import { useAuthorName, useUser } from '@/context/UserContext';
 
 // 대한민국 공휴일 정의
 interface Holiday {
@@ -128,7 +129,7 @@ interface Todo {
 
 export default function TodoCalendarPage() {
   const { user } = useUser();
-  const createdBy = user?.email;
+  const createdBy = useAuthorName();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDateRange, setSelectedDateRange] = useState<{start: Date | null, end: Date | null}>({
     start: null,
@@ -345,10 +346,7 @@ export default function TodoCalendarPage() {
                   const isStart = isSameDay(parseISO(todo.start_date), day);
                   const isEnd = isSameDay(parseISO(todo.end_date), day);
                   
-                  // 작성자 이니셜 생성 (이메일에서 @ 앞 첫 2글자)
-                  const creatorInitial = todo.created_by 
-                    ? todo.created_by.split('@')[0].substring(0, 2).toUpperCase() 
-                    : '??';
+                  const creatorInitial = getAuthorInitials(todo.created_by);
                   
                   return (
                     <div 
@@ -364,7 +362,7 @@ export default function TodoCalendarPage() {
                         paddingLeft: isStart ? '4px' : '8px',
                         paddingRight: isEnd ? '4px' : '8px'
                       }}
-                      title={`${todo.title} (${todo.start_date} ~ ${todo.end_date}, 작성자: ${todo.created_by})`}
+                      title={`${todo.title} (${todo.start_date} ~ ${todo.end_date}, 작성자: ${formatAuthorName(todo.created_by)})`}
                       onClick={(e) => handleTodoClick(todo, e)}
                     >
                       {isStart && (
@@ -499,27 +497,6 @@ export default function TodoCalendarPage() {
     }
   };
 
-  // 작성자 이니셜을 추출하는 함수 추가
-  const getInitials = (email: string): string => {
-    // 이메일 형식인 경우 @ 앞 부분의 첫 두 글자 사용
-    if (email.includes('@')) {
-      const name = email.split('@')[0];
-      return name.length > 1 ? name.substring(0, 2).toUpperCase() : name.toUpperCase();
-    }
-    
-    // 공백이 있는 이름인 경우 각 단어의 첫 글자 사용
-    if (email.includes(' ')) {
-      return email.split(' ')
-        .map(word => word.charAt(0))
-        .join('')
-        .toUpperCase()
-        .substring(0, 2);
-    }
-    
-    // 그 외 경우 첫 두 글자 사용
-    return email.length > 1 ? email.substring(0, 2).toUpperCase() : email.toUpperCase();
-  };
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-y-4">
@@ -536,7 +513,7 @@ export default function TodoCalendarPage() {
               <option value="">모든 작성자</option>
               {creators.map(creator => (
                 <option key={creator} value={creator}>
-                  {creator.split('@')[0]}
+                  {formatAuthorName(creator)}
                 </option>
               ))}
             </select>
@@ -632,9 +609,9 @@ export default function TodoCalendarPage() {
             {modalMode !== 'create' && selectedTodo && (
               <p className="text-sm text-gray-600 mb-4 flex items-center">
                 <span className="inline-flex items-center justify-center w-5 h-5 mr-1 bg-gray-200 rounded-full text-xs font-bold">
-                  {getInitials(selectedTodo.created_by)}
+                  {getAuthorInitials(selectedTodo.created_by)}
                 </span>
-                작성자: {selectedTodo.created_by}
+                작성자: {formatAuthorName(selectedTodo.created_by)}
               </p>
             )}
             

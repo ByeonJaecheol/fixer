@@ -172,7 +172,7 @@ export function toReportRows(logs: IAsManagementLog[]): ReportLogRow[] {
   return logs.map((log, index) => ({
     no: index + 1,
     logId: log.log_id?.toString() || '',
-    author: log.created_by ? log.created_by.split('@')[0] : '',
+    author: formatAuthorName(log.created_by),
     workDate: log.work_date ? new Date(log.work_date).toLocaleDateString('ko-KR') : '',
     workType: log.work_type || '',
     category: log.category || '없음',

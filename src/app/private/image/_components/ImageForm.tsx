@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/context/UserContext';
+import { useAuthorName, useUser } from '@/context/UserContext';
 import SupabaseService, { IImage } from '@/api/supabase/supabaseApi';
 import OkButton from '@/app/_components/common/input/button/OkButton';
 import InputDropDown from '@/app/_components/log/new/InputDropDown';
@@ -30,6 +30,7 @@ interface ImageFormProps {
 
 export default function ImageForm({ mode, image }: ImageFormProps) {
   const { user } = useUser();
+  const authorName = useAuthorName();
   const router = useRouter();
   
   // 각 드롭다운마다 개별적인 ref 사용
@@ -66,7 +67,7 @@ export default function ImageForm({ mode, image }: ImageFormProps) {
         brand: brand,
         model_name: modelName,
         win_version: winVersion,
-        created_by: user?.email
+        created_by: authorName
       };
 
       if (mode === 'create') {

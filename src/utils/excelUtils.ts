@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import { formatAuthorName } from '@/utils/userProfile';
 
 // AS 관리 로그 데이터 타입 정의
 export interface IAsManagementLog {
@@ -75,7 +76,7 @@ export const exportAsLogsToExcel = (data: IAsManagementLog[], filename: string =
     const excelData: ExcelAsLogData[] = monthData.map((log, index) => ({
       '번호': index + 1,
       'ID': log.log_id?.toString() || '',
-      '작성자': log.created_by ? log.created_by.split('@')[0] : '',
+      '작성자': formatAuthorName(log.created_by),
       '작업일': log.work_date ? new Date(log.work_date).toLocaleDateString('ko-KR') : '',
       '작업유형': log.work_type || '',
       '분류': log.category || '없음',

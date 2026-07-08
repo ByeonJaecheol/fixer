@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import SupabaseService, { IPcManagementLog } from '@/api/supabase/supabaseApi';
+import { formatAuthorName } from '@/utils/userProfile';
 import { formatToKoreanTime, truncateDescription } from '@/utils/utils';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { RingLoader } from 'react-spinners';
@@ -177,8 +178,8 @@ export default function PcHistoryPage() {
     
     // 특수 필드 처리
     if (sortField === 'created_by') {
-      valueA = a.created_by ? a.created_by.split('@')[0] : '';
-      valueB = b.created_by ? b.created_by.split('@')[0] : '';
+      valueA = formatAuthorName(a.created_by);
+      valueB = formatAuthorName(b.created_by);
     } else if (sortField === 'work_date') {
       valueA = new Date(a.work_date || '').getTime();
       valueB = new Date(b.work_date || '').getTime();
@@ -302,7 +303,7 @@ export default function PcHistoryPage() {
           log.pc_assets?.model_name,
           log.pc_assets?.serial_number,
           log.detailed_description,
-          log.created_by?.split('@')[0]
+          formatAuthorName(log.created_by)
         ];
         
         const matchesSearch = searchableFields.some(field => 
@@ -436,7 +437,7 @@ export default function PcHistoryPage() {
       case 'date':
         return value ? formatToKoreanTime(value, 'date') : '-';
       case 'email':
-        return value ? value.split('@')[0] : '-';
+        return formatAuthorName(value);
       case 'truncate':
         return value ? truncateDescription(value, column.truncateLength || 30) : '-';
       case 'pc_type':

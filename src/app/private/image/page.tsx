@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import LoadingSpinner from '@/app/_components/common/LoadingSpinner';
 import SupabaseService, { IImage } from '@/api/supabase/supabaseApi';
+import { formatAuthorName } from '@/utils/userProfile';
 import { formatToKoreanTime } from '@/utils/utils';
 
 interface FilterState {
@@ -491,7 +492,7 @@ function ImagePage() {
                         <div className="flex justify-between text-xs">
                           <span className="text-gray-500">작성자</span>
                           <span className="text-gray-900 truncate ml-1" title={image.created_by || '-'}>
-                            {image.created_by ? image.created_by.split('@')[0] : '-'}
+                            {formatAuthorName(image.created_by)}
                           </span>
                         </div>
                         
