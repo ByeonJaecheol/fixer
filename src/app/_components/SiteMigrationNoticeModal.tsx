@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { MegaphoneIcon } from '@heroicons/react/24/outline';
 
-const NEW_SITE_URL = 'https://fixer2.vercel.app/';
+const NEW_SITE_URL = 'https://fixer-v2.vercel.app/';
 const STORAGE_KEY = 'fixer_migration_notice_dismissed';
 
 function shouldShowNotice(pathname: string): boolean {
