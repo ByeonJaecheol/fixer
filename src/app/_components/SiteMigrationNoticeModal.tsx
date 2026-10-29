@@ -70,7 +70,7 @@ export default function SiteMigrationNoticeModal() {
                 rel="noopener noreferrer"
                 className="font-semibold text-indigo-600 hover:text-indigo-700 underline underline-offset-2"
               >
-                fixer2.vercel.app
+                fixer-v2.vercel.app
               </a>
               로 접속해 주세요.
             </p>
